@@ -12,6 +12,8 @@ class OrderItemSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        // OrderItems are created by OrderSeeder to ensure consistency with orders/items.
+        // This seeder is intentionally minimal to avoid duplication.
+        return;
     }
 }

@@ -12,6 +12,13 @@ class ItemGallerySeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        $items = \App\Models\Item::all();
+        foreach ($items as $item) {
+            // ensure at least one gallery image per item
+            \App\Models\ItemGallery::updateOrCreate(
+                ['item_id' => $item->id],
+                ['image_path' => 'images/item/default_image.png']
+            );
+        }
     }
 }

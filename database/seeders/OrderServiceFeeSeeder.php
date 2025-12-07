@@ -12,6 +12,14 @@ class OrderServiceFeeSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        // If orders and service fees exist, attach a service fee to the first order
+        $order = \App\Models\Order::first();
+        $fee = \App\Models\ServiceFee::first();
+        if (! $order || ! $fee) return;
+
+        \App\Models\OrderServiceFee::updateOrCreate(
+            ['order_id' => $order->id, 'service_fee_id' => $fee->id],
+            []
+        );
     }
 }

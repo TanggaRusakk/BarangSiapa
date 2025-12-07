@@ -17,9 +17,28 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Ensure a Test User exists (avoid duplicate unique errors)
+        \App\Models\User::updateOrCreate(
+            ['email' => 'test@example.com'],
+            ['name' => 'Test User', 'password' => 'password', 'phone_number' => '081234567890']
+        );
+
+        // Seed demo data in focused seeders
+        $this->call([
+            CategorySeeder::class,
+            VendorSeeder::class,
+            ItemSeeder::class,
+            ItemGallerySeeder::class,
+            ItemCategorySeeder::class,
+            AdSeeder::class,
+            ReviewSeeder::class,
+            ChatSeeder::class,
+            MessageSeeder::class,
+            ServiceFeeSeeder::class,
+            OrderSeeder::class,
+            OrderServiceFeeSeeder::class,
+            PaymentSeeder::class,
+            RentalInfoSeeder::class,
         ]);
     }
 }

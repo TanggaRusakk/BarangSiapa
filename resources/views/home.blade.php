@@ -96,38 +96,80 @@
             <h2 class="section-title text-gradient">🔥 Trending Now</h2>
             <div class="carousel">
                 <button class="carousel-btn prev" onclick="scrollCarousel(-1)">‹</button>
-                    <div class="carousel-track" id="trendingCarousel">
-                    <!-- Trending items from database -->
-                    @foreach($trending as $t)
-                        <div class="carousel-item">
-                            <div class="product-card">
-                                @if($t->item_type === 'rent')
-                                    <div class="product-badge badge-rent">For Rent</div>
-                                @elseif($t->item_status === 'flash')
-                                    <div class="product-badge badge-flash">Flash Sale</div>
-                                @else
-                                    <div class="product-badge badge-buy">Buy Now</div>
-                                @endif
-
-                                @php
-                                    $img = optional($t->itemGalleries->first())->image_path;
-                                @endphp
-                                <img src="{{ $img ? asset('storage/' . $img) : asset('images/item/default_image.png') }}" alt="{{ $t->item_name }}" class="product-image">
-                                <div class="p-4">
-                                    <h3 class="text-lg font-bold mb-2">{{ $t->item_name }}</h3>
-                                    <p class="text-sm text-soft-lilac mb-3">{{ Str::limit($t->item_description, 80) }}</p>
-                                    <div class="flex justify-between items-center">
-                                        <div>
-                                            <span class="text-2xl font-bold text-gradient">${{ number_format($t->item_price, 0) }}</span>
-                                            <span class="text-sm text-soft-lilac">{{ $t->item_type === 'rent' ? '/' . ($t->rental_duration_unit ?? 'day') : '/buy' }}</span>
-                                        </div>
-                                        <button class="btn btn-primary">View</button>
+                <div class="carousel-track" id="trendingCarousel">
+                    <!-- Carousel items will be populated by JavaScript -->
+                    <div class="carousel-item">
+                        <div class="product-card">
+                            <div class="product-badge badge-flash">Flash Sale</div>
+                            <img src="{{ asset('images/item/default_image.png') }}" alt="Product" class="product-image">
+                            <div class="p-4">
+                                <h3 class="text-lg font-bold mb-2">Premium Headphones</h3>
+                                <p class="text-sm text-soft-lilac mb-3">High-quality wireless audio</p>
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <span class="text-2xl font-bold text-gradient">$199</span>
+                                        <span class="text-sm text-soft-lilac">/buy</span>
                                     </div>
+                                    <button class="btn btn-primary">View</button>
                                 </div>
                             </div>
                         </div>
-                    @endforeach
                     </div>
+                    
+                    <div class="carousel-item">
+                        <div class="product-card">
+                            <div class="product-badge badge-rent">For Rent</div>
+                            <img src="{{ asset('images/item/default_image.png') }}" alt="Product" class="product-image">
+                            <div class="p-4">
+                                <h3 class="text-lg font-bold mb-2">Professional Camera</h3>
+                                <p class="text-sm text-soft-lilac mb-3">4K video, perfect for events</p>
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <span class="text-2xl font-bold text-gradient">$29</span>
+                                        <span class="text-sm text-soft-lilac">/day</span>
+                                    </div>
+                                    <button class="btn btn-accent">Rent</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="carousel-item">
+                        <div class="product-card">
+                            <div class="product-badge badge-buy">Best Seller</div>
+                            <img src="{{ asset('images/item/default_image.png') }}" alt="Product" class="product-image">
+                            <div class="p-4">
+                                <h3 class="text-lg font-bold mb-2">Smart Watch</h3>
+                                <p class="text-sm text-soft-lilac mb-3">Track your fitness goals</p>
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <span class="text-2xl font-bold text-gradient">$149</span>
+                                        <span class="text-sm text-soft-lilac">/buy</span>
+                                    </div>
+                                    <button class="btn btn-primary">View</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="carousel-item">
+                        <div class="product-card">
+                            <div class="product-badge badge-rent">For Rent</div>
+                            <img src="{{ asset('images/item/default_image.png') }}" alt="Product" class="product-image">
+                            <div class="p-4">
+                                <h3 class="text-lg font-bold mb-2">Gaming Console</h3>
+                                <p class="text-sm text-soft-lilac mb-3">Latest gen with controllers</p>
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <span class="text-2xl font-bold text-gradient">$15</span>
+                                        <span class="text-sm text-soft-lilac">/day</span>
+                                    </div>
+                                    <button class="btn btn-accent">Rent</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <button class="carousel-btn next" onclick="scrollCarousel(1)">›</button>
             </div>
         </div>
@@ -142,11 +184,11 @@
             
             <div class="product-grid" id="productGrid">
                 @foreach($items as $item)
+                    @php
+                        $firstImage = optional($item->itemGalleries->first())->image_path;
+                        $isRent = ($item->item_type === 'sewa' || $item->item_type === 'rent');
+                    @endphp
                     <div class="product-card" data-category="all">
-                        @php
-                            $firstImage = optional($item->itemGalleries->first())->image_path;
-                            $isRent = ($item->item_type === 'sewa');
-                        @endphp
                         <div class="product-badge {{ $isRent ? 'badge-rent' : 'badge-buy' }}">{{ $isRent ? 'For Rent' : 'Buy Now' }}</div>
                         <img src="{{ $firstImage ? asset('storage/' . $firstImage) : asset('images/item/default_image.png') }}" alt="{{ $item->item_name }}" class="product-image">
                         <div class="p-4">
@@ -356,6 +398,7 @@
                 alert('Please login to view product details');
                 window.location.href = '{{ route("login") }}';
             @else
+                // record last viewed via AJAX
                 try {
                     fetch('/product/viewed', {
                         method: 'POST',
@@ -365,7 +408,7 @@
                         },
                         body: JSON.stringify({ id: productId })
                     });
-                } catch (e) { }
+                } catch (e) { /* ignore */ }
                 alert('Product modal for: ' + productId + '\n(Will be implemented in member dashboard)');
             @endguest
         }
@@ -384,7 +427,7 @@
                         },
                         body: JSON.stringify({ id: productId })
                     });
-                } catch (e) { }
+                } catch (e) { /* ignore */ }
                 alert('Rental modal for: ' + productId + '\n(Will be implemented in member dashboard)');
             @endguest
         }
