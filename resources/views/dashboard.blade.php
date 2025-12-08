@@ -3,7 +3,7 @@
     
     <!-- Welcome Header -->
     <div class="mb-4">
-        <h1 class="text-4xl font-bold text-gradient mb-2">Welcome back, {{ Auth::user()->name }}! 👋</h1>
+        <h1 class="text-4xl font-bold text-gradient mb-2">Welcome back, {{ auth()->user()->name }}! 👋</h1>
         <p class="text-soft-lilac">Here's what's happening with your account today.</p>
     </div>
 
@@ -20,7 +20,7 @@
         </div>
     @endif
 
-    @if(Auth::user()->role === 'admin')
+    @if(auth()->user()->role === 'admin')
         <!-- ADMIN DASHBOARD -->
         <div class="stat-grid mb-4">
             <a href="{{ route('admin.users') }}" class="stat-card hover:scale-105 transition cursor-pointer">
@@ -89,7 +89,7 @@
                                         <td>{{ $u->name }}</td>
                                         <td>{{ $u->email }}</td>
                                         <td><span class="badge badge-info">{{ ucfirst($u->role) }}</span></td>
-                                        <td><a href="#" class="btn btn-primary btn-sm">View</a></td>
+                                        <td><a href="{{ route('admin.users.show', $u) }}" class="btn btn-primary btn-sm">View</a></td>
                                     </tr>
                                 @endforeach
                         </tbody>
@@ -148,7 +148,7 @@
                                 <td>{{ optional(optional($o->orderItems->first())->item->vendor)->vendor_name ?? '—' }}</td>
                                 <td>Rp{{ number_format($o->order_total_amount ?? 0, 0) }}</td>
                                 <td><span class="badge badge-info">{{ ucfirst($o->order_status ?? '—') }}</span></td>
-                                <td><a href="#" class="btn btn-primary btn-sm">View</a></td>
+                                <td><a href="{{ route('admin.orders.show', $o) }}" class="btn btn-primary btn-sm">View</a></td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -156,7 +156,7 @@
             </div>
         </div>
 
-    @elseif(Auth::user()->role === 'vendor')
+    @elseif(auth()->user()->role === 'vendor')
         <!-- VENDOR DASHBOARD -->
         <div class="stat-grid mb-4">
             <div class="stat-card">
@@ -183,21 +183,21 @@
 
         <!-- Quick Actions -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <button class="card text-center hover:scale-105 transition cursor-pointer">
+            <a href="/vendor/products/create" class="card text-center hover:scale-105 transition cursor-pointer">
                 <div class="text-4xl mb-2">➕</div>
                 <h3 class="font-bold">Add New Product</h3>
                 <p class="text-sm text-soft-lilac">List a new item</p>
-            </button>
-            <button class="card text-center hover:scale-105 transition cursor-pointer">
+            </a>
+            <a href="/vendor/orders/list" class="card text-center hover:scale-105 transition cursor-pointer">
                 <div class="text-4xl mb-2">📦</div>
                 <h3 class="font-bold">Manage Orders</h3>
                 <p class="text-sm text-soft-lilac">View pending orders</p>
-            </button>
-            <button class="card text-center hover:scale-105 transition cursor-pointer">
+            </a>
+            <a href="/vendor/ads/create" class="card text-center hover:scale-105 transition cursor-pointer">
                 <div class="text-4xl mb-2">📢</div>
                 <h3 class="font-bold">Create Ad</h3>
                 <p class="text-sm text-soft-lilac">Promote your products</p>
-            </button>
+            </a>
         </div>
 
         <!-- Recent Products & Orders -->

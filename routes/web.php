@@ -268,6 +268,119 @@ Route::middleware('auth')->group(function () {
         $ad->delete();
         return redirect()->route('admin.ads')->with('success', 'Ad deleted');
     })->name('admin.ads.destroy');
+
+    // Vendor routes (basic) — dashboard, product create/list, orders, ads
+    Route::get('/vendor/dashboard', function () {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $vendor = auth()->user()->vendor;
+        $recentProducts = $vendor ? $vendor->items()->orderBy('created_at', 'desc')->take(6)->get() : collect();
+        return view('vendor.dashboard', compact('recentProducts'));
+    })->name('vendor.dashboard');
+
+    Route::get('/vendor/products/create', function () {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        return view('vendor.products-create');
+    })->name('vendor.products.create');
+
+    Route::post('/vendor/products', function (Request $request) {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $vendor = auth()->user()->vendor;
+        $data = $request->validate([
+            'item_name' => 'required|string|max:255',
+            'item_description' => 'nullable|string',
+            'item_price' => 'required|numeric',
+            'item_type' => 'required|string',
+            'item_status' => 'nullable|string',
+        ]);
+        $data['vendor_id'] = $vendor->id ?? null;
+        \App\Models\Item::create($data);
+        return redirect()->route('vendor.products.list')->with('success', 'Product created');
+    })->name('vendor.products.store');
+
+    Route::get('/vendor/products/list', function () {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $vendor = auth()->user()->vendor;
+        $items = $vendor ? $vendor->items()->orderBy('created_at', 'desc')->paginate(25) : collect();
+        return view('vendor.products-list', compact('items'));
+    })->name('vendor.products.list');
+
+    // Delete vendor product (ensure ownership)
+    Route::delete('/vendor/products/{item}', function (Request $request, \App\Models\Item $item) {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $vendor = auth()->user()->vendor;
+        if (!$vendor || $item->vendor_id !== $vendor->id) abort(403);
+        $item->delete();
+        return redirect()->route('vendor.products.list')->with('success', 'Product deleted');
+    })->name('vendor.products.destroy');
+
+    Route::get('/vendor/orders/list', function () {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $vendor = auth()->user()->vendor;
+        $orders = \App\Models\Order::whereHas('orderItems.item', function ($q) use ($vendor) {
+            $q->where('vendor_id', $vendor->id ?? 0);
+        })->with('user')->orderBy('created_at', 'desc')->paginate(25);
+        return view('vendor.orders-list', compact('orders'));
+    })->name('vendor.orders.list');
+
+    Route::get('/vendor/ads/create', function () {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        return view('vendor.ads-create');
+    })->name('vendor.ads.create');
+
+    Route::post('/vendor/ads', function (Request $request) {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $data = $request->validate([
+            'ad_title' => 'required|string',
+            'ad_image' => 'nullable|string',
+            'ad_url' => 'nullable|url',
+        ]);
+        $data['vendor_id'] = auth()->user()->vendor->id ?? null;
+        \App\Models\Ad::create($data);
+        return redirect()->route('vendor.dashboard')->with('success', 'Ad created');
+    })->name('vendor.ads.store');
+
+    // Edit vendor product
+    Route::get('/vendor/products/{item}/edit', function (\App\Models\Item $item) {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $vendor = auth()->user()->vendor;
+        if (!$vendor || $item->vendor_id !== $vendor->id) abort(403);
+        return view('vendor.products-edit', compact('item'));
+    })->name('vendor.products.edit');
+
+    Route::patch('/vendor/products/{item}', function (Request $request, \App\Models\Item $item) {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $vendor = auth()->user()->vendor;
+        if (!$vendor || $item->vendor_id !== $vendor->id) abort(403);
+        $data = $request->validate([
+            'item_name' => 'required|string|max:255',
+            'item_description' => 'nullable|string',
+            'item_price' => 'required|numeric',
+            'item_type' => 'required|string',
+            'item_status' => 'nullable|string',
+            'image' => 'nullable|image|max:2048',
+        ]);
+
+        // Handle image upload: store to public/images/item and create gallery record
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = time() . '_' . preg_replace('/[^A-Za-z0-9\-_.]/', '_', $file->getClientOriginalName());
+            $dest = public_path('images/item');
+            if (!file_exists($dest)) {
+                mkdir($dest, 0755, true);
+            }
+            $file->move($dest, $filename);
+
+            // create gallery record
+            \App\Models\ItemGallery::create([
+                'item_id' => $item->id,
+                'image_path' => $filename,
+            ]);
+        }
+
+        // Update item fields
+        $item->update(collect($data)->only(['item_name','item_description','item_price','item_type','item_status'])->toArray());
+        return redirect()->route('vendor.products.list')->with('success', 'Product updated');
+    })->name('vendor.products.update');
 });
 
 require __DIR__.'/auth.php';
