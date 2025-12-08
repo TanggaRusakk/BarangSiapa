@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -19,7 +20,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'role_name',
+        'role',
         'email',
         'password',
         'image_path',
@@ -71,5 +72,21 @@ class User extends Authenticatable
 
     public function reviews() {
         return $this->hasMany(Review::class);
+    }
+
+    /**
+     * Photo URL accessor. Returns the full URL to the user's profile image,
+     * falling back to the default profile image when missing.
+     *
+     * Usage: $user->photo_url
+     */
+    public function getPhotoUrlAttribute()
+    {
+        // Simpler public path approach: images stored under public/images/profile/
+        if ($this->image_path) {
+            return asset('images/profile/' . ltrim($this->image_path, '/'));
+        }
+
+        return asset('images/profile/default-profile.png');
     }
 }

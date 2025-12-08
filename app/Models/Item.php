@@ -45,4 +45,19 @@ class Item extends Model
     public function reviews() {
         return $this->hasMany(Review::class);
     }
+
+    /**
+     * First image URL for the item. Returns the first related gallery image's
+     * URL accessor or a default image when none exist.
+     * Usage: $item->first_image_url
+     */
+    public function getFirstImageUrlAttribute()
+    {
+        $first = $this->itemGalleries()->first();
+        if ($first && $first->image_path) {
+            return asset('images/item/' . ltrim($first->image_path, '/'));
+        }
+
+        return asset('images/item/default_image.png');
+    }
 }

@@ -17,10 +17,36 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        // Ensure an Admin user exists
+        \App\Models\User::updateOrCreate(
+            ['email' => 'admin@gmail.com'],
+            [
+                'name' => 'Admin User',
+                'password' => 'password',
+                'role' => 'admin',
+                'phone_number' => '081299999999'
+            ]
+        );
+
+        // Create or fetch demo vendor user
+        $user = \App\Models\User::updateOrCreate(
+            ['email' => 'vendor@example.test'],
+            [
+                'name' => 'ProStage Productions',
+                'password' => 'password',
+                'role' => 'vendor',
+                'phone_number' => '081234567890'
+            ]
+        );
+
         // Ensure a Test User exists (avoid duplicate unique errors)
         \App\Models\User::updateOrCreate(
-            ['email' => 'test@example.com'],
-            ['name' => 'Test User', 'password' => 'password', 'phone_number' => '081234567890']
+            ['email' => 'test@gmail.com'],
+            ['name' => 'Test User', 
+            'password' => 'password',
+            'role' => 'user',
+            'phone_number' => '081234567890'
+        ]
         );
 
         // Seed demo data in focused seeders

@@ -185,12 +185,11 @@
             <div class="product-grid" id="productGrid">
                 @foreach($items as $item)
                     @php
-                        $firstImage = optional($item->itemGalleries->first())->image_path;
                         $isRent = ($item->item_type === 'sewa' || $item->item_type === 'rent');
                     @endphp
                     <div class="product-card" data-category="all">
                         <div class="product-badge {{ $isRent ? 'badge-rent' : 'badge-buy' }}">{{ $isRent ? 'For Rent' : 'Buy Now' }}</div>
-                        <img src="{{ $firstImage ? asset('storage/' . $firstImage) : asset('images/item/default_image.png') }}" alt="{{ $item->item_name }}" class="product-image">
+                        <img src="{{ $item->first_image_url ?? asset('images/item/default_image.png') }}" alt="{{ $item->item_name }}" class="product-image">
                         <div class="p-4">
                             <h3 class="text-lg font-bold mb-2">{{ $item->item_name }}</h3>
                             <p class="text-sm text-soft-lilac mb-3">{{ \Illuminate\Support\Str::limit($item->item_description ?? '', 80) }}</p>

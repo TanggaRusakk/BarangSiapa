@@ -66,7 +66,7 @@
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <ul class="sidebar-menu">
-                @if(Auth::user()->role_name === 'admin')
+                @if(Auth::user()->role === 'admin')
                     <!-- Admin Menu -->
                     <li class="sidebar-item">
                         <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
@@ -119,7 +119,7 @@
                         </a>
                     </li>
                     
-                @elseif(Auth::user()->role_name === 'vendor')
+                @elseif(Auth::user()->role === 'vendor')
                     <!-- Vendor Menu -->
                     <li class="sidebar-item">
                         <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">

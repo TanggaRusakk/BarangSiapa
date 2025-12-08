@@ -16,9 +16,10 @@ class VendorSeeder extends Seeder
         $user = \App\Models\User::updateOrCreate(
             ['email' => 'vendor@example.test'],
             [
-                'name' => 'Demo Vendor',
+                'name' => 'ProStage Productions',
                 'password' => 'password',
-                'phone_number' => '081200000000'
+                'role' => 'vendor',
+                'phone_number' => '081234567890'
             ]
         );
 
@@ -26,9 +27,9 @@ class VendorSeeder extends Seeder
         \App\Models\Vendor::updateOrCreate(
             ['user_id' => $user->id],
             [
-                'vendor_name' => 'Demo Store',
+                'vendor_name' => 'ProStage Audio & Lighting',
                 'location' => 'Jakarta, Indonesia',
-                'description' => 'Official Demo Vendor for BarangSiapa',
+                'description' => 'Professional concert & event equipment rental company. Serving festivals, concerts, corporate events since 2010. TUV certified rigging, premium sound & lighting systems.',
                 'logo_path' => 'images/item/default_image.png'
             ]
         );

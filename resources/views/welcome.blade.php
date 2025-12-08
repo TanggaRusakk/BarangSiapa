@@ -4,12 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>BarangSiapa - Buy & Rent Marketplace</title>
+    <title>BarangSiapa - Concert & Event Equipment Marketplace</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('styles/style.css') }}">
@@ -25,17 +25,17 @@
             <a href="/" class="logo">BarangSiapa</a>
             
             <ul class="nav-links" id="navLinks">
-                <li><a href="#home" class="nav-link active">Home</a></li>
-                <li><a href="#products" class="nav-link">Products</a></li>
-                <li><a href="#categories" class="nav-link">Categories</a></li>
-                <li><a href="#trending" class="nav-link">Trending</a></li>
+                <li><a href="#home" class="nav-link active">HOME</a></li>
+                <li><a href="#products" class="nav-link">GEAR</a></li>
+                <li><a href="#categories" class="nav-link">CATEGORIES</a></li>
+                <li><a href="#trending" class="nav-link">HOT DEALS</a></li>
                 
                 @auth
-                    <li><a href="{{ url('/dashboard') }}" class="btn btn-primary">Dashboard</a></li>
+                    <li><a href="{{ url('/dashboard') }}" class="btn btn-primary btn-sm">DASHBOARD</a></li>
                 @else
-                    <li><a href="{{ route('login') }}" class="btn btn-secondary">Login</a></li>
+                    <li><a href="{{ route('login') }}" class="btn btn-secondary btn-sm">LOGIN</a></li>
                     @if (Route::has('register'))
-                        <li><a href="{{ route('register') }}" class="btn btn-primary">Register</a></li>
+                        <li><a href="{{ route('register') }}" class="btn btn-primary btn-sm">REGISTER</a></li>
                     @endif
                 @endauth
             </ul>
@@ -51,11 +51,27 @@
     <!-- Hero Section -->
     <section id="home" class="hero">
         <div class="hero-content">
-            <h1 class="hero-title">Welcome to the Future of Shopping</h1>
-            <p class="hero-subtitle">Buy what you need. Rent what you want. Save like never before.</p>
+            <h1 class="hero-title">
+                <span class="text-gradient">GEAR UP</span> FOR<br>
+                THE ULTIMATE SHOW
+            </h1>
+            <p class="hero-subtitle">Professional concert & event equipment | Buy or rent stage gear, sound systems, lighting rigs & more</p>
+            
+            <!-- Waveform Visualizer -->
+            <div class="waveform mb-4">
+                <div class="waveform-bar"></div>
+                <div class="waveform-bar"></div>
+                <div class="waveform-bar"></div>
+                <div class="waveform-bar"></div>
+                <div class="waveform-bar"></div>
+                <div class="waveform-bar"></div>
+                <div class="waveform-bar"></div>
+                <div class="waveform-bar"></div>
+            </div>
+            
             <div class="hero-cta">
-                <a href="#products" class="btn btn-primary">Explore Products</a>
-                <a href="{{ route('register') }}" class="btn btn-accent">Start Selling</a>
+                <a href="#products" class="btn btn-primary btn-lg">Browse Equipment</a>
+                <a href="{{ route('register') }}" class="btn btn-accent btn-lg">List Your Gear</a>
             </div>
         </div>
     </section>
@@ -63,7 +79,7 @@
     <!-- Search Bar -->
     <div class="container">
         <div class="search-container">
-            <input type="text" class="search-input" placeholder="Search for products, categories, vendors...">
+            <input type="text" class="search-input" placeholder="Search stage platforms, microphones, lighting, sound systems...">
             <button class="search-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="11" cy="11" r="8"></circle>
@@ -76,16 +92,16 @@
     <!-- Category Filter -->
     <section id="categories" class="section">
         <div class="container">
-            <h2 class="section-title text-gradient">Browse by Category</h2>
+            <h2 class="section-title text-gradient">EQUIPMENT CATEGORIES</h2>
             <div class="category-filter">
-                <button class="category-chip active" data-category="all">All Products</button>
-                <button class="category-chip" data-category="electronics">Electronics</button>
-                <button class="category-chip" data-category="fashion">Fashion</button>
-                <button class="category-chip" data-category="home">Home & Living</button>
-                <button class="category-chip" data-category="sports">Sports</button>
-                <button class="category-chip" data-category="toys">Toys & Games</button>
-                <button class="category-chip" data-category="books">Books</button>
-                <button class="category-chip" data-category="tools">Tools</button>
+                <button class="category-chip active" data-category="all">ALL GEAR</button>
+                <button class="category-chip" data-category="sound">🔊 SOUND SYSTEMS</button>
+                <button class="category-chip" data-category="lighting">💡 LIGHTING</button>
+                <button class="category-chip" data-category="stage">🎪 STAGES</button>
+                <button class="category-chip" data-category="rigging">⚙️ RIGGING</button>
+                <button class="category-chip" data-category="power">⚡ POWER/GENERATORS</button>
+                <button class="category-chip" data-category="controllers">🎛️ CONTROLLERS</button>
+                <button class="category-chip" data-category="crew">👷 CREW SERVICES</button>
             </div>
         </div>
     </section>
@@ -93,7 +109,7 @@
     <!-- Trending Products Carousel -->
     <section id="trending" class="section">
         <div class="container">
-            <h2 class="section-title text-gradient">🔥 Trending Now</h2>
+            <h2 class="section-title text-gradient">🔥 HOT GEAR THIS MONTH</h2>
             <div class="carousel">
                 <button class="carousel-btn prev" onclick="scrollCarousel(-1)">‹</button>
                     <div class="carousel-track" id="trendingCarousel">
@@ -102,26 +118,23 @@
                         <div class="carousel-item">
                             <div class="product-card">
                                 @if($t->item_type === 'rent')
-                                    <div class="product-badge badge-rent">For Rent</div>
+                                    <div class="product-badge badge-rent">RENT</div>
                                 @elseif($t->item_status === 'flash')
-                                    <div class="product-badge badge-flash">Flash Sale</div>
+                                    <div class="product-badge badge-flash">FLASH DEAL</div>
                                 @else
-                                    <div class="product-badge badge-buy">Buy Now</div>
+                                    <div class="product-badge badge-buy">BUY</div>
                                 @endif
 
-                                @php
-                                    $img = optional($t->itemGalleries->first())->image_path;
-                                @endphp
-                                <img src="{{ $img ? asset('storage/' . $img) : asset('images/item/default_image.png') }}" alt="{{ $t->item_name }}" class="product-image">
+                                <img src="{{ $t->first_image_url ?? asset('images/item/default_image.png') }}" alt="{{ $t->item_name }}" class="product-image">
                                 <div class="p-4">
-                                    <h3 class="text-lg font-bold mb-2">{{ $t->item_name }}</h3>
+                                    <h3 class="text-lg font-bold mb-2 uppercase">{{ $t->item_name }}</h3>
                                     <p class="text-sm text-soft-lilac mb-3">{{ Str::limit($t->item_description, 80) }}</p>
                                     <div class="flex justify-between items-center">
                                         <div>
                                             <span class="text-2xl font-bold text-gradient">${{ number_format($t->item_price, 0) }}</span>
-                                            <span class="text-sm text-soft-lilac">{{ $t->item_type === 'rent' ? '/' . ($t->rental_duration_unit ?? 'day') : '/buy' }}</span>
+                                            <span class="text-sm text-soft-lilac">{{ $t->item_type === 'rent' ? '/day' : '' }}</span>
                                         </div>
-                                        <button class="btn btn-primary">View</button>
+                                        <button class="btn btn-primary btn-sm">VIEW</button>
                                     </div>
                                 </div>
                             </div>
@@ -138,23 +151,27 @@
     <!-- Product Grid -->
     <section id="products" class="section">
         <div class="container">
-            <h2 class="section-title text-gradient">Explore All Products</h2>
+            <h2 class="section-title text-gradient">ALL CONCERT EQUIPMENT</h2>
             
             <div class="product-grid" id="productGrid">
                 @foreach($items as $item)
                     <div class="product-card" data-category="all">
                         @php
-                            $firstImage = optional($item->itemGalleries->first())->image_path;
                             $isRent = ($item->item_type === 'sewa');
                         @endphp
-                        <div class="product-badge {{ $isRent ? 'badge-rent' : 'badge-buy' }}">{{ $isRent ? 'For Rent' : 'Buy Now' }}</div>
-                        <img src="{{ $firstImage ? asset('storage/' . $firstImage) : asset('images/item/default_image.png') }}" alt="{{ $item->item_name }}" class="product-image">
+                        <div class="product-badge {{ $isRent ? 'badge-rent' : 'badge-buy' }}">{{ $isRent ? 'RENT' : 'BUY' }}</div>
+                        <img src="{{ $item->first_image_url ?? asset('images/item/default_image.png') }}" alt="{{ $item->item_name }}" class="product-image">
                         <div class="p-4">
-                            <h3 class="text-lg font-bold mb-2">{{ $item->item_name }}</h3>
+                            <h3 class="text-lg font-bold mb-2 uppercase">{{ $item->item_name }}</h3>
                             <p class="text-sm text-soft-lilac mb-3">{{ \Illuminate\Support\Str::limit($item->item_description ?? '', 80) }}</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-2xl font-bold text-gradient">@if($isRent) {{ $item->item_price }} / {{ $item->rental_duration_unit ?? 'day' }} @else {{ $item->item_price }} @endif</span>
-                                <button class="btn {{ $isRent ? 'btn-accent' : 'btn-primary' }} btn-sm" onclick="showProductModal({{ $item->id }})">{{ $isRent ? 'Rent Now' : 'View Details' }}</button>
+                            <div class="flex flex-wrap justify-between items-center gap-2">
+                                <div>
+                                    <span class="text-2xl font-bold text-gradient">${{ number_format($item->item_price, 0) }}</span>
+                                    @if($isRent)
+                                        <span class="text-sm text-soft-lilac">/day</span>
+                                    @endif
+                                </div>
+                                <button class="btn {{ $isRent ? 'btn-accent' : 'btn-primary' }} btn-sm" onclick="showProductModal({{ $item->id }})">{{ $isRent ? 'RENT' : 'DETAILS' }}</button>
                             </div>
                         </div>
                     </div>
@@ -175,34 +192,34 @@
     <!-- Features Section -->
     <section class="section bg-animated">
         <div class="container">
-            <h2 class="section-title text-gradient">Why Choose BarangSiapa?</h2>
+            <h2 class="section-title text-gradient">WHY RENT WITH US?</h2>
             <div class="stat-grid">
                 <div class="stat-card">
                     <div class="text-center">
-                        <div class="text-4xl mb-3">🛍️</div>
-                        <h3 class="text-xl font-bold mb-2">Buy & Rent</h3>
-                        <p class="text-soft-lilac">Choose to own or rent products based on your needs</p>
+                        <div class="text-4xl mb-3">🎸</div>
+                        <h3 class="text-xl font-bold mb-2 uppercase">Pro-Grade Equipment</h3>
+                        <p class="text-soft-lilac">Industry-standard gear from top brands</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="text-center">
                         <div class="text-4xl mb-3">⚡</div>
-                        <h3 class="text-xl font-bold mb-2">Fast Delivery</h3>
-                        <p class="text-soft-lilac">Get your products delivered within 24 hours</p>
+                        <h3 class="text-xl font-bold mb-2 uppercase">Quick Deployment</h3>
+                        <p class="text-soft-lilac">Setup and delivery within 24-48 hours</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="text-center">
-                        <div class="text-4xl mb-3">🔒</div>
-                        <h3 class="text-xl font-bold mb-2">Secure Payment</h3>
-                        <p class="text-soft-lilac">Your transactions are protected and encrypted</p>
+                        <div class="text-4xl mb-3">👷</div>
+                        <h3 class="text-xl font-bold mb-2 uppercase">Crew Included</h3>
+                        <p class="text-soft-lilac">Optional professional crew for setup & operation</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="text-center">
-                        <div class="text-4xl mb-3">⭐</div>
-                        <h3 class="text-xl font-bold mb-2">Verified Reviews</h3>
-                        <p class="text-soft-lilac">Real reviews from real customers</p>
+                        <div class="text-4xl mb-3">💰</div>
+                        <h3 class="text-xl font-bold mb-2 uppercase">Flexible Pricing</h3>
+                        <p class="text-soft-lilac">Daily, weekly, and monthly rental packages</p>
                     </div>
                 </div>
             </div>
@@ -214,29 +231,29 @@
         <div class="container">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
                 <div>
-                    <h3 class="text-gradient text-xl font-bold mb-3">BarangSiapa</h3>
-                    <p class="text-soft-lilac">The future of buying and renting. Premium quality, affordable prices.</p>
+                    <h3 class="text-gradient text-xl font-bold mb-3 uppercase">BarangSiapa</h3>
+                    <p class="text-soft-lilac">Professional concert & event equipment marketplace. Buy or rent stage gear, sound systems, lighting rigs & more.</p>
                 </div>
                 <div>
-                    <h4 class="font-bold mb-3">Quick Links</h4>
+                    <h4 class="font-bold mb-3 uppercase">Quick Links</h4>
                     <ul style="list-style: none; padding: 0;">
-                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink">About Us</a></li>
-                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink">Contact</a></li>
-                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink">FAQ</a></li>
-                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink">Terms of Service</a></li>
+                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink transition">About Us</a></li>
+                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink transition">Contact</a></li>
+                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink transition">FAQ</a></li>
+                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink transition">Terms of Service</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-bold mb-3">Categories</h4>
+                    <h4 class="font-bold mb-3 uppercase">Equipment</h4>
                     <ul style="list-style: none; padding: 0;">
-                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink">Electronics</a></li>
-                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink">Fashion</a></li>
-                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink">Home & Living</a></li>
-                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink">Sports</a></li>
+                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink transition">Sound Systems</a></li>
+                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink transition">Lighting</a></li>
+                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink transition">Stages & Platforms</a></li>
+                        <li class="mb-2"><a href="#" class="text-soft-lilac hover:text-neon-pink transition">Crew Services</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-bold mb-3">Connect With Us</h4>
+                    <h4 class="font-bold mb-3 uppercase">Connect With Us</h4>
                     <div style="display: flex; gap: 1rem;">
                         <a href="#" class="text-2xl hover:text-neon-pink transition">📘</a>
                         <a href="#" class="text-2xl hover:text-neon-pink transition">📷</a>
@@ -246,7 +263,7 @@
                 </div>
             </div>
             <div class="divider"></div>
-            <p class="text-center text-soft-lilac">© 2025 BarangSiapa. All rights reserved. Built with ❤️ using Laravel.</p>
+            <p class="text-center text-soft-lilac">© 2025 BarangSiapa. All rights reserved. Built with ❤️ for the concert industry.</p>
         </div>
     </footer>
 

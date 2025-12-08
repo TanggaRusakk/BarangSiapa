@@ -10,9 +10,8 @@
     @if(!empty($lastViewed))
         <div class="mb-4">
             <h3 class="text-lg font-semibold text-gradient">Last Viewed</h3>
-            @php $lvImg = optional($lastViewed->itemGalleries->first())->image_path; @endphp
             <div class="flex items-center gap-4 p-3 bg-purple-900 bg-opacity-10 rounded-lg">
-                <img src="{{ $lvImg ? asset('storage/' . $lvImg) : asset('images/item/default_image.png') }}" alt="{{ $lastViewed->item_name }}" class="w-20 h-20 rounded-lg object-cover">
+                <img src="{{ $lastViewed->first_image_url ?? asset('images/item/default_image.png') }}" alt="{{ $lastViewed->item_name }}" class="w-20 h-20 rounded-lg object-cover">
                 <div>
                     <h4 class="font-bold">{{ $lastViewed->item_name }}</h4>
                     <p class="text-sm text-soft-lilac">@if($lastViewed->item_type === 'sewa' || $lastViewed->item_type === 'rent') Rp{{ number_format($lastViewed->item_price) }} / {{ $lastViewed->rental_duration_unit ?? 'day' }} @else Rp{{ number_format($lastViewed->item_price) }} @endif</p>
@@ -21,29 +20,53 @@
         </div>
     @endif
 
-    @if(Auth::user()->role_name === 'admin')
+    @if(Auth::user()->role === 'admin')
         <!-- ADMIN DASHBOARD -->
         <div class="stat-grid mb-4">
-            <div class="stat-card">
+            <a href="{{ route('admin.users') }}" class="stat-card hover:scale-105 transition cursor-pointer">
                 <div class="stat-label">Total Users</div>
-                <div class="stat-value">1,248</div>
-                <div class="text-sm text-green-400">↑ 12% from last month</div>
-            </div>
-            <div class="stat-card">
+                <div class="stat-value">{{ number_format($totalUsers) }}</div>
+                <div class="text-sm text-green-400">Click to manage →</div>
+            </a>
+            <a href="{{ route('admin.vendors') }}" class="stat-card hover:scale-105 transition cursor-pointer">
                 <div class="stat-label">Active Vendors</div>
-                <div class="stat-value">342</div>
-                <div class="text-sm text-green-400">↑ 8% from last month</div>
-            </div>
-            <div class="stat-card">
+                <div class="stat-value">{{ number_format($activeVendors) }}</div>
+                <div class="text-sm text-green-400">Click to manage →</div>
+            </a>
+            <a href="{{ route('admin.items') }}" class="stat-card hover:scale-105 transition cursor-pointer">
                 <div class="stat-label">Total Products</div>
-                <div class="stat-value">5,789</div>
-                <div class="text-sm text-cyan-400">↑ 15% from last month</div>
-            </div>
-            <div class="stat-card">
+                <div class="stat-value">{{ number_format($totalProducts) }}</div>
+                <div class="text-sm text-cyan-400">Click to manage →</div>
+            </a>
+            <a href="{{ route('admin.payments') }}" class="stat-card hover:scale-105 transition cursor-pointer">
                 <div class="stat-label">Revenue (This Month)</div>
-                <div class="stat-value">$52,840</div>
-                <div class="text-sm text-green-400">↑ 22% from last month</div>
-            </div>
+                <div class="stat-value">Rp{{ number_format($revenueThisMonth, 0) }}</div>
+                <div class="text-sm text-green-400">Click to view →</div>
+            </a>
+        </div>
+
+        <!-- More Admin Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <a href="{{ route('admin.orders') }}" class="card text-center hover:scale-105 transition cursor-pointer">
+                <div class="text-4xl mb-2">📦</div>
+                <h3 class="font-bold">Orders</h3>
+                <p class="text-sm text-soft-lilac">Manage all orders</p>
+            </a>
+            <a href="{{ route('admin.reviews') }}" class="card text-center hover:scale-105 transition cursor-pointer">
+                <div class="text-4xl mb-2">⭐</div>
+                <h3 class="font-bold">Reviews</h3>
+                <p class="text-sm text-soft-lilac">View & moderate</p>
+            </a>
+            <a href="{{ route('admin.messages') }}" class="card text-center hover:scale-105 transition cursor-pointer">
+                <div class="text-4xl mb-2">💬</div>
+                <h3 class="font-bold">Messages</h3>
+                <p class="text-sm text-soft-lilac">View conversations</p>
+            </a>
+            <a href="{{ route('admin.ads') }}" class="card text-center hover:scale-105 transition cursor-pointer">
+                <div class="text-4xl mb-2">📢</div>
+                <h3 class="font-bold">Ads</h3>
+                <p class="text-sm text-soft-lilac">Manage advertisements</p>
+            </a>
         </div>
 
         <!-- Admin Quick Actions -->
@@ -61,24 +84,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>John Doe</td>
-                                <td>john@example.com</td>
-                                <td><span class="badge badge-info">Member</span></td>
-                                <td><button class="btn btn-primary btn-sm">View</button></td>
-                            </tr>
-                            <tr>
-                                <td>Jane Smith</td>
-                                <td>jane@example.com</td>
-                                <td><span class="badge badge-success">Vendor</span></td>
-                                <td><button class="btn btn-primary btn-sm">View</button></td>
-                            </tr>
-                            <tr>
-                                <td>Bob Johnson</td>
-                                <td>bob@example.com</td>
-                                <td><span class="badge badge-info">Member</span></td>
-                                <td><button class="btn btn-primary btn-sm">View</button></td>
-                            </tr>
+                                @foreach($recentUsers as $u)
+                                    <tr>
+                                        <td>{{ $u->name }}</td>
+                                        <td>{{ $u->email }}</td>
+                                        <td><span class="badge badge-info">{{ ucfirst($u->role) }}</span></td>
+                                        <td><a href="#" class="btn btn-primary btn-sm">View</a></td>
+                                    </tr>
+                                @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -128,41 +141,27 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>#ORD-001</td>
-                            <td>Alice Brown</td>
-                            <td>TechStore</td>
-                            <td>$299.00</td>
-                            <td><span class="badge badge-success">Completed</span></td>
-                            <td><button class="btn btn-primary btn-sm">View</button></td>
-                        </tr>
-                        <tr>
-                            <td>#ORD-002</td>
-                            <td>Charlie Davis</td>
-                            <td>FashionHub</td>
-                            <td>$89.00</td>
-                            <td><span class="badge badge-warning">Processing</span></td>
-                            <td><button class="btn btn-primary btn-sm">View</button></td>
-                        </tr>
-                        <tr>
-                            <td>#ORD-003</td>
-                            <td>Eve Wilson</td>
-                            <td>HomeEssentials</td>
-                            <td>$159.00</td>
-                            <td><span class="badge badge-info">Shipped</span></td>
-                            <td><button class="btn btn-primary btn-sm">View</button></td>
-                        </tr>
+                        @foreach($recentOrders as $o)
+                            <tr>
+                                <td>#{{ $o->id }}</td>
+                                <td>{{ optional($o->user)->name ?? '—' }}</td>
+                                <td>{{ optional(optional($o->orderItems->first())->item->vendor)->vendor_name ?? '—' }}</td>
+                                <td>Rp{{ number_format($o->order_total_amount ?? 0, 0) }}</td>
+                                <td><span class="badge badge-info">{{ ucfirst($o->order_status ?? '—') }}</span></td>
+                                <td><a href="#" class="btn btn-primary btn-sm">View</a></td>
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
         </div>
 
-    @elseif(Auth::user()->role_name === 'vendor')
+    @elseif(Auth::user()->role === 'vendor')
         <!-- VENDOR DASHBOARD -->
         <div class="stat-grid mb-4">
             <div class="stat-card">
                 <div class="stat-label">Total Products</div>
-                <div class="stat-value">45</div>
+                <div class="stat-value">{{ number_format($vendorProductsCount) }}</div>
                 <div class="text-sm text-cyan-400">3 pending approval</div>
             </div>
             <div class="stat-card">
@@ -207,9 +206,8 @@
                 <h3 class="text-xl font-bold mb-3">Your Recent Products</h3>
                 <div class="space-y-3">
                     @foreach($recentProducts->take(2) as $prod)
-                        @php $pImg = optional($prod->itemGalleries->first())->image_path; @endphp
-                        <div class="flex gap-3 p-3 bg-purple-900 bg-opacity-20 rounded-lg">
-                            <img src="{{ $pImg ? asset('storage/' . $pImg) : asset('images/item/default_image.png') }}" alt="{{ $prod->item_name }}" class="w-16 h-16 rounded-lg object-cover">
+                            <div class="flex gap-3 p-3 bg-purple-900 bg-opacity-20 rounded-lg">
+                                <img src="{{ $prod->first_image_url ?? asset('images/item/default_image.png') }}" alt="{{ $prod->item_name }}" class="w-16 h-16 rounded-lg object-cover">
                             <div class="flex-1">
                                 <h4 class="font-bold">{{ $prod->item_name }}</h4>
                                 <p class="text-sm text-soft-lilac">Rp{{ number_format($prod->item_price) }} @if($prod->item_type === 'sewa' || $prod->item_type === 'rent') • Rent @endif</p>
@@ -306,9 +304,8 @@
                 <h3 class="text-xl font-bold mb-3">Recent Orders</h3>
                 <div class="space-y-3">
                     @foreach($recentProducts->take(2) as $prod)
-                        @php $pImg = optional($prod->itemGalleries->first())->image_path; @endphp
                         <div class="flex gap-3 p-3 bg-purple-900 bg-opacity-20 rounded-lg">
-                            <img src="{{ $pImg ? asset('storage/' . $pImg) : asset('images/item/default_image.png') }}" alt="{{ $prod->item_name }}" class="w-16 h-16 rounded-lg object-cover">
+                            <img src="{{ $prod->first_image_url ?? asset('images/item/default_image.png') }}" alt="{{ $prod->item_name }}" class="w-16 h-16 rounded-lg object-cover">
                             <div class="flex-1">
                                 <h4 class="font-bold">{{ $prod->item_name }}</h4>
                                 <p class="text-sm text-soft-lilac">Rp{{ number_format($prod->item_price) }}</p>
@@ -353,9 +350,9 @@
             <h3 class="text-xl font-bold mb-3">Recommended For You</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     @foreach($recentProducts->take(3) as $prod)
-                        @php $pImg = optional($prod->itemGalleries->first())->image_path; $isRent = ($prod->item_type === 'sewa' || $prod->item_type === 'rent'); @endphp
+                        @php $isRent = ($prod->item_type === 'sewa' || $prod->item_type === 'rent'); @endphp
                         <div class="product-card">
-                            <img src="{{ $pImg ? asset('storage/' . $pImg) : asset('images/item/default_image.png') }}" alt="{{ $prod->item_name }}" class="product-image">
+                            <img src="{{ $prod->first_image_url ?? asset('images/item/default_image.png') }}" alt="{{ $prod->item_name }}" class="product-image">
                             <div class="p-4">
                                 <h4 class="font-bold mb-2">{{ $prod->item_name }}</h4>
                                 <div class="rating mb-2">
