@@ -32,6 +32,6 @@ class ItemGallery extends Model
             return asset('images/item/' . ltrim($this->image_path, '/'));
         }
 
-        return asset('images/item/default_image.png');
+        return asset('images/item/default-image.png');
     }
 }

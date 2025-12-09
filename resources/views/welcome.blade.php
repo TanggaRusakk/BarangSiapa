@@ -125,7 +125,7 @@
                                     <div class="product-badge badge-buy">BUY</div>
                                 @endif
 
-                                <img src="{{ $t->first_image_url ?? asset('images/item/default_image.png') }}" alt="{{ $t->item_name }}" class="product-image">
+                                <img src="{{ $t->first_image_url ?? asset('images/item/default-image.png') }}" alt="{{ $t->item_name }}" class="product-image">
                                 <div class="p-4">
                                     <h3 class="text-lg font-bold mb-2 uppercase">{{ $t->item_name }}</h3>
                                     <p class="text-sm text-soft-lilac mb-3">{{ Str::limit($t->item_description, 80) }}</p>
@@ -160,7 +160,7 @@
                             $isRent = ($item->item_type === 'sewa');
                         @endphp
                         <div class="product-badge {{ $isRent ? 'badge-rent' : 'badge-buy' }}">{{ $isRent ? 'RENT' : 'BUY' }}</div>
-                        <img src="{{ $item->first_image_url ?? asset('images/item/default_image.png') }}" alt="{{ $item->item_name }}" class="product-image">
+                        <img src="{{ $item->first_image_url ?? asset('images/item/default-image.png') }}" alt="{{ $item->item_name }}" class="product-image">
                         <div class="p-4">
                             <h3 class="text-lg font-bold mb-2 uppercase">{{ $item->item_name }}</h3>
                             <p class="text-sm text-soft-lilac mb-3">{{ \Illuminate\Support\Str::limit($item->item_description ?? '', 80) }}</p>

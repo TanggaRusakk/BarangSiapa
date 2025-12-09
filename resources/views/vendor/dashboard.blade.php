@@ -2,48 +2,72 @@
     <x-slot name="title">Vendor Dashboard</x-slot>
 
     <div class="mb-4">
-        <h1 class="text-3xl font-bold text-gradient">Welcome, {{ auth()->user()->name }}</h1>
-        <p class="text-soft-lilac">Quick overview of your store</p>
+        <h2 class="text-2xl font-bold text-gradient">Hi, {{ auth()->user()->name }} 👋</h2>
+        <p class="text-sm text-soft-lilac">Manage your store — products, orders and earnings.</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <a href="{{ route('vendor.products.create') }}" class="card text-center hover:scale-105 transition">
-            <div class="text-4xl mb-2">➕</div>
-            <h3 class="font-bold">Add Product</h3>
-        </a>
-        <a href="{{ route('vendor.products.list') }}" class="card text-center hover:scale-105 transition">
-            <div class="text-4xl mb-2">📦</div>
-            <h3 class="font-bold">My Products</h3>
-        </a>
-        <a href="{{ route('vendor.orders.list') }}" class="card text-center hover:scale-105 transition">
-            <div class="text-4xl mb-2">🧾</div>
-            <h3 class="font-bold">Orders</h3>
-        </a>
-    </div>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="card subtle-hover p-6">
+            <div class="stat-label">My Products</div>
+            <div class="stat-value text-3xl font-extrabold">{{ $productsCount ?? 0 }}</div>
+            <div class="text-sm text-soft-lilac mt-2">Active & draft items</div>
+        </div>
 
-    <div class="card">
-        <h3 class="text-xl font-bold mb-3">Products</h3>
-        <div class="p-6 bg-purple-900 bg-opacity-5 rounded-md flex items-center justify-between">
-            <div>
-                <p class="font-semibold">Manage all your listed products from a single page.</p>
-                <p class="text-sm text-soft-lilac">Click the button to view, create, or edit items.</p>
-            </div>
-            <div>
-                <a href="{{ route('vendor.products.list') }}" class="btn btn-primary">View All Products</a>
-            </div>
+        <div class="card subtle-hover p-6">
+            <div class="stat-label">Active Orders</div>
+            <div class="stat-value text-3xl font-extrabold">{{ $ordersCount ?? 0 }}</div>
+            <div class="text-sm text-soft-lilac mt-2">Recently placed orders</div>
+        </div>
+
+        <div class="card subtle-hover p-6">
+            <div class="stat-label">Revenue (This Month)</div>
+            <div class="stat-value text-3xl font-extrabold">Rp{{ number_format($revenue ?? 0) }}</div>
+            <div class="text-sm text-soft-lilac mt-2">Net sales for current month</div>
         </div>
     </div>
 
-</x-dashboard-layout>
+    <!-- Quick Actions: clear 3-column boxes -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <a href="{{ route('vendor.products.create') }}" class="card subtle-hover text-center p-8 flex flex-col items-center justify-center">
+            <div class="text-4xl mb-3">➕</div>
+            <h3 class="font-bold text-lg">Add New Product</h3>
+            <p class="text-sm text-soft-lilac mt-2">Create product listing</p>
+        </a>
 
-<script>
-function quickView(id) {
-    try {
-        fetch('/items/' + id)
-            .then(r => r.json())
-            .then(data => {
-                alert('Quick view:\n' + (data.item_name || data.item_name) + '\nPrice: ' + (data.item_price || '—'));
-            }).catch(() => alert('Unable to fetch product details'));
-    } catch (e) { alert('Unable to fetch product details'); }
-}
-</script>
+        <a href="{{ route('vendor.products.list') }}" class="card subtle-hover text-center p-8 flex flex-col items-center justify-center">
+            <div class="text-4xl mb-3">📦</div>
+            <h3 class="font-bold text-lg">My Products</h3>
+            <p class="text-sm text-soft-lilac mt-2">View & manage all items</p>
+        </a>
+
+        <a href="{{ route('vendor.orders.list') }}" class="card subtle-hover text-center p-8 flex flex-col items-center justify-center">
+            <div class="text-4xl mb-3">🛒</div>
+            <h3 class="font-bold text-lg">Orders</h3>
+            <p class="text-sm text-soft-lilac mt-2">Manage recent orders</p>
+        </a>
+    </div>
+
+    <!-- Recent Orders (compact) -->
+    <div class="card">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Recent Orders</h3>
+            <a href="{{ route('vendor.orders.list') }}" class="btn btn-secondary btn-sm">View All →</a>
+        </div>
+
+        <div class="space-y-3">
+            @foreach($recentOrders as $order)
+                <div class="p-3 bg-purple-900 bg-opacity-10 rounded flex justify-between items-center subtle-hover">
+                    <div>
+                        <div class="font-bold">Order #{{ $order->id }}</div>
+                        <div class="text-sm text-soft-lilac">Customer: {{ optional($order->user)->name ?? '—' }}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold">Rp{{ number_format($order->order_total_amount ?? 0) }}</div>
+                        <div class="text-xs text-soft-lilac mt-1">{{ $order->created_at->format('d M Y') }}</div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</x-dashboard-layout>

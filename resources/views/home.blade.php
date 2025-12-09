@@ -101,7 +101,7 @@
                     <div class="carousel-item">
                         <div class="product-card">
                             <div class="product-badge badge-flash">Flash Sale</div>
-                            <img src="{{ asset('images/item/default_image.png') }}" alt="Product" class="product-image">
+                            <img src="{{ asset('images/item/default-image.png') }}" alt="Product" class="product-image">
                             <div class="p-4">
                                 <h3 class="text-lg font-bold mb-2">Premium Headphones</h3>
                                 <p class="text-sm text-soft-lilac mb-3">High-quality wireless audio</p>
@@ -119,7 +119,7 @@
                     <div class="carousel-item">
                         <div class="product-card">
                             <div class="product-badge badge-rent">For Rent</div>
-                            <img src="{{ asset('images/item/default_image.png') }}" alt="Product" class="product-image">
+                            <img src="{{ asset('images/item/default-image.png') }}" alt="Product" class="product-image">
                             <div class="p-4">
                                 <h3 class="text-lg font-bold mb-2">Professional Camera</h3>
                                 <p class="text-sm text-soft-lilac mb-3">4K video, perfect for events</p>
@@ -137,7 +137,7 @@
                     <div class="carousel-item">
                         <div class="product-card">
                             <div class="product-badge badge-buy">Best Seller</div>
-                            <img src="{{ asset('images/item/default_image.png') }}" alt="Product" class="product-image">
+                            <img src="{{ asset('images/item/default-image.png') }}" alt="Product" class="product-image">
                             <div class="p-4">
                                 <h3 class="text-lg font-bold mb-2">Smart Watch</h3>
                                 <p class="text-sm text-soft-lilac mb-3">Track your fitness goals</p>
@@ -155,7 +155,7 @@
                     <div class="carousel-item">
                         <div class="product-card">
                             <div class="product-badge badge-rent">For Rent</div>
-                            <img src="{{ asset('images/item/default_image.png') }}" alt="Product" class="product-image">
+                            <img src="{{ asset('images/item/default-image.png') }}" alt="Product" class="product-image">
                             <div class="p-4">
                                 <h3 class="text-lg font-bold mb-2">Gaming Console</h3>
                                 <p class="text-sm text-soft-lilac mb-3">Latest gen with controllers</p>
@@ -189,7 +189,7 @@
                     @endphp
                     <div class="product-card" data-category="all">
                         <div class="product-badge {{ $isRent ? 'badge-rent' : 'badge-buy' }}">{{ $isRent ? 'For Rent' : 'Buy Now' }}</div>
-                        <img src="{{ $item->first_image_url ?? asset('images/item/default_image.png') }}" alt="{{ $item->item_name }}" class="product-image">
+                        <img src="{{ $item->first_image_url ?? asset('images/item/default-image.png') }}" alt="{{ $item->item_name }}" class="product-image">
                         <div class="p-4">
                             <h3 class="text-lg font-bold mb-2">{{ $item->item_name }}</h3>
                             <p class="text-sm text-soft-lilac mb-3">{{ \Illuminate\Support\Str::limit($item->item_description ?? '', 80) }}</p>

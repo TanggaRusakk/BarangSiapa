@@ -17,7 +17,7 @@ class ItemGallerySeeder extends Seeder
             // ensure at least one gallery image per item
             \App\Models\ItemGallery::updateOrCreate(
                 ['item_id' => $item->id],
-                ['image_path' => 'images/item/default_image.png']
+                ['image_path' => 'images/item/default-image.png']
             );
         }
     }

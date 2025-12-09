@@ -11,7 +11,7 @@
         <div class="mb-4">
             <h3 class="text-lg font-semibold text-gradient">Last Viewed</h3>
             <div class="flex items-center gap-4 p-3 bg-purple-900 bg-opacity-10 rounded-lg">
-                <img src="{{ $lastViewed->first_image_url ?? asset('images/item/default_image.png') }}" alt="{{ $lastViewed->item_name }}" class="w-20 h-20 rounded-lg object-cover">
+                <img src="{{ $lastViewed->first_image_url ?? asset('images/item/default-image.png') }}" alt="{{ $lastViewed->item_name }}" class="w-20 h-20 rounded-lg object-cover">
                 <div>
                     <h4 class="font-bold">{{ $lastViewed->item_name }}</h4>
                     <p class="text-sm text-soft-lilac">@if($lastViewed->item_type === 'sewa' || $lastViewed->item_type === 'rent') Rp{{ number_format($lastViewed->item_price) }} / {{ $lastViewed->rental_duration_unit ?? 'day' }} @else Rp{{ number_format($lastViewed->item_price) }} @endif</p>
@@ -207,7 +207,7 @@
                 <div class="space-y-3">
                     @foreach($recentProducts->take(2) as $prod)
                             <div class="flex gap-3 p-3 bg-purple-900 bg-opacity-20 rounded-lg">
-                                <img src="{{ $prod->first_image_url ?? asset('images/item/default_image.png') }}" alt="{{ $prod->item_name }}" class="w-16 h-16 rounded-lg object-cover">
+                                <img src="{{ $prod->first_image_url ?? asset('images/item/default-image.png') }}" alt="{{ $prod->item_name }}" class="w-16 h-16 rounded-lg object-cover">
                             <div class="flex-1">
                                 <h4 class="font-bold">{{ $prod->item_name }}</h4>
                                 <p class="text-sm text-soft-lilac">Rp{{ number_format($prod->item_price) }} @if($prod->item_type === 'sewa' || $prod->item_type === 'rent') • Rent @endif</p>
@@ -305,7 +305,7 @@
                 <div class="space-y-3">
                     @foreach($recentProducts->take(2) as $prod)
                         <div class="flex gap-3 p-3 bg-purple-900 bg-opacity-20 rounded-lg">
-                            <img src="{{ $prod->first_image_url ?? asset('images/item/default_image.png') }}" alt="{{ $prod->item_name }}" class="w-16 h-16 rounded-lg object-cover">
+                            <img src="{{ $prod->first_image_url ?? asset('images/item/default-image.png') }}" alt="{{ $prod->item_name }}" class="w-16 h-16 rounded-lg object-cover">
                             <div class="flex-1">
                                 <h4 class="font-bold">{{ $prod->item_name }}</h4>
                                 <p class="text-sm text-soft-lilac">Rp{{ number_format($prod->item_price) }}</p>
@@ -352,7 +352,7 @@
                     @foreach($recentProducts->take(3) as $prod)
                         @php $isRent = ($prod->item_type === 'sewa' || $prod->item_type === 'rent'); @endphp
                         <div class="product-card">
-                            <img src="{{ $prod->first_image_url ?? asset('images/item/default_image.png') }}" alt="{{ $prod->item_name }}" class="product-image">
+                            <img src="{{ $prod->first_image_url ?? asset('images/item/default-image.png') }}" alt="{{ $prod->item_name }}" class="product-image">
                             <div class="p-4">
                                 <h4 class="font-bold mb-2">{{ $prod->item_name }}</h4>
                                 <div class="rating mb-2">

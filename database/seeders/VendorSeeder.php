@@ -30,7 +30,7 @@ class VendorSeeder extends Seeder
                 'vendor_name' => 'ProStage Audio & Lighting',
                 'location' => 'Jakarta, Indonesia',
                 'description' => 'Professional concert & event equipment rental company. Serving festivals, concerts, corporate events since 2010. TUV certified rigging, premium sound & lighting systems.',
-                'logo_path' => 'images/item/default_image.png'
+                'logo_path' => 'images/item/default-image.png'
             ]
         );
     }
