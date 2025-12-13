@@ -1,14 +1,22 @@
 <x-dashboard-layout>
-    <x-slot name="title">Admin — User: {{ $user->name }}</x-slot>
+    @php
+        use Illuminate\Support\Str;
+        $user = $user ?? null;
+        $orders = $orders ?? collect();
+        $reviews = $reviews ?? collect();
+        $payments = $payments ?? collect();
+    @endphp
+
+    <x-slot name="title">Admin — User: {{ $user->name ?? '—' }}</x-slot>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         <div class="card">
             <h3 class="font-bold mb-2">Profile</h3>
             <div class="space-y-2">
-                <div><strong>Name:</strong> {{ $user->name }}</div>
-                <div><strong>Email:</strong> {{ $user->email }}</div>
+                <div><strong>Name:</strong> {{ $user->name ?? '—' }}</div>
+                <div><strong>Email:</strong> {{ $user->email ?? '—' }}</div>
                 <div><strong>Role:</strong> {{ ucfirst($user->role ?? 'user') }}</div>
-                <div><strong>Joined:</strong> {{ $user->created_at->toDayDateTimeString() }}</div>
+                <div><strong>Joined:</strong> {{ $user && $user->created_at ? $user->created_at->toDayDateTimeString() : '—' }}</div>
             </div>
         </div>
 

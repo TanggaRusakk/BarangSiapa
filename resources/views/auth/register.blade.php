@@ -1,6 +1,22 @@
 <x-guest-layout>
+    @php $role = request('role', 'user'); @endphp
+    <div class="mb-4 text-center">
+        <a href="{{ route('register') }}?role=user" class="inline-block px-3 py-1 rounded-md mr-2" style="text-decoration:none; border:1px solid transparent; background: {{ $role==='user' ? 'rgba(106,56,194,0.15)' : 'transparent' }};">Register as User</a>
+        <a href="{{ route('register') }}?role=vendor" class="inline-block px-3 py-1 rounded-md" style="text-decoration:none; border:1px solid transparent; background: {{ $role==='vendor' ? 'rgba(106,56,194,0.15)' : 'transparent' }};">Register as Vendor</a>
+    </div>
+
     <form method="POST" action="{{ route('register') }}">
         @csrf
+
+        <p class="text-sm text-gray-400 mb-4">
+            @if($role === 'vendor')
+                Registering as a <strong>vendor</strong> will allow you to create a vendor profile and list products. You'll still need a user account — after registering we'll set your role to <em>vendor</em>.
+            @else
+                Registering as a <strong>user</strong> lets you browse and rent items. If you want to sell or list items, choose the "Register as Vendor" option.
+            @endif
+        </p>
+
+        <input type="hidden" name="role" value="{{ $role }}">
 
         <!-- Name -->
         <div>

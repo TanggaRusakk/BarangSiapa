@@ -43,5 +43,10 @@
                 {{ __('Log in') }}
             </x-primary-button>
         </div>
+        
+        <div class="mt-4 text-sm text-center text-gray-400">
+            <p>Don't have an account? <a href="{{ route('register') }}" class="underline">Register as User</a> or <a href="{{ route('register') }}?role=vendor" class="underline">Register as Vendor</a>.</p>
+            <p class="mt-2">If you're a vendor, registering as vendor lets you create a store and list items; otherwise register as a regular user to browse and rent.</p>
+        </div>
     </form>
 </x-guest-layout>

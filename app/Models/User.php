@@ -40,15 +40,12 @@ class User extends Authenticatable
     /**
      * Get the attributes that should be cast.
      *
-     * @return array<string, string>
+     * @var array<string,string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
 
     public function vendor()
     {
@@ -74,15 +71,8 @@ class User extends Authenticatable
         return $this->hasMany(Review::class);
     }
 
-    /**
-     * Photo URL accessor. Returns the full URL to the user's profile image,
-     * falling back to the default profile image when missing.
-     *
-     * Usage: $user->photo_url
-     */
     public function getPhotoUrlAttribute()
     {
-        // Simpler public path approach: images stored under public/images/profile/
         if ($this->image_path) {
             return asset('images/profile/' . ltrim($this->image_path, '/'));
         }

@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Vendor;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
@@ -33,13 +34,27 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['nullable', 'in:user,vendor'],
         ]);
+
+        $role = $request->input('role', 'user');
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $role,
         ]);
+
+        // If user chose to register as vendor, create a basic vendor record.
+        if ($role === 'vendor') {
+            Vendor::create([
+                'user_id' => $user->id,
+                'vendor_name' => $user->name,
+                'location' => 'Unknown',
+                'description' => null,
+            ]);
+        }
 
         event(new Registered($user));
 
