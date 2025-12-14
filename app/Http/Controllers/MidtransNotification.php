@@ -25,6 +25,7 @@ class MidtransNotification extends Controller
         $grossAmount = $notification['gross_amount'] ?? null;
         $signatureKey = $notification['signature_key'] ?? null;
         $transactionStatus = $notification['transaction_status'] ?? null;
+        $paymentType = $notification['payment_type'] ?? null;
 
         if (!$midtransOrderId || !$statusCode || !$grossAmount || !$signatureKey) {
             Log::warning('Midtrans: missing required fields', $notification);
@@ -50,9 +51,12 @@ class MidtransNotification extends Controller
         if (!$payment) {
             // Jika tidak ditemukan, buat record baru berdasarkan payload Midtrans
             $payment = new Payment();
-            $payment->midtrans_transaction_id = $midtransOrderId;
+            $payment->order_id = 1; // Sesuaikan jika ada cara untuk mengaitkan order_id
+            $payment->midtrans_order_id = $midtransOrderId;
+            $payment->payment_method = $paymentType;
+            $payment->payment_type = 'full'; // Asumsi default; sesuaikan jika ada info lebih lanjut
             $payment->payment_total_amount = (int) $grossAmount;
-            $payment->payment_status = strtoupper($transactionStatus ?? 'pending');
+            $payment->payment_status = ($transactionStatus ?? 'pending');
             $payment->paid_at = ($payment->payment_status === 'settlement' || $payment->payment_status === 'capture') ? now() : null;
             $payment->save();
 
@@ -61,7 +65,7 @@ class MidtransNotification extends Controller
 
         // 4. Update order dengan data dari Midtrans
         // Map beberapa field yang umum; simpan transaksi id, amount, status, payment_date jika relevan
-        $payment->midtrans_transaction_id = $midtransOrderId ?? $payment->midtrans_transaction_id;
+        $payment->midtrans_order_id = $midtransOrderId ?? $payment->midtrans_order_id;
         $payment->payment_total_amount = (int) $grossAmount;
         $payment->payment_status = ($transactionStatus ?? $payment->payment_status);
         // Jika ingin menyimpan full notification JSON, tambahkan kolom di migration dan simpan:
@@ -72,7 +76,7 @@ class MidtransNotification extends Controller
         Log::info('Midtrans notification processed', [
             'order_id' => $midtransOrderId,
             'status' => $payment->payment_status,
-            'transaction_id' => $payment->midtrans_transaction_id,
+            'transaction_id' => $payment->midtrans_order_id,
         ]);
 
         // 5. Balas Midtrans dengan 200 OK
