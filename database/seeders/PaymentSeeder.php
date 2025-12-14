@@ -18,10 +18,11 @@ class PaymentSeeder extends Seeder
         \App\Models\Payment::updateOrCreate(
             ['order_id' => $order->id],
             [
-                'payment_method' => 'bank_transfer',
+                'midtrans_order_id' => 'ORDER-TEST',
+                'payment_method' => 'qris',
                 'payment_type' => 'full',
                 'payment_total_amount' => $order->total_amount,
-                'payment_status' => 'completed',
+                'payment_status' => 'settlement',
                 'paid_at' => now(),
             ]
         );
