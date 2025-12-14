@@ -15,6 +15,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ServiceFeeController;
 use App\Http\Controllers\RentalInfoController;
 use App\Http\Controllers\ItemCategoryController;
+use App\Http\Controllers\MidtransNotification;
 use App\Http\Controllers\OrderServiceFeeController;
 use Illuminate\Support\Facades\Route;
 
@@ -386,6 +387,11 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('vendor.products.list')->with('success', 'Product updated');
     })->name('vendor.products.update');
 });
+
+Route::get('/payment', [App\Http\Controllers\PaymentController::class, 'payment']);
+
+Route::post('/midtrans/notification', [MidtransNotification::class, 'handle'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
 require __DIR__.'/auth.php';
 
