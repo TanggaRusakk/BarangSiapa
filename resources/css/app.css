@@ -1,3 +1,2 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Import Bootstrap */
+@import '~bootstrap/scss/bootstrap.scss';

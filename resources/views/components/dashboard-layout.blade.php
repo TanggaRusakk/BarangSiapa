@@ -13,29 +13,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-animated cyber-grid">
-    <!-- Top Navigation -->
-    <nav class="navbar">
-        <div class="navbar-container">
-            <a href="/" class="logo">BarangSiapa</a>
-
-            <ul class="nav-links">
-                <li><a href="/" class="nav-link">Home</a></li>
-                <li><a href="{{ url('/dashboard') }}" class="nav-link active">Dashboard</a></li>
-            </ul>
-
-            <div class="flex items-center gap-3">
-                @auth
-                    <div class="text-sm text-soft-lilac">{{ auth()->user()->name }}</div>
-                    <div>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="btn btn-secondary btn-sm">Logout</button>
-                        </form>
-                    </div>
-                @endauth
-            </div>
-        </div>
-    </nav>
+    @include('layouts.navigation')
 
     <main class="container section">
         <header class="mb-6">

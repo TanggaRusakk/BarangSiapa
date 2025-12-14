@@ -402,6 +402,34 @@ h3 {
     font-size: 1.1rem;
 }
 
+/* Items page pagination: magenta Next/Previous, no hover effects */
+.items-pagination .pagination .page-link {
+    background: var(--neon-pink) !important;
+    color: #000 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.45rem 0.8rem !important;
+    box-shadow: none !important;
+}
+
+.items-pagination .pagination .page-item.disabled .page-link,
+.items-pagination .pagination .page-item.disabled .page-link:hover {
+    background: #444 !important;
+    color: #ccc !important;
+}
+
+.items-pagination .pagination .page-link:hover,
+.items-pagination .pagination .page-link:focus {
+    background: var(--neon-pink) !important;
+    color: #000 !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.items-pagination .pagination {
+    justify-content: center;
+}
+
 /* ===== CARDS (Floating with Neon Glow) ===== */
 .card {
     background: rgba(9, 9, 15, 0.8);

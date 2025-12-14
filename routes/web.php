@@ -22,9 +22,11 @@ Route::get('/', [AdController::class, 'index']);
 
 // Public API-like endpoints (simple index actions)
 Route::get('/items', [ItemController::class, 'index'])->name('items.index');
+Route::get('/items/{item}', [ItemController::class, 'show'])->name('items.show');
 Route::get('/galleries', [ItemGalleryController::class, 'index'])->name('galleries.index');
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('/vendors', [VendorController::class, 'index'])->name('vendors.index');
+Route::get('/vendors/{vendor}', [VendorController::class, 'show'])->name('vendors.show');
 Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
 Route::get('/chats', [ChatController::class, 'index'])->name('chats.index');
 Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
@@ -84,6 +86,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/photo/upload', [ProfileController::class, 'uploadPhoto'])->name('profile.photo.upload');
+    Route::delete('/profile/photo/remove', [ProfileController::class, 'removePhoto'])->name('profile.photo.remove');
 
     // Admin: Users management
     Route::get('/admin/users', function () {
@@ -384,3 +388,19 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Temporary debug route: show resolved image URLs and placeholder existence
+Route::get('/debug-image-urls', function () {
+    $userUrl = auth()->check() ? auth()->user()->photo_url : null;
+    $item = \App\Models\Item::with('galleries')->first();
+    $itemUrl = $item ? $item->first_image_url : null;
+
+    return response()->json([
+        'user_photo_url' => $userUrl,
+        'item_first_image_url' => $itemUrl,
+        'profile_placeholder_jpg' => file_exists(public_path('images/profiles/profile_placeholder.jpg')),
+        'profile_placeholder_png' => file_exists(public_path('images/profiles/profile_placeholder.png')),
+        'item_placeholder_jpg' => file_exists(public_path('images/items/item_placeholder.jpg')),
+        'item_placeholder_png' => file_exists(public_path('images/items/item_placeholder.png')),
+    ]);
+});

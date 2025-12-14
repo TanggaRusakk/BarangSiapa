@@ -9,9 +9,10 @@
 
     <x-slot name="title">Admin — User: {{ $user->name ?? '—' }}</x-slot>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-        <div class="card">
-            <h3 class="font-bold mb-2">Profile</h3>
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-lg-4">
+            <div class="card">
+                <h3 class="font-bold mb-2">Profile</h3>
             <div class="space-y-2">
                 <div><strong>Name:</strong> {{ $user->name ?? '—' }}</div>
                 <div><strong>Email:</strong> {{ $user->email ?? '—' }}</div>
@@ -20,14 +21,15 @@
             </div>
         </div>
 
-        <div class="card lg:col-span-2">
-            <h3 class="font-bold mb-2">Recent Orders</h3>
-            @if($orders->isEmpty())
+        <div class="col-12 col-lg-8">
+            <div class="card">
+                <h3 class="font-bold mb-2">Recent Orders</h3>
+                @if($orders->isEmpty())
                 <p class="text-soft-lilac">No orders found for this user.</p>
             @else
                 <div class="space-y-3">
                     @foreach($orders as $order)
-                        <div class="p-3 bg-purple-900 bg-opacity-10 rounded flex justify-between items-center">
+                            <div class="p-3 bg-purple-900 bg-opacity-10 rounded d-flex justify-content-between align-items-center">
                             <div>
                                 <div class="font-bold">Order #{{ $order->id }}</div>
                                 <div class="text-sm text-soft-lilac">
@@ -53,7 +55,7 @@
             @else
                 <div class="space-y-2">
                     @foreach($reviews as $rev)
-                        <div class="p-3 bg-purple-900 bg-opacity-10 rounded">
+                            <div class="p-3 bg-purple-900 bg-opacity-10 rounded">
                             <div class="font-bold">{{ optional($rev->item)->item_name ?? '—' }}</div>
                             <div class="text-sm text-soft-lilac">{{ Str::limit($rev->review_text ?? '', 180) }}</div>
                         </div>
@@ -69,7 +71,7 @@
             @else
                 <div class="space-y-2">
                     @foreach($payments as $p)
-                        <div class="flex justify-between items-center p-3 bg-purple-900 bg-opacity-10 rounded">
+                            <div class="d-flex justify-content-between align-items-center p-3 bg-purple-900 bg-opacity-10 rounded">
                             <div>
                                 <div class="font-bold">Payment #{{ $p->id }}</div>
                                 <div class="text-sm text-soft-lilac">Method: {{ $p->payment_method ?? '—' }}</div>

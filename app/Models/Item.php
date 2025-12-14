@@ -30,6 +30,14 @@ class Item extends Model
         return $this->hasMany(ItemCategory::class);
     }
 
+    public function categories() {
+        return $this->belongsToMany(Category::class, 'item_categories', 'item_id', 'category_id');
+    }
+
+    public function galleries() {
+        return $this->hasMany(ItemGallery::class);
+    }
+
     public function orderItems() {
         return $this->hasMany(OrderItem::class);
     }
@@ -58,6 +66,11 @@ class Item extends Model
             return asset('images/item/' . ltrim($first->image_path, '/'));
         }
 
-        return asset('images/item/default-image.png');
+        // Prefer JPEG placeholder if present, fallback to PNG
+        if (file_exists(public_path('images/items/item_placeholder.jpg'))) {
+            return asset('images/items/item_placeholder.jpg');
+        }
+
+        return asset('images/items/item_placeholder.png');
     }
 }

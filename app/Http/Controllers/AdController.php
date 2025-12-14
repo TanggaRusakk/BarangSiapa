@@ -14,6 +14,14 @@ class AdController extends Controller
      */
     public function index(Request $request)
     {
+        // Popular items (top 5 most ordered)
+        $popularItems = Item::where('item_status', 'available')
+            ->with(['itemGalleries', 'vendor.user'])
+            ->withCount('orderItems')
+            ->orderBy('order_items_count', 'desc')
+            ->take(5)
+            ->get();
+
         // If there are active ads, show their related items as trending
         $ads = Ad::where('status', 'active')
             ->with('item.itemGalleries')
@@ -35,15 +43,14 @@ class AdController extends Controller
             $trending = $trending->merge($more);
         }
 
-        // items: for product grid
+        // items: for product grid (use paginator so views can call ->links())
         $items = Item::where('item_status', 'available')
             ->with('itemGalleries')
             ->latest()
-            ->take(12)
-            ->get();
+            ->paginate(12);
 
         $categories = Category::all();
 
-        return view('welcome', compact('trending', 'items', 'categories'));
+        return view('home', compact('trending', 'items', 'categories', 'popularItems'));
     }
 }

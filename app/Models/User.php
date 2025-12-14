@@ -73,10 +73,20 @@ class User extends Authenticatable
 
     public function getPhotoUrlAttribute()
     {
+        // Support both `profile_photo` and `image_path` fields depending on older code
+        if ($this->profile_photo) {
+            return asset(ltrim($this->profile_photo, '/'));
+        }
+
         if ($this->image_path) {
             return asset('images/profile/' . ltrim($this->image_path, '/'));
         }
 
-        return asset('images/profile/default-profile.png');
+        // Prefer JPEG placeholder if present, fallback to PNG
+        if (file_exists(public_path('images/profiles/profile_placeholder.jpg'))) {
+            return asset('images/profiles/profile_placeholder.jpg');
+        }
+
+        return asset('images/profiles/profile_placeholder.png');
     }
 }

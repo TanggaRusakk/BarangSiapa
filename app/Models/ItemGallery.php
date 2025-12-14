@@ -31,7 +31,10 @@ class ItemGallery extends Model
         if ($this->image_path) {
             return asset('images/item/' . ltrim($this->image_path, '/'));
         }
+        if (file_exists(public_path('images/items/item_placeholder.jpg'))) {
+            return asset('images/items/item_placeholder.jpg');
+        }
 
-        return asset('images/item/default-image.png');
+        return asset('images/items/item_placeholder.png');
     }
 }
