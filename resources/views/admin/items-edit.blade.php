@@ -30,8 +30,8 @@
             <div class="mb-4">
                 <label class="block mb-2 font-bold">Type</label>
                 <select name="item_type" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac" required>
-                    <option value="sell" {{ $item->item_type == 'sell' ? 'selected' : '' }}>Sell</option>
-                    <option value="sewa" {{ $item->item_type == 'sewa' ? 'selected' : '' }}>Rent</option>
+                    <option value="jual" {{ $item->item_type == 'jual' ? 'selected' : '' }}>Jual</option>
+                    <option value="sewa" {{ $item->item_type == 'sewa' ? 'selected' : '' }}>Sewa</option>
                 </select>
             </div>
 
@@ -46,6 +46,17 @@
             <div class="mb-4">
                 <label class="block mb-2 font-bold">Description</label>
                 <textarea name="item_description" rows="4" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac">{{ $item->item_description }}</textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="block mb-2 font-bold">Stock</label>
+                <input type="number" name="item_stock" value="{{ $item->item_stock ?? 1 }}" min="0" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="block mb-2 font-bold">Product Images</label>
+                <input type="file" name="images[]" accept="image/*" multiple class="form-control" />
+                <small class="text-muted">Optional — upload one or more images</small>
             </div>
 
             <div class="flex gap-2">

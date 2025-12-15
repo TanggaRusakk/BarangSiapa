@@ -35,8 +35,8 @@
                 <div>
                     <x-input-label for="item_type" :value="__('Type')" />
                     <select id="item_type" name="item_type" class="w-full px-4 py-3 bg-midnight-black bg-opacity-60 border-2 border-royal-purple border-opacity-40 rounded-lg text-white focus:border-neon-pink focus:ring-0 transition appearance-none">
-                        <option value="buy" {{ old('item_type', $item->item_type) === 'buy' ? 'selected' : '' }}>buy</option>
-                        <option value="rent" {{ old('item_type', $item->item_type) === 'rent' ? 'selected' : '' }}>rent</option>
+                        <option value="jual" {{ old('item_type', $item->item_type) === 'jual' ? 'selected' : '' }}>Jual</option>
+                        <option value="sewa" {{ old('item_type', $item->item_type) === 'sewa' ? 'selected' : '' }}>Sewa</option>
                     </select>
                     <x-input-error class="mt-2" :messages="$errors->get('item_type')" />
                 </div>

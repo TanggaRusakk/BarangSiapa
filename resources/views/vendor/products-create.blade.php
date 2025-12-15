@@ -2,7 +2,7 @@
     <x-slot name="title">Add Product</x-slot>
 
     <div class="card max-w-3xl">
-        <form method="POST" action="{{ route('vendor.products.store') }}" class="mt-6 space-y-6">
+        <form method="POST" action="{{ route('vendor.products.store') }}" class="mt-6 space-y-6" enctype="multipart/form-data">
             @csrf
 
             <div>
@@ -27,11 +27,25 @@
                 <div>
                     <x-input-label for="item_type" :value="__('Type')" />
                     <select id="item_type" name="item_type" class="w-full px-4 py-3 bg-midnight-black bg-opacity-60 border-2 border-royal-purple border-opacity-40 rounded-lg text-white focus:border-neon-pink focus:ring-0 transition appearance-none" style="background: rgba(9,9,15,0.6); color: #ffffff;">
-                        <option value="buy">buy</option>
-                        <option value="rent">rent</option>
+                            <option value="jual">Jual</option>
+                            <option value="sewa">Sewa</option>
                     </select>
                     <x-input-error class="mt-2" :messages="$errors->get('item_type')" />
                 </div>
+            </div>
+
+            <div>
+                <x-input-label for="item_stock" :value="__('Stock')" />
+                <x-text-input id="item_stock" name="item_stock" type="number" class="mt-1 block w-full" value="1" min="0" required />
+                <x-input-error class="mt-2" :messages="$errors->get('item_stock')" />
+            </div>
+
+            <div>
+                <x-input-label for="images" :value="__('Product Images')" />
+                <input id="images" name="images[]" type="file" accept="image/*" multiple class="form-control" />
+                <small class="text-muted">You can upload multiple images (optional).</small>
+                <x-input-error class="mt-2" :messages="$errors->get('images')" />
+                <x-input-error class="mt-2" :messages="$errors->get('images.*')" />
             </div>
 
             <div>

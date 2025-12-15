@@ -522,6 +522,70 @@ h3 {
     50% { box-shadow: 0 0 40px rgba(255, 60, 172, 1); }
 }
 
+/* Disable hover effects inside dashboard wrapper */
+.no-hover .card,
+.no-hover .product-card,
+.no-hover .stat-card {
+    transition: none !important;
+}
+
+.no-hover .card:hover,
+.no-hover .product-card:hover,
+.no-hover .stat-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.no-hover .btn:hover,
+.no-hover .btn-primary:hover,
+.no-hover .btn-secondary:hover,
+.no-hover .btn-accent:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.no-hover .hover-border-neon-pink:hover {
+    box-shadow: none !important;
+}
+
+.no-hover .logo:hover,
+.no-hover .nav-link:hover {
+    filter: none !important;
+    color: inherit !important;
+    text-shadow: none !important;
+}
+
+/* Cap SVGs on item detail page so icons don't dominate layout */
+.item-detail svg {
+    max-width: 24px !important;
+    max-height: 24px !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+.item-detail .main-placeholder svg {
+    /* allow a slightly larger placeholder */
+    max-width: 64px !important;
+    max-height: 64px !important;
+}
+
+/* Auth card: smaller centered form container for login/register */
+.auth-card {
+    max-width: 520px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: rgba(9,9,15,0.9);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+@media (max-width: 500px) {
+    .auth-card {
+        margin: 1rem;
+        padding: 1rem;
+    }
+}
+
 /* ===== PRODUCT GRID ===== */
 .product-grid {
     display: grid;

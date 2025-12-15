@@ -163,7 +163,33 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/admin/items', function (Request $request) {
         if (auth()->user()->role !== 'admin') abort(403);
-        \App\Models\Item::create($request->all());
+        $data = $request->validate([
+            'item_name' => 'required|string|max:255',
+            'item_description' => 'nullable|string',
+            'item_price' => 'required|numeric',
+            'item_type' => 'required|in:jual,sewa',
+            'item_status' => 'nullable|in:available,unavailable',
+            'item_stock' => 'required|integer|min:0',
+            'images' => 'nullable|array',
+            'images.*' => 'image|max:4096',
+            'vendor_id' => 'nullable|integer|exists:vendors,id',
+        ]);
+
+        $item = \App\Models\Item::create($data);
+
+        // Handle uploaded images (store in public/images/item and create gallery rows)
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $ext = $file->getClientOriginalExtension();
+                $filename = time() . '_' . uniqid() . '.' . $ext;
+                $file->move(public_path('images/item'), $filename);
+                \App\Models\ItemGallery::create([
+                    'item_id' => $item->id,
+                    'image_path' => $filename,
+                ]);
+            }
+        }
+
         return redirect()->route('admin.items')->with('success', 'Item created');
     })->name('admin.items.store');
 
@@ -175,7 +201,32 @@ Route::middleware('auth')->group(function () {
 
     Route::patch('/admin/items/{item}', function (Request $request, \App\Models\Item $item) {
         if (auth()->user()->role !== 'admin') abort(403);
-        $item->update($request->all());
+        $data = $request->validate([
+            'item_name' => 'required|string|max:255',
+            'item_description' => 'nullable|string',
+            'item_price' => 'required|numeric',
+            'item_type' => 'required|in:jual,sewa',
+            'item_status' => 'nullable|in:available,unavailable',
+            'item_stock' => 'nullable|integer|min:0',
+            'images' => 'nullable|array',
+            'images.*' => 'image|max:4096',
+            'vendor_id' => 'nullable|integer|exists:vendors,id',
+        ]);
+
+        $item->update(collect($data)->only(['item_name','item_description','item_price','item_type','item_status','item_stock','vendor_id'])->toArray());
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $ext = $file->getClientOriginalExtension();
+                $filename = time() . '_' . uniqid() . '.' . $ext;
+                $file->move(public_path('images/item'), $filename);
+                \App\Models\ItemGallery::create([
+                    'item_id' => $item->id,
+                    'image_path' => $filename,
+                ]);
+            }
+        }
+
         return redirect()->route('admin.items')->with('success', 'Item updated');
     })->name('admin.items.update');
 
@@ -296,9 +347,26 @@ Route::middleware('auth')->group(function () {
             'item_price' => 'required|numeric',
             'item_type' => 'required|string',
             'item_status' => 'nullable|string',
+            'item_stock' => 'required|integer|min:0',
+            'images' => 'nullable|array',
+            'images.*' => 'image|max:4096',
         ]);
         $data['vendor_id'] = $vendor->id ?? null;
-        \App\Models\Item::create($data);
+
+        $item = \App\Models\Item::create($data);
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $ext = $file->getClientOriginalExtension();
+                $filename = time() . '_' . uniqid() . '.' . $ext;
+                $file->move(public_path('images/item'), $filename);
+                \App\Models\ItemGallery::create([
+                    'item_id' => $item->id,
+                    'image_path' => $filename,
+                ]);
+            }
+        }
+
         return redirect()->route('vendor.products.list')->with('success', 'Product created');
     })->name('vendor.products.store');
 
@@ -360,8 +428,9 @@ Route::middleware('auth')->group(function () {
             'item_name' => 'required|string|max:255',
             'item_description' => 'nullable|string',
             'item_price' => 'required|numeric',
-            'item_type' => 'required|string',
-            'item_status' => 'nullable|string',
+            'item_type' => 'required|in:jual,sewa',
+            'item_status' => 'nullable|in:available,unavailable',
+            'item_stock' => 'nullable|integer|min:0',
             'image' => 'nullable|image|max:2048',
         ]);
 
@@ -383,7 +452,7 @@ Route::middleware('auth')->group(function () {
         }
 
         // Update item fields
-        $item->update(collect($data)->only(['item_name','item_description','item_price','item_type','item_status'])->toArray());
+        $item->update(collect($data)->only(['item_name','item_description','item_price','item_type','item_status','item_stock'])->toArray());
         return redirect()->route('vendor.products.list')->with('success', 'Product updated');
     })->name('vendor.products.update');
 });

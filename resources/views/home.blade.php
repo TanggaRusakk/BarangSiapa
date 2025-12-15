@@ -14,6 +14,31 @@
         </div>
     </section>
 
+    <!-- Ads Carousel -->
+    @if(isset($ads) && $ads->count() > 0)
+    <section id="ads" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-4" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">🎯 Featured Ads</h2>
+            <div id="adsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000" data-bs-wrap="true" data-bs-pause="false">
+                <div class="carousel-indicators">
+                    @foreach($ads as $index => $ad)
+                        <button type="button" data-bs-target="#adsCarousel" data-bs-slide-to="{{ $index }}" class="{{ $index === 0 ? 'active' : '' }}" aria-current="{{ $index === 0 ? 'true' : 'false' }}" aria-label="Ad {{ $index + 1 }}"></button>
+                    @endforeach
+                </div>
+                <div class="carousel-inner">
+                    @foreach($ads as $index => $ad)
+                        <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                            <a href="{{ $ad->item ? route('items.show', $ad->item->id) : '#' }}" class="d-block">
+                                <img src="{{ $ad->item && $ad->item->first_image_url ? $ad->item->first_image_url : (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png')) }}" class="d-block w-100 rounded" alt="{{ $ad->item ? $ad->item->item_name : 'Ad' }}" style="max-height: 400px; object-fit: cover;">
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </section>
+    @endif
+
     <!-- About Us -->
     <section id="about" class="py-5">
         <div class="container">
@@ -24,67 +49,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Category Filter -->
-    <section id="categories" class="py-4">
-        <div class="container">
-            <h2 class="text-center mb-4" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Browse by Category</h2>
-            <div class="d-flex flex-wrap gap-2 justify-content-center">
-                <button class="btn btn-outline-primary active" data-category="all">All Products</button>
-                <button class="btn btn-outline-primary" data-category="electronics">Electronics</button>
-                <button class="btn btn-outline-primary" data-category="fashion">Fashion</button>
-                <button class="btn btn-outline-primary" data-category="home">Home & Living</button>
-                <button class="btn btn-outline-primary" data-category="sports">Sports</button>
-                <button class="btn btn-outline-primary" data-category="toys">Toys & Games</button>
-                <button class="btn btn-outline-primary" data-category="books">Books</button>
-                <button class="btn btn-outline-primary" data-category="tools">Tools</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Trending Products Carousel -->
-    <section id="trending" class="py-5">
-        <div class="container">
-            <h2 class="text-center mb-4" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">🔥 Trending Now</h2>
-            <div id="trendingCarousel" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <div class="row justify-content-center">
-                            <div class="col-md-4">
-                                <div class="card h-100 shadow-sm">
-                                    <div class="position-relative">
-                                        <span class="badge position-absolute top-0 start-0 m-2" style="background: #FF3CAC;">Flash Sale</span>
-                                        <img src="{{ file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png') }}" class="card-img-top" alt="Product">
-                                    </div>
-                                    <div class="card-body">
-                                        <h5 class="card-title fw-bold">Premium Headphones</h5>
-                                        <p class="card-text text-secondary">High-quality wireless audio</p>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <span class="h4 mb-0 fw-bold" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">$199</span>
-                                                <small class="text-secondary">/buy</small>
-                                            </div>
-                                            <button class="btn btn-sm" style="background: #6A38C2; color: white;">View</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#trendingCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#trendingCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <hr class="container">
 
     <!-- Product Grid -->
     <section id="products" class="py-5">

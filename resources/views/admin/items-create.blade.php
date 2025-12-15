@@ -2,7 +2,7 @@
     <x-slot name="title">Create Item</x-slot>
 
     <div class="card">
-        <form method="POST" action="{{ route('admin.items.store') }}">
+        <form method="POST" action="{{ route('admin.items.store') }}" enctype="multipart/form-data">
             @csrf
             
             <div class="mb-4">
@@ -28,8 +28,8 @@
             <div class="mb-4">
                 <label class="block mb-2 font-bold">Type</label>
                 <select name="item_type" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac" required>
-                    <option value="sell">Sell</option>
-                    <option value="sewa">Rent</option>
+                    <option value="jual">Jual</option>
+                    <option value="sewa">Sewa</option>
                 </select>
             </div>
 
@@ -42,8 +42,19 @@
             </div>
 
             <div class="mb-4">
+                <label class="block mb-2 font-bold">Stock</label>
+                <input type="number" name="item_stock" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac" value="1" min="0" required>
+            </div>
+
+            <div class="mb-4">
                 <label class="block mb-2 font-bold">Description</label>
                 <textarea name="item_description" rows="4" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac"></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="block mb-2 font-bold">Product Images</label>
+                <input type="file" name="images[]" accept="image/*" multiple class="form-control" />
+                <small class="text-muted">Optional — upload one or more images</small>
             </div>
 
             <div class="flex gap-2">

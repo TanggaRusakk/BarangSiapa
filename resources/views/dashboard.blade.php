@@ -2,6 +2,7 @@
     <x-slot name="title">Member Dashboard</x-slot>
     
     <!-- Welcome Header -->
+    <div class="no-hover">
     <div class="mb-4">
         <div class="row align-items-center">
             <div class="col">
@@ -96,32 +97,48 @@
 
         <!-- More Admin Actions -->
         <div class="row g-4 mb-4">
-            <div class="col-12 col-md-6 col-lg-3">
-                <a href="{{ route('admin.orders') }}" class="card text-center">
-                    <div class="text-4xl mb-2">📦</div>
-                    <h3 class="font-bold">Orders</h3>
-                    <p class="text-sm text-soft-lilac">Manage all orders</p>
+            <div class="col-6 col-md-3">
+                <a href="{{ route('admin.orders') }}" class="text-decoration-none">
+                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
+                        <div class="card-body p-2">
+                            <div class="fs-3 mb-2">📦</div>
+                            <h6 class="fw-bold mb-1">Orders</h6>
+                            <p class="small text-secondary mb-0">Manage all orders</p>
+                        </div>
+                    </div>
                 </a>
             </div>
-            <div class="col-12 col-md-6 col-lg-3">
-                <a href="{{ route('admin.reviews') }}" class="card text-center">
-                    <div class="text-4xl mb-2">⭐</div>
-                    <h3 class="font-bold">Reviews</h3>
-                    <p class="text-sm text-soft-lilac">View & moderate</p>
+            <div class="col-6 col-md-3">
+                <a href="{{ route('admin.reviews') }}" class="text-decoration-none">
+                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
+                        <div class="card-body p-2">
+                            <div class="fs-3 mb-2">⭐</div>
+                            <h6 class="fw-bold mb-1">Reviews</h6>
+                            <p class="small text-secondary mb-0">View & moderate</p>
+                        </div>
+                    </div>
                 </a>
             </div>
-            <div class="col-12 col-md-6 col-lg-3">
-                <a href="{{ route('admin.messages') }}" class="card text-center">
-                    <div class="text-4xl mb-2">💬</div>
-                    <h3 class="font-bold">Messages</h3>
-                    <p class="text-sm text-soft-lilac">View conversations</p>
+            <div class="col-6 col-md-3">
+                <a href="{{ route('admin.messages') }}" class="text-decoration-none">
+                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
+                        <div class="card-body p-2">
+                            <div class="fs-3 mb-2">💬</div>
+                            <h6 class="fw-bold mb-1">Messages</h6>
+                            <p class="small text-secondary mb-0">View conversations</p>
+                        </div>
+                    </div>
                 </a>
             </div>
-            <div class="col-12 col-md-6 col-lg-3">
-                <a href="{{ route('admin.ads') }}" class="card text-center">
-                    <div class="text-4xl mb-2">📢</div>
-                    <h3 class="font-bold">Ads</h3>
-                    <p class="text-sm text-soft-lilac">Manage advertisements</p>
+            <div class="col-6 col-md-3">
+                <a href="{{ route('admin.ads') }}" class="text-decoration-none">
+                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
+                        <div class="card-body p-2">
+                            <div class="fs-3 mb-2">📢</div>
+                            <h6 class="fw-bold mb-1">Ads</h6>
+                            <p class="small text-secondary mb-0">Manage advertisements</p>
+                        </div>
+                    </div>
                 </a>
             </div>
         </div>
@@ -159,29 +176,31 @@
             </div>
 
             <div class="col-12 col-md-6">
-                <div class="card">
-                    <h3 class="text-xl font-bold mb-3">System Alerts</h3>
-                    <div class="space-y-3">
-                        <div class="p-3 bg-red-900 bg-opacity-30 rounded-lg border border-red-500">
-                            <div class="d-flex align-items-center gap-2 mb-1">
-                                <span>⚠️</span>
-                                <span class="font-bold">Payment Dispute</span>
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h3 class="h6 fw-bold mb-3">System Alerts</h3>
+                        <div class="d-flex flex-column gap-3">
+                            <div class="alert alert-danger mb-0 d-flex align-items-start gap-2">
+                                <span class="fs-5">⚠️</span>
+                                <div>
+                                    <div class="fw-bold">Payment Dispute</div>
+                                    <p class="mb-0 small">Order #1234 has a payment dispute</p>
+                                </div>
                             </div>
-                            <p class="text-sm text-soft-lilac">Order #1234 has a payment dispute</p>
-                        </div>
-                        <div class="p-3 bg-yellow-900 bg-opacity-30 rounded-lg border border-yellow-500">
-                            <div class="d-flex align-items-center gap-2 mb-1">
-                                <span>🔔</span>
-                                <span class="font-bold">Pending Approvals</span>
+                            <div class="alert alert-warning mb-0 d-flex align-items-start gap-2">
+                                <span class="fs-5">🔔</span>
+                                <div>
+                                    <div class="fw-bold">Pending Approvals</div>
+                                    <p class="mb-0 small">5 vendors waiting for approval</p>
+                                </div>
                             </div>
-                            <p class="text-sm text-soft-lilac">5 vendors waiting for approval</p>
-                        </div>
-                        <div class="p-3 bg-blue-900 bg-opacity-30 rounded-lg border border-cyan-blue">
-                            <div class="d-flex align-items-center gap-2 mb-1">
-                                <span>📊</span>
-                                <span class="font-bold">System Update</span>
+                            <div class="alert alert-info mb-0 d-flex align-items-start gap-2">
+                                <span class="fs-5">📊</span>
+                                <div>
+                                    <div class="fw-bold">System Update</div>
+                                    <p class="mb-0 small">New features available</p>
+                                </div>
                             </div>
-                            <p class="text-sm text-soft-lilac">New features available</p>
                         </div>
                     </div>
                 </div>
@@ -224,173 +243,208 @@
     @elseif(auth()->user()->role === 'vendor')
         <!-- VENDOR DASHBOARD -->
         <div class="row g-4 mb-4">
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="stat-card">
-                    <div class="stat-label">Total Products</div>
-                    <div class="stat-value">{{ number_format($vendorProductsCount) }}</div>
-                    <div class="text-sm text-cyan-400">3 pending approval</div>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="text-secondary small">Total Products</div>
+                        <div class="h4 fw-bold">{{ number_format($vendorProductsCount) }}</div>
+                        <div class="small text-muted">Active items</div>
+                    </div>
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="stat-card">
-                    <div class="stat-label">Active Orders</div>
-                    <div class="stat-value">28</div>
-                    <div class="text-sm text-yellow-400">5 need attention</div>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="text-secondary small">Active Orders</div>
+                        <div class="h4 fw-bold">0</div>
+                        <div class="small text-muted">Pending orders</div>
+                    </div>
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="stat-card">
-                    <div class="stat-label">Revenue (This Month)</div>
-                    <div class="stat-value">$8,420</div>
-                    <div class="text-sm text-green-400">↑ 18% from last month</div>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="text-secondary small">Revenue (This Month)</div>
+                        <div class="h5 fw-bold">Rp0</div>
+                        <div class="small text-muted">Total sales</div>
+                    </div>
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="stat-card">
-                    <div class="stat-label">Store Rating</div>
-                    <div class="stat-value">4.8★</div>
-                    <div class="text-sm text-soft-lilac">Based on 234 reviews</div>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="text-secondary small">Store Rating</div>
+                        <div class="h4 fw-bold">0★</div>
+                        <div class="small text-muted">No reviews yet</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Quick Actions -->
         <div class="row g-4 mb-4">
-            <div class="col-12 col-md-4">
-                <a href="/vendor/products/create" class="card text-center">
-                    <div class="text-4xl mb-2">➕</div>
-                    <h3 class="font-bold">Add New Product</h3>
-                    <p class="text-sm text-soft-lilac">List a new item</p>
+            <div class="col-6 col-md-4">
+                <a href="/vendor/products/create" class="text-decoration-none">
+                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
+                        <div class="card-body p-2">
+                            <div class="fs-3 mb-2">➕</div>
+                            <h6 class="fw-bold mb-1">Add Product</h6>
+                            <p class="small text-secondary mb-0">List a new item</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4">
+                <a href="/vendor/products/list" class="text-decoration-none">
+                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
+                        <div class="card-body p-2">
+                            <div class="fs-3 mb-2">📦</div>
+                            <h6 class="fw-bold mb-1">Products</h6>
+                            <p class="small text-secondary mb-0">View all items</p>
+                        </div>
+                    </div>
                 </a>
             </div>
             <div class="col-12 col-md-4">
-                <a href="/vendor/orders/list" class="card text-center">
-                    <div class="text-4xl mb-2">📦</div>
-                    <h3 class="font-bold">Manage Orders</h3>
-                    <p class="text-sm text-soft-lilac">View pending orders</p>
-                </a>
-            </div>
-            <div class="col-12 col-md-4">
-                <a href="/vendor/ads/create" class="card text-center">
-                    <div class="text-4xl mb-2">📢</div>
-                    <h3 class="font-bold">Create Ad</h3>
-                    <p class="text-sm text-soft-lilac">Promote your products</p>
+                <a href="/vendor/orders/list" class="text-decoration-none">
+                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
+                        <div class="card-body p-2">
+                            <div class="fs-3 mb-2">🛒</div>
+                            <h6 class="fw-bold mb-1">Orders</h6>
+                            <p class="small text-secondary mb-0">Manage orders</p>
+                        </div>
+                    </div>
                 </a>
             </div>
         </div>
 
         <!-- Recent Products & Orders -->
-        <div class="row g-4 mb-4">
+        <div class="row g-4">
             <div class="col-12 col-lg-6">
-                <div class="card">
+                <div class="card h-100">
                     <div class="card-body">
-                        <h3 class="h6 fw-bold mb-3">Your Recent Products</h3>
-                        @foreach($recentProducts->take(2) as $prod)
-                            <div class="d-flex gap-3 p-3 mb-2 rounded" style="background: rgba(106,56,194,0.03);">
-                                <img src="{{ $prod->first_image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png')) }}" alt="{{ $prod->item_name }}" class="rounded" style="width:64px;height:64px;object-fit:cover;">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0 fw-bold">{{ $prod->item_name }}</h6>
-                                    <p class="mb-1 text-secondary small">Rp{{ number_format($prod->item_price) }} @if($prod->item_type === 'sewa' || $prod->item_type === 'rent') • Rent @endif</p>
-                                    <span class="badge bg-success">Active</span>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="h6 fw-bold mb-0">Your Recent Products</h3>
+                            <a href="/vendor/products/list" class="btn btn-sm" style="background: #6A38C2; color: white;">View All →</a>
+                        </div>
+                        @if($recentProducts->count() > 0)
+                            @foreach($recentProducts->take(3) as $prod)
+                                <div class="d-flex gap-3 p-3 mb-2 rounded" style="background: rgba(106,56,194,0.03);">
+                                    <img src="{{ $prod->first_image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png')) }}" alt="{{ $prod->item_name }}" class="rounded" style="width:64px;height:64px;object-fit:cover;">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0 fw-bold">{{ $prod->item_name }}</h6>
+                                        <p class="mb-1 text-secondary small">Rp{{ number_format($prod->item_price) }} @if($prod->item_type === 'sewa' || $prod->item_type === 'rent') • Rent @endif</p>
+                                        <span class="badge bg-success">Active</span>
+                                    </div>
                                 </div>
+                            @endforeach
+                        @else
+                            <div class="text-center py-5">
+                                <div class="text-secondary mb-2">📦</div>
+                                <p class="text-secondary mb-0">No products yet</p>
                             </div>
-                        @endforeach
-                    </div>
-                </div>
-
-            <div class="col-12 col-lg-6">
-                <div class="card">
-                <h3 class="text-xl font-bold mb-3">Recent Orders</h3>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center p-3 bg-purple-900 bg-opacity-20 rounded-lg">
-                        <div>
-                            <h4 class="font-bold">#ORD-456</h4>
-                            <p class="text-sm text-soft-lilac">Premium Headphones</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold text-gradient">$199.00</p>
-                            <span class="badge badge-warning">Processing</span>
-                        </div>
-                    </div>
-                    <div class="flex justify-between items-center p-3 bg-purple-900 bg-opacity-20 rounded-lg">
-                        <div>
-                            <h4 class="font-bold">#ORD-457</h4>
-                            <p class="text-sm text-soft-lilac">Wireless Mouse</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold text-gradient">$49.00</p>
-                            <span class="badge badge-success">Completed</span>
-                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Sales Chart Placeholder -->
-        <div class="card">
-            <h3 class="text-xl font-bold mb-3">Sales Overview</h3>
-            <div class="h-64 bg-purple-900 bg-opacity-20 rounded-lg flex items-center justify-center">
-                <p class="text-soft-lilac">📊 Chart visualization will be displayed here</p>
+            <div class="col-12 col-lg-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="h6 fw-bold mb-0">Recent Orders</h3>
+                            <a href="/vendor/orders/list" class="btn btn-sm" style="background: #FF3CAC; color: #000;">View All →</a>
+                        </div>
+                        <div class="text-center py-5">
+                            <div class="text-secondary mb-2">🛒</div>
+                            <p class="text-secondary mb-0">No orders yet</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
     @else
         <!-- MEMBER DASHBOARD -->
         <div class="row g-4 mb-4">
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="stat-card">
-                    <div class="stat-label">Active Orders</div>
-                    <div class="stat-value">3</div>
-                    <div class="text-sm text-cyan-400">2 arriving soon</div>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="text-secondary small">Active Orders</div>
+                        <div class="h4 fw-bold">0</div>
+                        <div class="small text-muted">No orders yet</div>
+                    </div>
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="stat-card">
-                    <div class="stat-label">Active Rentals</div>
-                    <div class="stat-value">2</div>
-                    <div class="text-sm text-yellow-400">1 due soon</div>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="text-secondary small">Active Rentals</div>
+                        <div class="h4 fw-bold">0</div>
+                        <div class="small text-muted">No rentals</div>
+                    </div>
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="stat-card">
-                    <div class="stat-label">Total Spent</div>
-                    <div class="stat-value">$1,245</div>
-                    <div class="text-sm text-soft-lilac">Last 30 days</div>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="text-secondary small">Total Spent</div>
+                        <div class="h5 fw-bold">Rp0</div>
+                        <div class="small text-muted">Last 30 days</div>
+                    </div>
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="stat-card">
-                    <div class="stat-label">Wishlist Items</div>
-                    <div class="stat-value">12</div>
-                    <div class="text-sm text-soft-lilac">3 on sale</div>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="text-secondary small">Wishlist Items</div>
+                        <div class="h4 fw-bold">0</div>
+                        <div class="small text-muted">No items saved</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Quick Actions -->
         <div class="row g-4 mb-4">
-            <div class="col-12 col-md-3">
-                <a href="/" class="card text-center">
-                    <div class="text-4xl mb-2">🛍️</div>
-                    <h3 class="font-bold">Browse Products</h3>
+            <div class="col-6 col-md-3">
+                <a href="{{ route('items.index') }}" class="text-decoration-none">
+                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
+                        <div class="card-body p-2">
+                            <div class="fs-3 mb-2">🛍️</div>
+                            <h6 class="fw-bold mb-0">Browse</h6>
+                        </div>
+                    </div>
                 </a>
             </div>
-            <div class="col-12 col-md-3">
-                <a href="#" class="card text-center">
-                    <div class="text-4xl mb-2">📦</div>
-                    <h3 class="font-bold">Track Orders</h3>
+            <div class="col-6 col-md-3">
+                <a href="#" class="text-decoration-none">
+                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
+                        <div class="card-body p-2">
+                            <div class="fs-3 mb-2">📦</div>
+                            <h6 class="fw-bold mb-0">Orders</h6>
+                        </div>
+                    </div>
                 </a>
             </div>
-            <div class="col-12 col-md-3">
-                <a href="#" class="card text-center">
-                    <div class="text-4xl mb-2">💬</div>
-                    <h3 class="font-bold">Messages</h3>
+            <div class="col-6 col-md-3">
+                <a href="{{ url('/messages') }}" class="text-decoration-none">
+                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
+                        <div class="card-body p-2">
+                            <div class="fs-3 mb-2">💬</div>
+                            <h6 class="fw-bold mb-0">Messages</h6>
+                        </div>
+                    </div>
                 </a>
             </div>
-            <div class="col-12 col-md-3">
-                <a href="#" class="card text-center">
-                    <div class="text-4xl mb-2">❤️</div>
-                    <h3 class="font-bold">Wishlist</h3>
+            <div class="col-6 col-md-3">
+                <a href="#" class="text-decoration-none">
+                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
+                        <div class="card-body p-2">
+                            <div class="fs-3 mb-2">❤️</div>
+                            <h6 class="fw-bold mb-0">Wishlist</h6>
+                        </div>
+                    </div>
                 </a>
             </div>
         </div>
@@ -398,78 +452,52 @@
         <!-- Recent Activity -->
         <div class="row g-4 mb-4">
             <div class="col-12 col-lg-6">
-                <div class="card">
-                <h3 class="text-xl font-bold mb-3">Recent Orders</h3>
-                <div class="space-y-3">
-                    @foreach($recentProducts->take(2) as $prod)
-                        <div class="d-flex gap-3 p-3 mb-2 rounded" style="background: rgba(106,56,194,0.03);">
-                            <img src="{{ $prod->first_image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png')) }}" alt="{{ $prod->item_name }}" class="rounded" style="width:64px;height:64px;object-fit:cover;">
-                            <div class="flex-1">
-                                <h6 class="mb-0 fw-bold">{{ $prod->item_name }}</h6>
-                                <p class="mb-1 text-secondary small">Rp{{ number_format($prod->item_price) }}</p>
-                                <span class="badge bg-info text-dark">Shipped</span>
-                            </div>
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h3 class="h6 fw-bold mb-3">Recent Orders</h3>
+                        <div class="text-center py-5">
+                            <div class="text-secondary mb-2">📦</div>
+                            <p class="text-secondary mb-0">No orders yet</p>
                         </div>
-                    @endforeach
+                    </div>
                 </div>
             </div>
 
             <div class="col-12 col-lg-6">
-                <div class="card">
-                <h3 class="text-xl font-bold mb-3">Active Rentals</h3>
-                <div class="space-y-3">
-                    <div class="p-3 bg-purple-900 bg-opacity-20 rounded-lg">
-                        <div class="flex justify-between items-start mb-2">
-                            <h4 class="font-bold">Professional Camera</h4>
-                            <span class="badge badge-warning">Active</span>
-                        </div>
-                        <p class="text-sm text-soft-lilac mb-2">$29/day • Rented 3 days ago</p>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm">Due: Jan 15, 2025</span>
-                            <button class="btn btn-accent btn-sm">Extend</button>
-                        </div>
-                    </div>
-                    <div class="p-3 bg-purple-900 bg-opacity-20 rounded-lg">
-                        <div class="flex justify-between items-start mb-2">
-                            <h4 class="font-bold">Gaming Console</h4>
-                            <span class="badge badge-warning">Active</span>
-                        </div>
-                        <p class="text-sm text-soft-lilac mb-2">$15/day • Rented 1 day ago</p>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm">Due: Jan 10, 2025</span>
-                            <button class="btn btn-accent btn-sm">Extend</button>
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h3 class="h6 fw-bold mb-3">Active Rentals</h3>
+                        <div class="text-center py-5">
+                            <div class="text-secondary mb-2">🔑</div>
+                            <p class="text-secondary mb-0">No active rentals</p>
                         </div>
                     </div>
                 </div>
-            </div>
             </div>
         </div>
 
         <!-- Recommended Products -->
         <div class="card">
-            <h3 class="text-xl font-bold mb-3">Recommended For You</h3>
+            <div class="card-body">
+                <h3 class="h6 fw-bold mb-3">Recommended For You</h3>
                 <div class="row g-4">
                     @foreach($recentProducts->take(3) as $prod)
                         @php $isRent = ($prod->item_type === 'sewa' || $prod->item_type === 'rent'); @endphp
                         <div class="col-12 col-md-4">
-                            <div class="product-card">
-                                <img src="{{ $prod->first_image_url ?? asset('images/items/item_placeholder.png') }}" alt="{{ $prod->item_name }}" class="product-image">
-                                <div class="p-4">
-                                    <h4 class="font-bold mb-2">{{ $prod->item_name }}</h4>
-                                    <div class="rating mb-2">
-                                        <span class="star">★</span>
-                                        <span class="star">★</span>
-                                        <span class="star">★</span>
-                                        <span class="star">★</span>
-                                        <span class="star">★</span>
-                                    </div>
-                                    <p class="text-2xl font-bold text-gradient">@if($isRent) Rp{{ number_format($prod->item_price) }} / {{ $prod->rental_duration_unit ?? 'day' }} @else Rp{{ number_format($prod->item_price) }} @endif</p>
+                            <div class="card shadow-sm h-100">
+                                <img src="{{ $prod->first_image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png')) }}" alt="{{ $prod->item_name }}" class="card-img-top" style="height:180px;object-fit:cover;">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-2">{{ $prod->item_name }}</h6>
+                                    <p class="h5 fw-bold text-gradient mb-0">@if($isRent) Rp{{ number_format($prod->item_price) }}/{{ $prod->rental_duration_unit ?? 'day' }} @else Rp{{ number_format($prod->item_price) }} @endif</p>
                                 </div>
                             </div>
                         </div>
                     @endforeach
                 </div>
+            </div>
         </div>
     @endif
+
+    </div>
 
 </x-dashboard-layout>

@@ -51,6 +51,6 @@ class AdController extends Controller
 
         $categories = Category::all();
 
-        return view('home', compact('trending', 'items', 'categories', 'popularItems'));
+        return view('home', compact('trending', 'items', 'categories', 'popularItems', 'ads'));
     }
 }

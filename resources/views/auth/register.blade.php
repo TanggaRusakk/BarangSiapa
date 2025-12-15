@@ -1,20 +1,36 @@
 <x-guest-layout>
+    <div class="auth-card">
     @php $role = request('role', 'user'); @endphp
+    
+    <!-- Site Title above form -->
+    <div class="text-center mb-4">
+        <h1 class="h3 fw-bold text-gradient mb-1">BarangSiapa</h1>
+    </div>
+
+    <!-- Page Title -->
+    <div class="text-center mb-4">
+        <h2 class="text-3xl font-bold text-gradient mb-2">Create Account</h2>
+        <p class="text-secondary">Join BarangSiapa marketplace</p>
+    </div>
+
+    <!-- Role Selector -->
     <div class="mb-4 text-center">
-        <a href="{{ route('register') }}?role=user" class="inline-block px-3 py-1 rounded-md mr-2" style="text-decoration:none; border:1px solid transparent; background: {{ $role==='user' ? 'rgba(106,56,194,0.15)' : 'transparent' }};">Register as User</a>
-        <a href="{{ route('register') }}?role=vendor" class="inline-block px-3 py-1 rounded-md" style="text-decoration:none; border:1px solid transparent; background: {{ $role==='vendor' ? 'rgba(106,56,194,0.15)' : 'transparent' }};">Register as Vendor</a>
+        <div class="btn-group w-100" role="group">
+            <a href="{{ route('register') }}?role=user" class="btn {{ $role==='user' ? 'btn-primary' : 'btn-outline-secondary' }}" style="text-decoration:none;">👤 User</a>
+            <a href="{{ route('register') }}?role=vendor" class="btn {{ $role==='vendor' ? 'btn-primary' : 'btn-outline-secondary' }}" style="text-decoration:none;">🏪 Vendor</a>
+        </div>
     </div>
 
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
-        <p class="text-sm text-gray-400 mb-4">
+        <div class="alert {{ $role === 'vendor' ? 'alert-info' : 'alert-light' }} mb-4 small">
             @if($role === 'vendor')
-                Registering as a <strong>vendor</strong> will allow you to create a vendor profile and list products. You'll still need a user account — after registering we'll set your role to <em>vendor</em>.
+                <strong>🏪 Vendor Account:</strong> Create a store and list products for sale or rent.
             @else
-                Registering as a <strong>user</strong> lets you browse and rent items. If you want to sell or list items, choose the "Register as Vendor" option.
+                <strong>👤 User Account:</strong> Browse and rent items from the marketplace.
             @endif
-        </p>
+        </div>
 
         <input type="hidden" name="role" value="{{ $role }}">
 
@@ -55,14 +71,19 @@
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm rounded-md" style="color: var(--soft-lilac);" href="{{ route('login') }}" onmouseover="this.style.color='var(--neon-pink)';" onmouseout="this.style.color='var(--soft-lilac)';">
-                {{ __('Already registered?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
+        <div class="d-grid gap-2 mt-4">
+            <x-primary-button class="w-100">
                 {{ __('Register') }}
             </x-primary-button>
         </div>
+        
+        <div class="mt-4 text-center">
+            <a class="text-sm" style="color: var(--soft-lilac); text-decoration: none;" href="{{ route('login') }}" onmouseover="this.style.color='var(--neon-pink)';" onmouseout="this.style.color='var(--soft-lilac)';">
+                Already have an account? <strong>Sign in</strong>
+            </a>
+        </div>
+
+        
     </form>
+    </div>
 </x-guest-layout>

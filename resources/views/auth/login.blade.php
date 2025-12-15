@@ -1,4 +1,16 @@
 <x-guest-layout>
+    <div class="auth-card">
+    <!-- Site Title above form -->
+    <div class="text-center mb-4">
+        <h1 class="h3 fw-bold text-gradient mb-1">BarangSiapa</h1>
+    </div>
+
+    <!-- Page Title -->
+    <div class="text-center mb-4">
+        <h2 class="text-3xl font-bold text-gradient mb-2">Welcome Back</h2>
+        <p class="text-secondary">Sign in to continue to BarangSiapa</p>
+    </div>
+
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
@@ -32,10 +44,10 @@
             </label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <div class="flex items-center justify-between mt-4">
             @if (Route::has('password.request'))
-                <a class="underline text-sm rounded-md" style="color: var(--soft-lilac);" href="{{ route('password.request') }}" onmouseover="this.style.color='var(--neon-pink)';" onmouseout="this.style.color='var(--soft-lilac)';">
-                    {{ __('Forgot your password?') }}
+                <a class="text-sm" style="color: var(--soft-lilac); text-decoration: none;" href="{{ route('password.request') }}" onmouseover="this.style.color='var(--neon-pink)';" onmouseout="this.style.color='var(--soft-lilac)';">
+                    {{ __('Forgot password?') }}
                 </a>
             @endif
 
@@ -44,9 +56,15 @@
             </x-primary-button>
         </div>
         
-        <div class="mt-4 text-sm text-center text-gray-400">
-            <p>Don't have an account? <a href="{{ route('register') }}" class="underline">Register as User</a> or <a href="{{ route('register') }}?role=vendor" class="underline">Register as Vendor</a>.</p>
-            <p class="mt-2">If you're a vendor, registering as vendor lets you create a store and list items; otherwise register as a regular user to browse and rent.</p>
+        <div class="mt-6 pt-6 border-top text-center">
+            <p class="text-secondary mb-3">Don't have an account?</p>
+            <div class="d-flex gap-2 justify-content-center">
+                <a href="{{ route('register') }}" class="btn btn-sm btn-outline-primary">Register as User</a>
+                <a href="{{ route('register') }}?role=vendor" class="btn btn-sm" style="background: #FF3CAC; color: #000; border: none;">Register as Vendor</a>
+            </div>
         </div>
+
+        
     </form>
+    </div>
 </x-guest-layout>

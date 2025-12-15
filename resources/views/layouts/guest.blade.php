@@ -20,15 +20,9 @@
     </head>
     <body class="bg-animated cyber-grid">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
-            <div>
-                <a href="/">
-                    <div class="logo text-4xl">BarangSiapa</div>
-                </a>
-            </div>
-
-            <div class="w-full sm:max-w-md mt-6 px-8 py-6 card">
-                {{ $slot }}
-            </div>
+                <div class="w-full sm:max-w-md mt-6">
+                    {{ $slot }}
+                </div>
             
             <div class="mt-4 text-center">
                 <a href="{{ url('/') }}" class="text-soft-lilac hover:text-neon-pink transition">← Back to Home</a>
