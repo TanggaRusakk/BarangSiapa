@@ -36,6 +36,12 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
                             <li><a class="dropdown-item" href="{{ route('dashboard') }}">Dashboard</a></li>
                             <li><a class="dropdown-item" href="{{ route('profile.edit') }}">View Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ route('orders.my-orders') }}">
+                                <svg class="d-inline-block me-1" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                </svg>
+                                My Orders
+                            </a></li>
                             @if(auth()->check() && auth()->user()->image_path)
                                 <li>
                                     <form method="POST" action="{{ route('profile.photo.remove') }}" class="m-0">

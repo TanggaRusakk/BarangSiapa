@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use App\Models\Payment; 
+use App\Models\Order;
 
 class MidtransNotification extends Controller
 {
@@ -45,41 +47,72 @@ class MidtransNotification extends Controller
             return response()->json(['message' => 'Invalid signature key'], 403);
         }
 
-        // 3. Cari order di database
+        // 3. Cari payment di database
         $payment = Payment::where('midtrans_order_id', $midtransOrderId)->first();
 
         if (!$payment) {
-            // Jika tidak ditemukan, buat record baru berdasarkan payload Midtrans
-            $payment = new Payment();
-            $payment->order_id = 1; // Sesuaikan jika ada cara untuk mengaitkan order_id
-            $payment->midtrans_order_id = $midtransOrderId;
-            $payment->payment_method = $paymentType;
-            $payment->payment_type = 'full'; // Asumsi default; sesuaikan jika ada info lebih lanjut
-            $payment->payment_total_amount = (int) $grossAmount;
-            $payment->payment_status = ($transactionStatus ?? 'pending');
-            $payment->paid_at = ($payment->payment_status === 'settlement' || $payment->payment_status === 'capture') ? now() : null;
-            $payment->save();
-
-            Log::info('Midtrans: order created from notification', ['order_id' => $midtransOrderId]);
+            Log::warning('Midtrans: payment not found', ['midtrans_order_id' => $midtransOrderId]);
+            return response()->json(['message' => 'Payment not found'], 404);
         }
 
-        // 4. Update order dengan data dari Midtrans
-        // Map beberapa field yang umum; simpan transaksi id, amount, status, payment_date jika relevan
-        $payment->midtrans_order_id = $midtransOrderId ?? $payment->midtrans_order_id;
-        $payment->payment_total_amount = (int) $grossAmount;
-        $payment->payment_status = ($transactionStatus ?? $payment->payment_status);
-        // Jika ingin menyimpan full notification JSON, tambahkan kolom di migration dan simpan:
-        // $order->raw_notification = json_encode($notification);
+        DB::beginTransaction();
+        try {
+            // 4. Update payment status
+            $payment->payment_status = $transactionStatus;
+            $payment->payment_method = $paymentType;
+            
+            // If payment is successful, update paid_at and order status
+            if (in_array($transactionStatus, ['settlement', 'capture'])) {
+                $payment->paid_at = now();
+                
+                // Update order status
+                $order = Order::find($payment->order_id);
+                if ($order) {
+                    $order->order_status = 'processing';
+                    $order->save();
+                    
+                    // Reduce item stock
+                    foreach ($order->orderItems as $orderItem) {
+                        $item = $orderItem->item;
+                        if ($item) {
+                            $item->item_stock -= $orderItem->quantity;
+                            if ($item->item_stock <= 0) {
+                                $item->item_status = 'unavailable';
+                            }
+                            $item->save();
+                        }
+                    }
+                }
+            }
+            
+            // If payment failed or cancelled
+            if (in_array($transactionStatus, ['deny', 'cancel', 'expire'])) {
+                $order = Order::find($payment->order_id);
+                if ($order) {
+                    $order->order_status = 'cancelled';
+                    $order->save();
+                }
+            }
 
-        $payment->save();
+            $payment->save();
+            DB::commit();
 
-        Log::info('Midtrans notification processed', [
-            'order_id' => $midtransOrderId,
-            'status' => $payment->payment_status,
-            'transaction_id' => $payment->midtrans_order_id,
-        ]);
+            Log::info('Midtrans notification processed', [
+                'midtrans_order_id' => $midtransOrderId,
+                'status' => $payment->payment_status,
+                'transaction_status' => $transactionStatus,
+            ]);
 
-        // 5. Balas Midtrans dengan 200 OK
-        return response()->json(['message' => 'Notification processed successfully'], 200);
+            // 5. Balas Midtrans dengan 200 OK
+            return response()->json(['message' => 'Notification processed successfully'], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Midtrans notification error', [
+                'error' => $e->getMessage(),
+                'midtrans_order_id' => $midtransOrderId,
+            ]);
+            return response()->json(['message' => 'Error processing notification'], 500);
+        }
     }
 }

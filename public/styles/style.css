@@ -733,6 +733,65 @@ h3 {
     transform: translateY(-50%) scale(1.1);
 }
 
+/* Admin categories header responsive layout */
+.admin-categories-header {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.create-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+.create-input {
+    min-width: 180px;
+    max-width: 420px;
+    width: 40vw;
+}
+.create-btn {
+    white-space: nowrap;
+}
+
+/* Wider create button for admin categories */
+.create-btn {
+    min-width: 140px;
+    padding: 0.5rem 1.1rem;
+    font-weight: 700;
+}
+
+@media (max-width: 576px) {
+    .create-input { width: calc(100% - 120px); }
+    .create-btn { min-width: 100px; }
+}
+
+/* Persistent top-right toast for success messages */
+.persistent-toast {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(9,9,15,0.92);
+    color: #fff;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.persistent-toast .toast-content { font-weight: 700; }
+.toast-close {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    opacity: 0.9;
+}
+
 /* ===== STATS GRID (Dashboard) ===== */
 .stat-grid {
     display: grid;
@@ -1040,6 +1099,22 @@ tr:hover {
 @keyframes wave {
     0%, 100% { transform: scaleY(1); }
     50% { transform: scaleY(1.5); }
+}
+
+/* ===== TOAST NOTIFICATION ANIMATION ===== */
+@keyframes slide-in {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.animate-slide-in {
+    animation: slide-in 0.3s ease-out;
 }
 
 /* ===== UTILITY CLASSES ===== */

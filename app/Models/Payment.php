@@ -13,6 +13,7 @@ class Payment extends Model
     protected $fillable = [
         'user_id',
         'order_id',
+        'midtrans_order_id',
         'payment_method',
         'payment_type',
         'payment_total_amount',

@@ -141,6 +141,17 @@
                     </div>
                 </a>
             </div>
+            <div class="col-6 col-md-3">
+                <a href="{{ route('admin.categories') }}" class="text-decoration-none">
+                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
+                        <div class="card-body p-2">
+                            <div class="fs-3 mb-2">🗂</div>
+                            <h6 class="fw-bold mb-1">Categories</h6>
+                            <p class="small text-secondary mb-0">Create / edit / delete</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
 
         <!-- Admin Quick Actions -->

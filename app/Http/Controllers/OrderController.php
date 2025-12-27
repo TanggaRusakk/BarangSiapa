@@ -4,6 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Order;
+use App\Models\Item;
+use App\Models\OrderItem;
+use App\Models\Payment;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
@@ -11,5 +16,106 @@ class OrderController extends Controller
     {
         $orders = Order::with(['orderItems','user'])->latest()->take(50)->get();
         return response()->json($orders);
+    }
+
+    // Show checkout page
+    public function checkout($itemId)
+    {
+        $item = Item::with(['vendor', 'galleries'])->findOrFail($itemId);
+        
+        // Check if item is available
+        if ($item->item_status !== 'available' || $item->item_stock <= 0) {
+            return redirect()->route('items.show', $itemId)->with('error', 'Item tidak tersedia untuk dipesan.');
+        }
+
+        return view('checkout', compact('item'));
+    }
+
+    // Create order from checkout
+    public function store(Request $request)
+    {
+        $request->validate([
+            'item_id' => 'required|exists:items,id',
+            'quantity' => 'required|integer|min:1',
+            'rental_start_date' => 'nullable|date',
+            'rental_end_date' => 'nullable|date|after:rental_start_date',
+        ]);
+
+        $item = Item::findOrFail($request->item_id);
+
+        // Check stock
+        if ($item->item_stock < $request->quantity) {
+            return back()->with('error', 'Stok tidak mencukupi!');
+        }
+
+        // Check if item type is rent and dates are provided
+        $isRent = in_array($item->item_type, ['sewa', 'rent']);
+        if ($isRent && (!$request->rental_start_date || !$request->rental_end_date)) {
+            return back()->with('error', 'Tanggal rental harus diisi untuk item sewa!');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Calculate total
+            $itemTotal = $item->item_price * $request->quantity;
+            $serviceFee = $itemTotal * 0.05; // 5% service fee
+            $totalAmount = $itemTotal + $serviceFee;
+
+            // Create order
+            $order = Order::create([
+                'user_id' => Auth::id(),
+                'order_total_amount' => $totalAmount,
+                'order_status' => 'pending',
+                'ordered_at' => now(),
+            ]);
+
+            // Create order item
+            OrderItem::create([
+                'order_id' => $order->id,
+                'item_id' => $item->id,
+                'quantity' => $request->quantity,
+                'price' => $item->item_price,
+            ]);
+
+            // If it's a rental, create rental info
+            if ($isRent) {
+                \App\Models\RentalInfo::create([
+                    'order_id' => $order->id,
+                    'rental_start_date' => $request->rental_start_date,
+                    'rental_end_date' => $request->rental_end_date,
+                    'rental_status' => 'pending',
+                ]);
+            }
+
+            DB::commit();
+
+            // Redirect to payment
+            return redirect()->route('payment.create', $order->id);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    // Show my orders
+    public function myOrders()
+    {
+        $orders = Order::with(['orderItems.item.galleries', 'payments'])
+            ->where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('orders.my-orders', compact('orders'));
+    }
+
+    // Show order detail
+    public function show($id)
+    {
+        $order = Order::with(['orderItems.item.galleries', 'payments', 'rentalInfos'])
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        return view('orders.show', compact('order'));
     }
 }

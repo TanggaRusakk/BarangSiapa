@@ -34,6 +34,9 @@ Route::get('/messages', [MessageController::class, 'index'])->name('messages.ind
 Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 Route::get('/order-items', [OrderItemController::class, 'index'])->name('order-items.index');
 Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+
+// Midtrans notification webhook
+Route::post('/midtrans/notification', [MidtransNotification::class, 'handle'])->name('midtrans.notification');
 Route::get('/service-fees', [ServiceFeeController::class, 'index'])->name('service-fees.index');
 Route::get('/rental-infos', [RentalInfoController::class, 'index'])->name('rental-infos.index');
 Route::get('/item-categories', [ItemCategoryController::class, 'index'])->name('item-categories.index');
@@ -89,6 +92,18 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/photo/upload', [ProfileController::class, 'uploadPhoto'])->name('profile.photo.upload');
     Route::delete('/profile/photo/remove', [ProfileController::class, 'removePhoto'])->name('profile.photo.remove');
+
+    // Order routes
+    Route::get('/checkout/{item}', [OrderController::class, 'checkout'])->name('checkout');
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+    Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('orders.my-orders');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+
+    // Payment routes
+    Route::get('/payment/{order}', [PaymentController::class, 'create'])->name('payment.create');
+    Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
+    Route::get('/payment/pending', [PaymentController::class, 'pending'])->name('payment.pending');
+    Route::get('/payment/error', [PaymentController::class, 'error'])->name('payment.error');
 
     // Admin: Users management
     Route::get('/admin/users', function () {
@@ -324,6 +339,282 @@ Route::middleware('auth')->group(function () {
         $ad->delete();
         return redirect()->route('admin.ads')->with('success', 'Ad deleted');
     })->name('admin.ads.destroy');
+
+    // Admin: Categories CRUD
+    Route::get('/admin/categories', function () {
+        if (auth()->user()->role !== 'admin') abort(403);
+        $categories = \App\Models\Category::orderBy('category_name')->paginate(25);
+        return view('admin.categories', compact('categories'));
+    })->name('admin.categories');
+
+    Route::post('/admin/categories', function (Request $request) {
+        if (auth()->user()->role !== 'admin') abort(403);
+        $data = $request->validate([
+            'category_name' => 'required|string|max:255|unique:categories,category_name'
+        ]);
+        \App\Models\Category::create($data);
+        return redirect()->route('admin.categories')->with('success', 'Category created');
+    })->name('admin.categories.store');
+
+    Route::get('/admin/categories/{category}/edit', function (\App\Models\Category $category) {
+        if (auth()->user()->role !== 'admin') abort(403);
+        return view('admin.categories-edit', compact('category'));
+    })->name('admin.categories.edit');
+
+    Route::patch('/admin/categories/{category}', function (Request $request, \App\Models\Category $category) {
+        if (auth()->user()->role !== 'admin') abort(403);
+        $data = $request->validate([
+            'category_name' => 'required|string|max:255|unique:categories,category_name,' . $category->id
+        ]);
+        $category->update($data);
+        return redirect()->route('admin.categories')->with('success', 'Category updated');
+    })->name('admin.categories.update');
+
+    Route::delete('/admin/categories/{category}', function (\App\Models\Category $category) {
+        if (auth()->user()->role !== 'admin') abort(403);
+        $category->delete();
+        return redirect()->route('admin.categories')->with('success', 'Category deleted');
+    })->name('admin.categories.destroy');
+
+    // Message routes (Shopee-like chat)
+    Route::get('/messages', function () {
+        $user = auth()->user();
+        // Get all chats for this user
+        $chats = \App\Models\Chat::where('user_id', $user->id)
+            ->orWhereHas('messages', function($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->with(['user', 'messages' => function($q) {
+                $q->latest()->take(1);
+            }])
+            ->orderBy('last_message_at', 'desc')
+            ->get();
+        
+        return view('messages.index', compact('chats'));
+    })->name('messages.index');
+
+    Route::get('/messages/start', function (Request $request) {
+        $vendorId = $request->query('vendor_id');
+        $itemId = $request->query('item_id');
+        
+        if (!$vendorId) {
+            return redirect()->back()->with('error', 'Vendor not found');
+        }
+        
+        // Find the vendor user
+        $vendor = \App\Models\Vendor::findOrFail($vendorId);
+        $vendorUser = $vendor->user;
+        
+        if (!$vendorUser) {
+            return redirect()->back()->with('error', 'Vendor user not found');
+        }
+        
+        // Check if chat already exists between these two users
+        $chat = \App\Models\Chat::where('user_id', auth()->id())
+            ->whereHas('messages', function($q) use ($vendorUser) {
+                $q->where('user_id', $vendorUser->id);
+            })
+            ->first();
+        
+        if (!$chat) {
+            // Check reverse (vendor owns the chat)
+            $chat = \App\Models\Chat::where('user_id', $vendorUser->id)
+                ->whereHas('messages', function($q) {
+                    $q->where('user_id', auth()->id());
+                })
+                ->first();
+        }
+        
+        // If no chat exists, create new one
+        if (!$chat) {
+            $chat = \App\Models\Chat::create([
+                'user_id' => auth()->id(),
+                'last_message_at' => now()
+            ]);
+            
+            // Send initial message about the item
+            if ($itemId) {
+                $item = \App\Models\Item::find($itemId);
+                $initialMessage = "Hi, I'm interested in: " . ($item ? $item->item_name : "your item");
+            } else {
+                $initialMessage = "Hi, I have a question about your products.";
+            }
+            
+            \App\Models\Message::create([
+                'chat_id' => $chat->id,
+                'user_id' => auth()->id(),
+                'content' => $initialMessage,
+                'sent_at' => now(),
+                'is_read' => false
+            ]);
+        }
+        
+        return redirect()->route('messages.show', $chat->id);
+    })->name('messages.start');
+
+    Route::get('/messages/{chat}', function (\App\Models\Chat $chat) {
+        $user = auth()->user();
+        
+        // Verify user has access to this chat
+        $hasAccess = $chat->user_id === $user->id || 
+                     $chat->messages()->where('user_id', $user->id)->exists();
+        
+        if (!$hasAccess) {
+            abort(403, 'Unauthorized access to this chat');
+        }
+        
+        // Get messages
+        $messages = $chat->messages()->with('user')->orderBy('sent_at')->get();
+        
+        // Mark messages as read
+        $chat->messages()
+            ->where('user_id', '!=', $user->id)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+        
+        // Determine other user
+        $otherUserId = $chat->user_id === $user->id 
+            ? $chat->messages()->where('user_id', '!=', $user->id)->first()?->user_id
+            : $chat->user_id;
+        
+        $otherUser = $otherUserId ? \App\Models\User::find($otherUserId) : null;
+        
+        // Get all chats for sidebar
+        $allChats = \App\Models\Chat::where('user_id', $user->id)
+            ->orWhereHas('messages', function($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->with(['user', 'messages' => function($q) {
+                $q->latest()->take(1);
+            }])
+            ->orderBy('last_message_at', 'desc')
+            ->get();
+        
+        return view('messages.show', compact('chat', 'messages', 'otherUser', 'allChats'));
+    })->name('messages.show');
+
+    Route::post('/messages/send', function (Request $request) {
+        $data = $request->validate([
+            'chat_id' => 'required|exists:chats,id',
+            'content' => 'required|string|max:2000'
+        ]);
+        
+        $chat = \App\Models\Chat::findOrFail($data['chat_id']);
+        
+        // Create message
+        $message = \App\Models\Message::create([
+            'chat_id' => $chat->id,
+            'user_id' => auth()->id(),
+            'content' => $data['content'],
+            'sent_at' => now(),
+            'is_read' => false
+        ]);
+        
+        // Update chat last_message_at
+        $chat->update(['last_message_at' => now()]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => [
+                'id' => $message->id,
+                'content' => $message->content,
+                'user_id' => $message->user_id,
+                'sent_at' => $message->sent_at->format('H:i'),
+                'created_at' => $message->created_at->toIso8601String()
+            ]
+        ]);
+    })->name('messages.send');
+
+    Route::get('/messages/{chat}/fetch', function (\App\Models\Chat $chat) {
+        $user = auth()->user();
+        
+        // Verify access
+        $hasAccess = $chat->user_id === $user->id || 
+                     $chat->messages()->where('user_id', $user->id)->exists();
+        
+        if (!$hasAccess) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        
+        $messages = $chat->messages()
+            ->with('user')
+            ->orderBy('sent_at')
+            ->get()
+            ->map(function($msg) {
+                return [
+                    'id' => $msg->id,
+                    'content' => $msg->content,
+                    'user_id' => $msg->user_id,
+                    'sent_at' => $msg->sent_at->format('H:i'),
+                    'created_at' => $msg->created_at->toIso8601String(),
+                    'user_name' => $msg->user->name ?? 'Unknown'
+                ];
+            });
+        
+        return response()->json(['messages' => $messages]);
+    })->name('messages.fetch');
+
+    // Review routes (only for users)
+    Route::post('/reviews', function (Request $request) {
+        if (auth()->user()->role !== 'user') {
+            return redirect()->back()->with('error', 'Only users can write reviews');
+        }
+
+        $data = $request->validate([
+            'item_id' => 'required|exists:items,id',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string|max:1000'
+        ]);
+
+        // Check if user already reviewed this item
+        $existingReview = \App\Models\Review::where('item_id', $data['item_id'])
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if ($existingReview) {
+            return redirect()->back()->with('error', 'You have already reviewed this item. Please edit your existing review.');
+        }
+
+        $data['user_id'] = auth()->id();
+        \App\Models\Review::create($data);
+
+        return redirect()->back()->with('success', 'Review submitted successfully!');
+    })->name('reviews.store');
+
+    Route::patch('/reviews/{review}', function (Request $request, \App\Models\Review $review) {
+        // Check if user owns this review
+        if ($review->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized to edit this review');
+        }
+
+        if (auth()->user()->role !== 'user') {
+            return redirect()->back()->with('error', 'Only users can edit reviews');
+        }
+
+        $data = $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string|max:1000'
+        ]);
+
+        $review->update($data);
+
+        return redirect()->back()->with('success', 'Review updated successfully!');
+    })->name('reviews.update');
+
+    Route::delete('/reviews/{review}', function (\App\Models\Review $review) {
+        // Check if user owns this review
+        if ($review->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized to delete this review');
+        }
+
+        if (auth()->user()->role !== 'user') {
+            return redirect()->back()->with('error', 'Only users can delete reviews');
+        }
+
+        $review->delete();
+
+        return redirect()->back()->with('success', 'Review deleted successfully!');
+    })->name('reviews.destroy');
 
     // Vendor routes (basic) — dashboard, product create/list, orders, ads
     Route::get('/vendor/dashboard', function () {

@@ -7,9 +7,21 @@
         <div class="card">
             <div class="flex flex-col md:flex-row gap-6">
                 <div class="flex-shrink-0">
-                    <img src="{{ $vendor->logo_path ? asset('images/vendor/' . $vendor->logo_path) : asset('images/items/item_placeholder.png') }}" 
-                         alt="{{ $vendor->vendor_name }}" 
-                         class="w-32 h-32 rounded-lg object-cover">
+                    @php
+                        $vendorLogo = null;
+                        if ($vendor->logo_path && file_exists(public_path('images/vendor/' . $vendor->logo_path))) {
+                            $vendorLogo = asset('images/vendor/' . $vendor->logo_path);
+                        } else {
+                            $vendorLogo = file_exists(public_path('images/vendor/vendor_placeholder.jpg')) ? asset('images/vendor/vendor_placeholder.jpg') : asset('images/vendor/vendor_placeholder.png');
+                        }
+                    @endphp
+                    @if($vendorLogo)
+                        <img src="{{ $vendorLogo }}" 
+                             alt="{{ $vendor->vendor_name }}" 
+                             class="w-32 h-32 rounded-lg object-cover">
+                    @else
+                        <div class="w-32 h-32 rounded-lg bg-royal-purple flex items-center justify-center text-neon-pink font-bold">{{ substr($vendor->vendor_name,0,1) }}</div>
+                    @endif
                 </div>
 
                 <div class="flex-1">
