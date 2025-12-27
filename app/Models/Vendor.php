@@ -25,4 +25,20 @@ class Vendor extends Model
     public function items() {
         return $this->hasMany(Item::class);
     }
+
+    public function getLogoUrlAttribute()
+    {
+        if ($this->logo_path) {
+            $path = public_path('images/vendor/' . ltrim($this->logo_path, '/'));
+            if (file_exists($path)) {
+                return asset('images/vendor/' . ltrim($this->logo_path, '/'));
+            }
+        }
+
+        if (file_exists(public_path('images/vendor/vendor_placeholder.jpg'))) {
+            return asset('images/vendor/vendor_placeholder.jpg');
+        }
+
+        return asset('images/vendor/vendor_placeholder.png');
+    }
 }

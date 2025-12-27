@@ -1,7 +1,7 @@
 @extends('layouts.mainlayout')
 
 @section('content')
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-5">
     <!-- Breadcrumb -->
     <div class="mb-6 text-sm text-secondary">
         <a href="{{ url('/') }}" class="hover:text-primary" style="color: #6A38C2;">Home</a>
@@ -11,7 +11,7 @@
         <span class="fw-bold">Checkout</span>
     </div>
 
-    <h1 class="text-3xl fw-bold mb-6" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Checkout</h1>
+    <h1 class="display-5 fw-bold mb-4" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Checkout</h1>
 
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -20,18 +20,15 @@
         </div>
     @endif
 
-    <div class="row g-4">
+    <div class="flex flex-wrap -mx-2">
         <!-- Left: Item Details -->
-        <div class="col-lg-7">
+        <div class="w-full lg:w-7/12 px-2">
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h5 class="card-title fw-bold mb-3" style="color: #6A38C2;">Detail Item</h5>
                     <div class="row">
                         <div class="col-md-4">
-                            @php
-                                $imageUrl = $item->first_image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png'));
-                            @endphp
-                            <img src="{{ $imageUrl }}" alt="{{ $item->item_name }}" class="img-fluid rounded">
+                            <img src="{{ $item->first_image_url }}" alt="{{ $item->item_name }}" class="img-fluid rounded">
                         </div>
                         <div class="col-md-8">
                             <h6 class="fw-bold">{{ $item->item_name }}</h6>
@@ -41,7 +38,7 @@
                                     {{ ucfirst($item->item_type ?? 'sale') }}
                                 </span>
                             </div>
-                            <div class="text-2xl fw-bold" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                            <div class="fs-3 fw-bold" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                 Rp {{ number_format($item->item_price, 0, ',', '.') }}
                                 @if(in_array($item->item_type, ['sewa', 'rent']))
                                     <small class="text-muted">/ {{ $item->rental_duration_unit ?? 'day' }}</small>
@@ -55,9 +52,9 @@
         </div>
 
         <!-- Right: Order Form -->
-        <div class="col-lg-5">
-            <div class="card shadow-sm">
-                <div class="card-body">
+        <div class="w-full lg:w-5/12 px-2">
+            <div class="bg-white shadow rounded">
+                <div class="p-4">
                     <h5 class="card-title fw-bold mb-4" style="color: #6A38C2;">Order Details</h5>
                     
                     <form action="{{ route('orders.store') }}" method="POST" id="checkoutForm">
@@ -111,7 +108,7 @@
                         </div>
 
                         <!-- Submit Button -->
-                        <button type="submit" class="btn btn-lg w-100 mt-4 text-white" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%);">
+                        <button type="submit" class="inline-block w-full mt-4 px-6 py-3 rounded text-white" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%);">
                             Proceed to Payment
                         </button>
                     </form>

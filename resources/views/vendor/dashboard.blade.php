@@ -75,7 +75,7 @@
                         <div class="d-flex flex-column gap-3">
                             @foreach($recentProducts->take(3) as $product)
                                 <div class="d-flex gap-3 p-3 rounded" style="background: rgba(106,56,194,0.05);">
-                                    <img src="{{ $product->first_image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png')) }}" alt="{{ $product->item_name }}" class="rounded" style="width:80px;height:80px;object-fit:cover;">
+                                    <img src="{{ $product->first_image_url }}" alt="{{ $product->item_name }}" class="rounded" style="width:80px;height:80px;object-fit:cover;">
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1 fw-bold">{{ $product->item_name }}</h6>
                                         <p class="mb-1 text-secondary small">Rp{{ number_format($product->item_price) }}</p>

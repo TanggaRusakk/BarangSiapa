@@ -27,10 +27,14 @@ class ItemGallery extends Model
      */
     public function getUrlAttribute()
     {
-        // Use public/images/item/ storage convention
+        // Use public/images/items/ storage convention
         if ($this->image_path) {
-            return asset('images/item/' . ltrim($this->image_path, '/'));
+            $path = public_path('images/items/' . ltrim($this->image_path, '/'));
+            if (file_exists($path)) {
+                return asset('images/items/' . ltrim($this->image_path, '/'));
+            }
         }
+
         if (file_exists(public_path('images/items/item_placeholder.jpg'))) {
             return asset('images/items/item_placeholder.jpg');
         }

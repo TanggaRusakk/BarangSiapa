@@ -6,7 +6,7 @@
         <!-- Item Images Gallery -->
         <div class="col-md-6">
             <div class="card shadow-sm mb-3">
-                 <img src="{{ $item->first_image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png')) }}" 
+                 <img src="{{ $item->first_image_url }}" 
                      class="card-img-top" 
                      alt="{{ $item->item_name }}"
                      id="mainImage"
@@ -16,7 +16,7 @@
             @if($item->galleries && $item->galleries->count() > 0)
             <div class="d-flex gap-2 flex-wrap">
                  @foreach($item->galleries as $gallery)
-                 <img src="{{ $gallery->image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png')) }}" 
+                 <img src="{{ $gallery->url }}" 
                      class="img-thumbnail gallery-thumb" 
                      alt="Gallery Image"
                      style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;"
@@ -111,10 +111,7 @@
                 <div class="card-body">
                     <h5 class="fw-bold mb-3">Vendor Information</h5>
                     <div class="d-flex align-items-center mb-3">
-                        @php
-                            $vendorLogo = $item->vendor->logo_path ? asset('images/vendor/' . $item->vendor->logo_path) : (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png'));
-                        @endphp
-                        <img src="{{ $vendorLogo }}" alt="{{ $item->vendor->vendor_name }}" class="rounded me-3" style="width:64px;height:64px;object-fit:cover;">
+                        <img src="{{ $item->vendor->logo_url }}" alt="{{ $item->vendor->vendor_name }}" class="rounded me-3" style="width:64px;height:64px;object-fit:cover;">
                         <div>
                             <h6 class="mb-0 fw-bold">{{ $item->vendor->vendor_name }}</h6>
                             <small class="text-secondary">{{ $item->vendor->vendor_address ?? 'No address provided' }}</small>

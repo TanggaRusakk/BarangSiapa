@@ -23,10 +23,7 @@
                     <!-- Order Items -->
                     @foreach($order->orderItems as $orderItem)
                         <div class="d-flex align-items-center gap-3 mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-                            @php
-                                $imageUrl = $orderItem->item->first_image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png'));
-                            @endphp
-                            <img src="{{ $imageUrl }}" alt="{{ $orderItem->item->item_name }}" class="rounded" style="width: 80px; height: 80px; object-fit: cover;">
+                            <img src="{{ $orderItem->item->first_image_url }}" alt="{{ $orderItem->item->item_name }}" class="rounded" style="width: 80px; height: 80px; object-fit: cover;">
                             <div class="flex-grow-1">
                                 <h6 class="fw-bold mb-1">{{ $orderItem->item->item_name }}</h6>
                                 <p class="text-muted mb-0">Quantity: {{ $orderItem->quantity }} × Rp {{ number_format($orderItem->price, 0, ',', '.') }}</p>

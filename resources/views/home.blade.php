@@ -29,7 +29,7 @@
                     @foreach($ads as $index => $ad)
                         <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
                             <a href="{{ $ad->item ? route('items.show', $ad->item->id) : '#' }}" class="d-block">
-                                <img src="{{ $ad->item && $ad->item->first_image_url ? $ad->item->first_image_url : (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png')) }}" class="d-block w-100 rounded" alt="{{ $ad->item ? $ad->item->item_name : 'Ad' }}" style="max-height: 400px; object-fit: cover;">
+                                <img src="{{ optional($ad->item)->first_image_url ?? asset('images/items/item_placeholder.jpg') }}" class="d-block w-100 rounded" alt="{{ $ad->item ? $ad->item->item_name : 'Ad' }}" style="max-height: 400px; object-fit: cover;">
                             </a>
                         </div>
                     @endforeach
@@ -64,11 +64,11 @@
                         <div class="card h-100 shadow-sm">
                             <div class="position-relative">
                                 <span class="badge position-absolute top-0 start-0 m-2" style="background: {{ $isRent ? '#4ADFFF' : '#6A38C2' }};">{{ $isRent ? 'For Rent' : 'Buy Now' }}</span>
-                                <img src="{{ $item->first_image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png')) }}" class="card-img-top" alt="{{ $item->item_name }}">
+                                <img src="{{ $item->first_image_url }}" class="card-img-top" alt="{{ $item->item_name }}">
                             </div>
                             <div class="card-body">
-                                <h5 class="card-title fw-bold">{{ $item->item_name }}</h5>
-                                <p class="card-text text-secondary">{{ \Illuminate\Support\Str::limit($item->item_description ?? '', 80) }}</p>
+                                <h5 class="card-title fw-bold" style="color: #6A38C2;">{{ $item->item_name }}</h5>
+                                <p class="card-text" style="color: #888;">{{ \Illuminate\Support\Str::limit($item->item_description ?? '', 80) }}</p>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span class="h5 mb-0 fw-bold" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                         @if($isRent) 
@@ -102,29 +102,29 @@
                 <div class="col-md-3">
                     <div class="card h-100 shadow-sm text-center p-4">
                         <div class="fs-1 mb-3">🛍️</div>
-                        <h5 class="fw-bold mb-2">Buy & Rent</h5>
-                        <p class="text-secondary mb-0">Choose to own or rent products based on your needs</p>
+                        <h5 class="fw-bold mb-2" style="color: #6A38C2;">Buy & Rent</h5>
+                        <p class="mb-0" style="color: #888;">Choose to own or rent products based on your needs</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card h-100 shadow-sm text-center p-4">
                         <div class="fs-1 mb-3">⚡</div>
-                        <h5 class="fw-bold mb-2">Fast Delivery</h5>
-                        <p class="text-secondary mb-0">Get your products delivered within 24 hours</p>
+                        <h5 class="fw-bold mb-2" style="color: #FF3CAC;">Fast Delivery</h5>
+                        <p class="mb-0" style="color: #888;">Get your products delivered within 24 hours</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card h-100 shadow-sm text-center p-4">
                         <div class="fs-1 mb-3">🔒</div>
-                        <h5 class="fw-bold mb-2">Secure Payment</h5>
-                        <p class="text-secondary mb-0">Your transactions are protected and encrypted</p>
+                        <h5 class="fw-bold mb-2" style="color: #6A38C2;">Secure Payment</h5>
+                        <p class="mb-0" style="color: #888;">Your transactions are protected and encrypted</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card h-100 shadow-sm text-center p-4">
                         <div class="fs-1 mb-3">⭐</div>
-                        <h5 class="fw-bold mb-2">Verified Reviews</h5>
-                        <p class="text-secondary mb-0">Real reviews from real customers</p>
+                        <h5 class="fw-bold mb-2" style="color: #FF3CAC;">Verified Reviews</h5>
+                        <p class="mb-0" style="color: #888;">Real reviews from real customers</p>
                     </div>
                 </div>
             </div>

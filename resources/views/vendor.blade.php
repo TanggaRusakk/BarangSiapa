@@ -7,16 +7,8 @@
         <div class="card">
             <div class="flex flex-col md:flex-row gap-6">
                 <div class="flex-shrink-0">
-                    @php
-                        $vendorLogo = null;
-                        if ($vendor->logo_path && file_exists(public_path('images/vendor/' . $vendor->logo_path))) {
-                            $vendorLogo = asset('images/vendor/' . $vendor->logo_path);
-                        } else {
-                            $vendorLogo = file_exists(public_path('images/vendor/vendor_placeholder.jpg')) ? asset('images/vendor/vendor_placeholder.jpg') : asset('images/vendor/vendor_placeholder.png');
-                        }
-                    @endphp
-                    @if($vendorLogo)
-                        <img src="{{ $vendorLogo }}" 
+                    @if($vendor && $vendor->logo_url)
+                        <img src="{{ $vendor->logo_url }}" 
                              alt="{{ $vendor->vendor_name }}" 
                              class="w-32 h-32 rounded-lg object-cover">
                     @else
@@ -25,9 +17,9 @@
                 </div>
 
                 <div class="flex-1">
-                    <h1 class="text-4xl font-bold text-gradient mb-2">{{ $vendor->vendor_name }}</h1>
-                    <p class="text-soft-lilac mb-2">📍 {{ $vendor->location ?? 'Not specified' }}</p>
-                    <p class="text-soft-lilac mb-4">{{ $vendor->description ?? '' }}</p>
+                    <h1 class="text-4xl font-bold text-white mb-2">{{ $vendor->vendor_name }}</h1>
+                    <p class="text-secondary mb-2">📍 {{ $vendor->location ?? 'Not specified' }}</p>
+                    <p class="text-secondary mb-4">{{ $vendor->description ?? '' }}</p>
 
                     <div class="flex gap-4 flex-wrap">
                         <div class="stat-card">
@@ -83,7 +75,7 @@
             @endforeach
         </div>
 
-        <h2 class="section-title text-gradient mb-6">Products from {{ $vendor->vendor_name }}</h2>
+        <h2 class="section-title text-white mb-6">Products from {{ $vendor->vendor_name }}</h2>
 
         @if($items->count() > 0)
             <div class="product-grid">
@@ -91,10 +83,10 @@
                     @php $isRent = ($item->item_type === 'sewa' || $item->item_type === 'rent'); @endphp
                     <div class="product-card">
                         <div class="product-badge {{ $isRent ? 'badge-rent' : 'badge-buy' }}">{{ $isRent ? 'For Rent' : 'Buy Now' }}</div>
-                        <img src="{{ $item->first_image_url ?? asset('images/items/item_placeholder.png') }}" alt="{{ $item->item_name }}" class="product-image">
+                        <img src="{{ $item->first_image_url }}" alt="{{ $item->item_name }}" class="product-image">
                         <div class="p-4">
                             <h3 class="text-lg font-bold mb-2">{{ $item->item_name }}</h3>
-                            <p class="text-sm text-soft-lilac mb-3">{{ \Illuminate\Support\Str::limit($item->item_description ?? '', 80) }}</p>
+                            <p class="text-sm text-secondary mb-3">{{ \Illuminate\Support\Str::limit($item->item_description ?? '', 80) }}</p>
                             <div class="flex justify-between items-center">
                                 <span class="text-2xl font-bold text-gradient">@if($isRent) Rp{{ number_format($item->item_price) }} / {{ $item->rental_duration_unit ?? 'day' }} @else Rp{{ number_format($item->item_price) }} @endif</span>
                                 <a href="{{ route('items.show', $item->id) }}" class="btn {{ $isRent ? 'btn-accent' : 'btn-primary' }} btn-sm">{{ $isRent ? 'Rent Now' : 'View Details' }}</a>
@@ -109,7 +101,7 @@
             <div class="card text-center py-12">
                 <div class="text-6xl mb-4">📦</div>
                 <h3 class="text-2xl font-bold mb-2">No Products Found</h3>
-                <p class="text-soft-lilac">Try adjusting your search or filter criteria</p>
+                <p class="text-secondary">Try adjusting your search or filter criteria</p>
             </div>
         @endif
     </div>

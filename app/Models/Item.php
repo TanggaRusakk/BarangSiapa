@@ -63,7 +63,10 @@ class Item extends Model
     {
         $first = $this->itemGalleries()->first();
         if ($first && $first->image_path) {
-            return asset('images/item/' . ltrim($first->image_path, '/'));
+            $path = public_path('images/items/' . ltrim($first->image_path, '/'));
+            if (file_exists($path)) {
+                return asset('images/items/' . ltrim($first->image_path, '/'));
+            }
         }
 
         // Prefer JPEG placeholder if present, fallback to PNG

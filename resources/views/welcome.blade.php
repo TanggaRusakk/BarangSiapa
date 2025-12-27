@@ -91,7 +91,7 @@
                     @endphp
                     <div class="product-card" data-category="all">
                         <div class="product-badge {{ $isRent ? 'badge-rent' : 'badge-buy' }}">{{ $isRent ? 'For Rent' : 'Buy Now' }}</div>
-                        <img src="{{ $item->first_image_url ?? asset('images/items/item_placeholder.png') }}" alt="{{ $item->item_name }}" class="product-image">
+                        <img src="{{ $item->first_image_url }}" alt="{{ $item->item_name }}" class="product-image">
                         <div class="p-4">
                             <h3 class="text-lg font-bold mb-2">{{ $item->item_name }}</h3>
                             <p class="text-sm text-soft-lilac mb-3">{{ \Illuminate\Support\Str::limit($item->item_description ?? '', 80) }}</p>

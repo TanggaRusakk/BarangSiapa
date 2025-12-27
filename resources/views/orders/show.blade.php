@@ -1,7 +1,7 @@
 @extends('layouts.mainlayout')
 
 @section('content')
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-5">
     <!-- Breadcrumb -->
     <div class="mb-4">
         <a href="{{ route('orders.my-orders') }}" class="text-decoration-none" style="color: #6A38C2;">← Back to My Orders</a>
@@ -30,10 +30,7 @@
             <h5 class="fw-bold mb-4" style="color: #6A38C2;">Order Items</h5>
             @foreach($order->orderItems as $orderItem)
                 <div class="d-flex align-items-center gap-3 mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-                    @php
-                        $imageUrl = $orderItem->item->first_image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png'));
-                    @endphp
-                    <img src="{{ $imageUrl }}" alt="{{ $orderItem->item->item_name }}" class="rounded" style="width: 100px; height: 100px; object-fit: cover;">
+                    <img src="{{ $orderItem->item->first_image_url }}" alt="{{ $orderItem->item->item_name }}" class="rounded" style="width: 100px; height: 100px; object-fit: cover;">
                     <div class="flex-grow-1">
                         <h6 class="fw-bold mb-1">
                             <a href="{{ route('items.show', $orderItem->item->id) }}" class="text-decoration-none" style="color: #6A38C2;">{{ $orderItem->item->item_name }}</a>

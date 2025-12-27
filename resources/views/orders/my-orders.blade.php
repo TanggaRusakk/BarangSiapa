@@ -1,10 +1,10 @@
 @extends('layouts.mainlayout')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-5">
     <!-- Header -->
     <div class="mb-6">
-        <h1 class="text-3xl fw-bold mb-2" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">My Orders</h1>
+        <h1 class="text-3xl font-extrabold mb-2" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">My Orders</h1>
         <p class="text-secondary">Track and manage your orders</p>
     </div>
 
@@ -57,10 +57,7 @@
                             <div class="mb-3">
                                 @foreach($order->orderItems as $orderItem)
                                     <div class="d-flex align-items-center gap-3 mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-                                        @php
-                                            $imageUrl = $orderItem->item->first_image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png'));
-                                        @endphp
-                                        <img src="{{ $imageUrl }}" alt="{{ $orderItem->item->item_name }}" class="rounded" style="width: 80px; height: 80px; object-fit: cover;">
+                                        <img src="{{ $orderItem->item->first_image_url }}" alt="{{ $orderItem->item->item_name }}" class="rounded" style="width: 80px; height: 80px; object-fit: cover;">
                                         <div class="flex-grow-1">
                                             <h6 class="fw-bold mb-1">{{ $orderItem->item->item_name }}</h6>
                                             <p class="text-muted mb-0">Quantity: {{ $orderItem->quantity }}</p>

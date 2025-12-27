@@ -59,9 +59,9 @@
             @endif
         </div>
     @endif
-@else
+    @else
     <div class="mb-4 p-4 bg-midnight-black bg-opacity-30 rounded text-center">
-        <p class="text-soft-lilac mb-2">Want to share your experience?</p>
+        <p class="text-secondary mb-2">Want to share your experience?</p>
         <a href="{{ route('login') }}" class="btn btn-primary">Login to Write a Review</a>
     </div>
 @endauth
@@ -88,17 +88,17 @@
                                     </svg>
                                 @endfor
                             </div>
-                            <span class="text-xs text-soft-lilac">{{ $review->created_at->diffForHumans() }}</span>
+                            <span class="text-xs text-secondary">{{ $review->created_at->diffForHumans() }}</span>
                         </div>
 
-                        <p class="text-soft-lilac leading-relaxed">{{ $review->comment ?? 'No review content.' }}</p>
+                        <p class="text-secondary leading-relaxed">{{ $review->comment ?? 'No review content.' }}</p>
                     </div>
                 </div>
             </div>
         @endforeach
     </div>
 @else
-    <div class="text-center py-8 text-soft-lilac">
+    <div class="text-center py-8 text-secondary">
         <svg class="w-8 h-8 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
         </svg>

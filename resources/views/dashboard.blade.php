@@ -13,7 +13,7 @@
             <div class="col-auto">
                 <div class="card bg-dark text-white border-0" style="min-width:220px">
                     <div class="card-body p-2 d-flex align-items-center">
-                        <img src="{{ auth()->user()->photo_url ?? (file_exists(public_path('images/profiles/profile_placeholder.jpg')) ? asset('images/profiles/profile_placeholder.jpg') : asset('images/profiles/profile_placeholder.png')) }}" alt="{{ auth()->user()->name }}" class="rounded-circle me-2" style="width:56px;height:56px;object-fit:cover;border:2px solid rgba(106,56,194,0.6);">
+                        <img src="{{ auth()->user()->photo_url }}" alt="{{ auth()->user()->name }}" class="rounded-circle me-2" style="width:56px;height:56px;object-fit:cover;border:2px solid rgba(106,56,194,0.6);">
                         <div class="flex-grow-1 text-start">
                             <div class="fw-bold">{{ auth()->user()->name }}</div>
                             <small class="text-secondary">{{ ucfirst(auth()->user()->role ?? 'user') }}</small>
@@ -36,7 +36,7 @@
             <h3 class="h5 fw-semibold text-gradient">Last Viewed</h3>
             <div class="card bg-transparent border-0">
                 <div class="card-body p-3 d-flex align-items-center gap-3">
-                    <img src="{{ $lastViewed->first_image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png')) }}" alt="{{ $lastViewed->item_name }}" class="rounded me-3" style="width:80px;height:80px;object-fit:cover;">
+                    <img src="{{ $lastViewed->first_image_url }}" alt="{{ $lastViewed->item_name }}" class="rounded me-3" style="width:80px;height:80px;object-fit:cover;">
                     <div>
                         <h5 class="mb-1 fw-bold">{{ $lastViewed->item_name }}</h5>
                         <p class="mb-0 text-secondary">@if($lastViewed->item_type === 'sewa' || $lastViewed->item_type === 'rent') Rp{{ number_format($lastViewed->item_price) }} / {{ $lastViewed->rental_duration_unit ?? 'day' }} @else Rp{{ number_format($lastViewed->item_price) }} @endif</p>
@@ -341,7 +341,7 @@
                         @if($recentProducts->count() > 0)
                             @foreach($recentProducts->take(3) as $prod)
                                 <div class="d-flex gap-3 p-3 mb-2 rounded" style="background: rgba(106,56,194,0.03);">
-                                    <img src="{{ $prod->first_image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png')) }}" alt="{{ $prod->item_name }}" class="rounded" style="width:64px;height:64px;object-fit:cover;">
+                                    <img src="{{ $prod->first_image_url }}" alt="{{ $prod->item_name }}" class="rounded" style="width:64px;height:64px;object-fit:cover;">
                                     <div class="flex-grow-1">
                                         <h6 class="mb-0 fw-bold">{{ $prod->item_name }}</h6>
                                         <p class="mb-1 text-secondary small">Rp{{ number_format($prod->item_price) }} @if($prod->item_type === 'sewa' || $prod->item_type === 'rent') • Rent @endif</p>
@@ -496,7 +496,7 @@
                         @php $isRent = ($prod->item_type === 'sewa' || $prod->item_type === 'rent'); @endphp
                         <div class="col-12 col-md-4">
                             <div class="card shadow-sm h-100">
-                                <img src="{{ $prod->first_image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png')) }}" alt="{{ $prod->item_name }}" class="card-img-top" style="height:180px;object-fit:cover;">
+                                <img src="{{ $prod->first_image_url }}" alt="{{ $prod->item_name }}" class="card-img-top" style="height:180px;object-fit:cover;">
                                 <div class="card-body">
                                     <h6 class="fw-bold mb-2">{{ $prod->item_name }}</h6>
                                     <p class="h5 fw-bold text-gradient mb-0">@if($isRent) Rp{{ number_format($prod->item_price) }}/{{ $prod->rental_duration_unit ?? 'day' }} @else Rp{{ number_format($prod->item_price) }} @endif</p>

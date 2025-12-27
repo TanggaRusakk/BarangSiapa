@@ -7,48 +7,55 @@
         <div class="col-md-3">
             <div class="card shadow-sm">
                 <div class="card-body text-center">
-                    <!-- Profile Photo -->
+                    <!-- Profile Photo (vertical layout: image above, controls below) -->
                     <div class="mb-3">
-                        <div class="position-relative d-inline-block">
-                               <img src="{{ auth()->user()->photo_url }}" 
-                                 alt="Profile Photo" 
+                        <style>
+                        /* Disable hover effects inside this box and make text smaller for the upload button */
+                        .no-hover * { transition: none !important; }
+                        .no-hover:hover { transform: none !important; box-shadow: none !important; }
+                        .no-hover .btn { box-shadow: none !important; }
+                        .upload-text { font-size: 0.85rem; }
+                        </style>
+
+                        <div class="d-flex flex-column align-items-center gap-2 no-hover">
+                            <img src="{{ auth()->user()->photo_url }}"
+                                 alt="Profile Photo"
                                  class="rounded-circle"
                                  id="profilePhotoPreview"
                                  style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #6A38C2;">
-                            
-                            <!-- Upload/Remove Buttons -->
-                            <div class="mt-3">
-                                <form id="uploadPhotoForm" enctype="multipart/form-data" class="mb-2">
+
+                            <div class="w-100" style="max-width:220px;">
+                                <form id="uploadPhotoForm" enctype="multipart/form-data" class="mb-2 w-100 text-center">
                                     @csrf
-                                    <input type="file" 
-                                           id="photoInput" 
-                                           name="photo" 
-                                           accept="image/*" 
+                                    <input type="file"
+                                           id="photoInput"
+                                           name="photo"
+                                           accept="image/*"
                                            class="d-none"
                                            onchange="previewAndUploadPhoto(this)">
-                                    <button type="button" 
-                                            class="btn btn-sm w-100 mb-2" 
-                                            style="background: #6A38C2; color: white;"
+                                    <button type="button"
+                                            class="btn btn-sm w-100 mb-2"
+                                            style="background: #6A38C2; color: white; padding: .35rem .6rem;"
                                             onclick="document.getElementById('photoInput').click()">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="d-inline-block me-1">
                                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                             <polyline points="17 8 12 3 7 8"></polyline>
                                             <line x1="12" y1="3" x2="12" y2="15"></line>
                                         </svg>
-                                        Upload Photo
+                                        <span class="upload-text">Upload Photo</span>
                                     </button>
                                 </form>
-                                
+
                                 @if(auth()->user()->profile_photo || auth()->user()->image_path)
-                                <form action="{{ route('profile.photo.remove') }}" method="POST">
+                                <form action="{{ route('profile.photo.remove') }}" method="POST" class="w-100">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger w-100" style="font-size:0.85rem; padding: .28rem .55rem;">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="d-inline-block me-1">
                                             <polyline points="3 6 5 6 21 6"></polyline>
                                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                                         </svg>
-                                        Remove Photo
+                                        <span class="upload-text">Remove Photo</span>
                                     </button>
                                 </form>
                                 @endif

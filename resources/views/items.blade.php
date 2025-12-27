@@ -31,7 +31,7 @@
                 <div class="col-12 col-md-6 col-lg-4">
                     <a href="{{ route('items.show', $item->id) }}" class="card h-100 text-decoration-none text-reset hover-border-neon-pink">
                         <div class="position-relative" style="height:220px;overflow:hidden;">
-                            <img src="{{ $item->first_image_url ?? (file_exists(public_path('images/items/item_placeholder.jpg')) ? asset('images/items/item_placeholder.jpg') : asset('images/items/item_placeholder.png')) }}" alt="{{ $item->item_name }}" class="w-100 h-100 object-fit-cover">
+                            <img src="{{ $item->first_image_url }}" alt="{{ $item->item_name }}" class="w-100 h-100 object-fit-cover">
 
                             <span class="badge position-absolute top-2 end-2 {{ $item->item_status === 'available' ? 'bg-success' : 'bg-secondary' }} text-white">{{ ucfirst($item->item_status ?? 'available') }}</span>
                         </div>

@@ -46,16 +46,8 @@
                     <a href="{{ route('messages.index') }}" class="btn btn-sm btn-outline-secondary d-lg-none">←</a>
                     <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" 
                          style="width: 48px; height: 48px;">
-                        @php
-                            $avatar = null;
-                            if ($otherUser && $otherUser->image_path && file_exists(public_path('images/profiles/' . $otherUser->image_path))) {
-                                $avatar = asset('images/profiles/' . $otherUser->image_path);
-                            } else {
-                                $avatar = file_exists(public_path('images/profiles/profile_placeholder.jpg')) ? asset('images/profiles/profile_placeholder.jpg') : asset('images/profiles/profile_placeholder.png');
-                            }
-                        @endphp
-                        @if($avatar)
-                            <img src="{{ $avatar }}" alt="{{ $otherUser->name ?? 'User' }}" class="rounded-circle w-100 h-100 object-fit-cover">
+                        @if($otherUser && $otherUser->photo_url)
+                            <img src="{{ $otherUser->photo_url }}" alt="{{ $otherUser->name ?? 'User' }}" class="rounded-circle w-100 h-100 object-fit-cover">
                         @else
                             <span class="text-white fw-bold">{{ $otherUser ? strtoupper(substr($otherUser->name, 0, 1)) : '?' }}</span>
                         @endif
