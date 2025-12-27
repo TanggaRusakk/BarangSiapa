@@ -2,10 +2,10 @@
 
 @section('content')
 
-<div class="container py-5">
+<div class="container-fluid py-5">
     <div class="mb-4">
         <h1 class="display-5 fw-bold text-gradient mb-1">Browse Items</h1>
-        <p class="text-soft-lilac">Discover amazing products from our vendors</p>
+        <p class="text-secondary">Discover amazing products from our vendors</p>
     </div>
 
     <div class="mb-4 overflow-auto hide-scrollbar">
@@ -28,9 +28,9 @@
     @if($items->count())
         <div class="row g-4">
             @foreach($items as $item)
-                <div class="col-12 col-md-6 col-lg-4">
+                <div class="col-6 col-md-4 col-lg-3">
                     <a href="{{ route('items.show', $item->id) }}" class="card h-100 text-decoration-none text-reset hover-border-neon-pink">
-                        <div class="position-relative" style="height:220px;overflow:hidden;">
+                        <div class="position-relative" style="height:260px;overflow:hidden;">
                             <img src="{{ $item->first_image_url }}" alt="{{ $item->item_name }}" class="w-100 h-100 object-fit-cover">
 
                             <span class="badge position-absolute top-2 end-2 {{ $item->item_status === 'available' ? 'bg-success' : 'bg-secondary' }} text-white">{{ ucfirst($item->item_status ?? 'available') }}</span>
@@ -38,21 +38,25 @@
 
                         <div class="card-body">
                             <h5 class="card-title text-white mb-2 text-truncate">{{ $item->item_name }}</h5>
-                            <p class="card-text text-soft-lilac small mb-3 text-truncate">{{ $item->item_description ?? 'No description available' }}</p>
+                            <p class="card-text text-secondary small mb-3 text-truncate">{{ $item->item_description ?? 'No description available' }}</p>
 
-                            <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
                                 <div>
                                     <div class="fw-bold text-gradient">Rp {{ number_format($item->item_price ?? 0, 0, ',', '.') }}</div>
-                                    <div class="small text-soft-lilac">/{{ $item->item_type === 'rent' ? 'day' : 'item' }}</div>
+                                    <div class="small text-secondary">/{{ $item->item_type === 'rent' ? 'day' : 'item' }}</div>
                                 </div>
                                 <div>
                                     <span class="badge rounded-pill bg-royal-purple text-neon-pink">{{ ucfirst($item->item_type ?? 'sale') }}</span>
                                 </div>
                             </div>
 
-                            <div class="mt-3 small text-soft-lilac d-flex align-items-center gap-2">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                <span>{{ $item->vendor->vendor_name ?? 'Unknown Vendor' }}</span>
+                            <div class="mt-2 small d-flex align-items-center gap-2 text-secondary">
+                                @php
+                                    $vendor = $item->vendor ?? null;
+                                    $vendorLogo = $vendor && $vendor->logo_url ? $vendor->logo_url : asset('images/vendor/vendor_placeholder.jpg');
+                                @endphp
+                                <img src="{{ $vendorLogo }}" alt="{{ $vendor->vendor_name ?? 'Vendor' }}" class="rounded-circle" style="width:32px;height:32px;object-fit:cover;">
+                                <a href="{{ $vendor ? route('vendors.show', $vendor) : '#' }}" class="text-secondary text-decoration-none">{{ $vendor->vendor_name ?? 'Unknown Vendor' }}</a>
                             </div>
                         </div>
                     </a>
