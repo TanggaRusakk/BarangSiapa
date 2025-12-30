@@ -44,9 +44,11 @@ class PaymentController extends Controller
         $midtransOrderId = 'ORDER-' . $order->id . '-' . time();
 
         // Prepare transaction details
+        $orderTotal = $order->total_amount ?? $order->order_total_amount ?? $order->calculated_total;
+        
         $transactionDetails = [
             'order_id' => $midtransOrderId,
-            'gross_amount' => (int) $order->order_total_amount,
+            'gross_amount' => (int) $orderTotal,
         ];
 
         // Prepare item details
@@ -64,10 +66,10 @@ class PaymentController extends Controller
         $itemTotal = collect($itemDetails)->sum(function($item) {
             return $item['price'] * $item['quantity'];
         });
-        if ($itemTotal < $order->order_total_amount) {
+        if ($itemTotal < $orderTotal) {
             $itemDetails[] = [
                 'id' => 'SERVICE_FEE',
-                'price' => (int) ($order->order_total_amount - $itemTotal),
+                'price' => (int) ($orderTotal - $itemTotal),
                 'quantity' => 1,
                 'name' => 'Service Fee',
             ];
@@ -99,7 +101,7 @@ class PaymentController extends Controller
                     'midtrans_order_id' => $midtransOrderId,
                     'payment_method' => 'midtrans',
                     'payment_type' => 'full',
-                    'payment_total_amount' => $order->order_total_amount,
+                    'payment_total_amount' => $orderTotal,
                     'payment_status' => 'pending',
                 ]
             );

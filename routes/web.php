@@ -682,9 +682,25 @@ Route::middleware('auth')->group(function () {
         $vendor = auth()->user()->vendor;
         $orders = \App\Models\Order::whereHas('orderItems.item', function ($q) use ($vendor) {
             $q->where('vendor_id', $vendor->id ?? 0);
-        })->with('user')->orderBy('created_at', 'desc')->paginate(25);
+        })->with(['user', 'orderItems.item'])->orderBy('created_at', 'desc')->paginate(25);
         return view('vendor.orders-list', compact('orders'));
     })->name('vendor.orders.list');
+
+    // Vendor: Update order status
+    Route::patch('/vendor/orders/{order}/status', function (Request $request, \App\Models\Order $order) {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $vendor = auth()->user()->vendor;
+        
+        // Verify this order belongs to vendor's items
+        $hasVendorItem = $order->orderItems()->whereHas('item', function ($q) use ($vendor) {
+            $q->where('vendor_id', $vendor->id ?? 0);
+        })->exists();
+        
+        if (!$hasVendorItem) abort(403);
+        
+        $order->update(['order_status' => $request->input('status')]);
+        return redirect()->route('vendor.orders.list')->with('success', 'Order status updated');
+    })->name('vendor.orders.updateStatus');
 
     Route::get('/vendor/ads/create', function () {
         if (auth()->user()->role !== 'vendor') abort(403);

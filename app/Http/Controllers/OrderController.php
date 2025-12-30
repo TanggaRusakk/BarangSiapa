@@ -64,7 +64,8 @@ class OrderController extends Controller
             // Create order
             $order = Order::create([
                 'user_id' => Auth::id(),
-                'order_total_amount' => $totalAmount,
+                'total_amount' => $totalAmount,
+                'order_type' => $isRent ? 'sewa' : 'jual',
                 'order_status' => 'pending',
                 'ordered_at' => now(),
             ]);
