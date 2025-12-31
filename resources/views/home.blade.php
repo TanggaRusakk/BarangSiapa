@@ -29,7 +29,7 @@
                     @foreach($ads as $index => $ad)
                         <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
                             <a href="{{ $ad->item ? route('items.show', $ad->item->id) : '#' }}" class="d-block">
-                                <img src="{{ optional($ad->item)->first_image_url ?? asset('images/items/item_placeholder.jpg') }}" class="d-block w-100 rounded" alt="{{ $ad->item ? $ad->item->item_name : 'Ad' }}" style="max-height: 400px; object-fit: cover;">
+                                <img src="{{ optional($ad->item)->first_image_url ?? asset('images/products/product_placeholder.jpg') }}" class="d-block w-100 rounded" alt="{{ $ad->item ? $ad->item->item_name : 'Ad' }}" style="max-height: 400px; object-fit: cover;">
                             </a>
                         </div>
                     @endforeach

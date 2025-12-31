@@ -12,7 +12,8 @@ class OrderSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = \App\Models\User::first();
+        // Only use user role accounts for orders (not admin or vendor)
+        $user = \App\Models\User::where('role', 'user')->first();
         $item = \App\Models\Item::first();
         if (! $user || ! $item) return;
 

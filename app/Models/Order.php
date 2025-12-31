@@ -15,7 +15,6 @@ class Order extends Model
         'total_amount',
         'order_type',
         'order_status',
-        'ordered_at',
     ];
 
     public function user()

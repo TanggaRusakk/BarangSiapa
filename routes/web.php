@@ -64,7 +64,7 @@ Route::get('/dashboard', function (Request $request) {
 
     // Recent entities
     $recentUsers = \App\Models\User::orderBy('created_at', 'desc')->take(6)->get();
-    $recentOrders = \App\Models\Order::orderBy('ordered_at', 'desc')->take(6)->get();
+    $recentOrders = \App\Models\Order::orderBy('created_at', 'desc')->take(6)->get();
 
     // Vendor specific quick numbers (if current user is vendor)
     $vendorProductsCount = 0;
@@ -192,12 +192,12 @@ Route::middleware('auth')->group(function () {
 
         $item = \App\Models\Item::create($data);
 
-        // Handle uploaded images (store in public/images/item and create gallery rows)
+        // Handle uploaded images (store in public/images/products and create gallery rows)
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
                 $ext = $file->getClientOriginalExtension();
                 $filename = time() . '_' . uniqid() . '.' . $ext;
-                $file->move(public_path('images/item'), $filename);
+                $file->move(public_path('images/products'), $filename);
                 \App\Models\ItemGallery::create([
                     'item_id' => $item->id,
                     'image_path' => $filename,
@@ -234,7 +234,7 @@ Route::middleware('auth')->group(function () {
             foreach ($request->file('images') as $file) {
                 $ext = $file->getClientOriginalExtension();
                 $filename = time() . '_' . uniqid() . '.' . $ext;
-                $file->move(public_path('images/item'), $filename);
+                $file->move(public_path('images/products'), $filename);
                 \App\Models\ItemGallery::create([
                     'item_id' => $item->id,
                     'image_path' => $filename,
@@ -650,7 +650,7 @@ Route::middleware('auth')->group(function () {
             foreach ($request->file('images') as $file) {
                 $ext = $file->getClientOriginalExtension();
                 $filename = time() . '_' . uniqid() . '.' . $ext;
-                $file->move(public_path('images/item'), $filename);
+                $file->move(public_path('images/products'), $filename);
                 \App\Models\ItemGallery::create([
                     'item_id' => $item->id,
                     'image_path' => $filename,
@@ -741,11 +741,11 @@ Route::middleware('auth')->group(function () {
             'image' => 'nullable|image|max:2048',
         ]);
 
-        // Handle image upload: store to public/images/item and create gallery record
+        // Handle image upload: store to public/images/products and create gallery record
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $filename = time() . '_' . preg_replace('/[^A-Za-z0-9\-_.]/', '_', $file->getClientOriginalName());
-            $dest = public_path('images/item');
+            $dest = public_path('images/products');
             if (!file_exists($dest)) {
                 mkdir($dest, 0755, true);
             }

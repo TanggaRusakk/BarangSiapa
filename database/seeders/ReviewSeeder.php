@@ -12,7 +12,8 @@ class ReviewSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = \App\Models\User::first();
+        // Only use user role accounts for reviews
+        $user = \App\Models\User::where('role', 'user')->first();
         $item = \App\Models\Item::first();
         if (! $user || ! $item) {
             return;

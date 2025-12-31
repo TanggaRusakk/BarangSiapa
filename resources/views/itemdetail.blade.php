@@ -98,7 +98,12 @@
                     <!-- Action Buttons -->
                     <div class="d-grid">
                         @auth
-                            @if($item->item_status === 'available' && ($item->item_stock ?? 0) > 0)
+                            @php $userRole = auth()->user()->role ?? 'user'; @endphp
+                            @if(in_array($userRole, ['admin', 'vendor']))
+                                <div class="alert alert-info mb-0" style="background: rgba(106,56,194,0.2); border: 1px solid rgba(106,56,194,0.4); color: var(--soft-lilac);">
+                                    <small>{{ $userRole === 'admin' ? 'Admin' : 'Vendor' }} tidak dapat membuat pesanan.</small>
+                                </div>
+                            @elseif($item->item_status === 'available' && ($item->item_stock ?? 0) > 0)
                                 <a href="{{ route('checkout', $item->id) }}" class="btn btn-lg text-white" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); border: none;">
                                     {{ $isRent ? 'Rent Now' : 'Buy Now' }}
                                 </a>

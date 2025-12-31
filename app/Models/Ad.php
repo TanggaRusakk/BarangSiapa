@@ -22,4 +22,19 @@ class Ad extends Model
     {
         return $this->belongsTo(Item::class);
     }
+
+    /**
+     * Get vendor through item relationship
+     */
+    public function vendor()
+    {
+        return $this->hasOneThrough(
+            Vendor::class,
+            Item::class,
+            'id', // Foreign key on items table
+            'id', // Foreign key on vendors table
+            'item_id', // Local key on ads table
+            'vendor_id' // Local key on items table
+        );
+    }
 }

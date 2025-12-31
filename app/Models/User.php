@@ -79,14 +79,22 @@ class User extends Authenticatable
         }
 
         if ($this->image_path) {
-            return asset('images/profile/' . ltrim($this->image_path, '/'));
+            // image_path is stored as full relative path like 'images/profiles/filename.jpg'
+            if (file_exists(public_path($this->image_path))) {
+                return asset($this->image_path);
+            }
+            // Try in profiles folder if just filename
+            $profilesPath = public_path('images/profiles/' . ltrim($this->image_path, '/'));
+            if (file_exists($profilesPath)) {
+                return asset('images/profiles/' . ltrim($this->image_path, '/'));
+            }
         }
 
-        // Prefer JPEG placeholder if present, fallback to PNG
-        if (file_exists(public_path('images/profiles/profile_placeholder.jpg'))) {
-            return asset('images/profiles/profile_placeholder.jpg');
+        // Prefer PNG placeholder
+        if (file_exists(public_path('images/profiles/profile_placeholder.png'))) {
+            return asset('images/profiles/profile_placeholder.png');
         }
 
-        return asset('images/profiles/profile_placeholder.png');
+        return asset('images/profiles/profile_placeholder.jpg');
     }
 }

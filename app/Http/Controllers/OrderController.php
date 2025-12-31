@@ -21,6 +21,12 @@ class OrderController extends Controller
     // Show checkout page
     public function checkout($itemId)
     {
+        // Only users can create orders - admin and vendor cannot
+        $userRole = Auth::user()->role ?? 'user';
+        if (in_array($userRole, ['admin', 'vendor'])) {
+            return redirect()->route('items.show', $itemId)->with('error', 'Admin dan Vendor tidak dapat membuat pesanan.');
+        }
+
         $item = Item::with(['vendor', 'galleries'])->findOrFail($itemId);
         
         // Check if item is available
@@ -34,6 +40,12 @@ class OrderController extends Controller
     // Create order from checkout
     public function store(Request $request)
     {
+        // Only users can create orders - admin and vendor cannot
+        $userRole = Auth::user()->role ?? 'user';
+        if (in_array($userRole, ['admin', 'vendor'])) {
+            return back()->with('error', 'Admin dan Vendor tidak dapat membuat pesanan.');
+        }
+
         $request->validate([
             'item_id' => 'required|exists:items,id',
             'quantity' => 'required|integer|min:1',
@@ -67,7 +79,6 @@ class OrderController extends Controller
                 'total_amount' => $totalAmount,
                 'order_type' => $isRent ? 'sewa' : 'jual',
                 'order_status' => 'pending',
-                'ordered_at' => now(),
             ]);
 
             // Create order item

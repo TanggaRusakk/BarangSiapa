@@ -63,17 +63,28 @@ class Item extends Model
     {
         $first = $this->itemGalleries()->first();
         if ($first && $first->image_path) {
-            $path = public_path('images/items/' . ltrim($first->image_path, '/'));
-            if (file_exists($path)) {
+            // Try products folder (new standard path)
+            $pathProducts = public_path('images/products/' . ltrim($first->image_path, '/'));
+            if (file_exists($pathProducts)) {
+                return asset('images/products/' . ltrim($first->image_path, '/'));
+            }
+            // Try items folder (legacy)
+            $pathItems = public_path('images/items/' . ltrim($first->image_path, '/'));
+            if (file_exists($pathItems)) {
                 return asset('images/items/' . ltrim($first->image_path, '/'));
+            }
+            // Try item folder (singular - old legacy)
+            $pathItem = public_path('images/item/' . ltrim($first->image_path, '/'));
+            if (file_exists($pathItem)) {
+                return asset('images/item/' . ltrim($first->image_path, '/'));
             }
         }
 
-        // Prefer JPEG placeholder if present, fallback to PNG
-        if (file_exists(public_path('images/items/item_placeholder.jpg'))) {
-            return asset('images/items/item_placeholder.jpg');
+        // Prefer products placeholder
+        if (file_exists(public_path('images/products/product_placeholder.jpg'))) {
+            return asset('images/products/product_placeholder.jpg');
         }
 
-        return asset('images/items/item_placeholder.png');
+        return asset('images/items/item_placeholder.jpg');
     }
 }

@@ -408,9 +408,9 @@
             <div class="col-6 col-md-3">
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <div class="text-secondary small">Wishlist Items</div>
+                        <div class="text-secondary small">Reviews</div>
                         <div class="h4 fw-bold">0</div>
-                        <div class="small text-muted">No items saved</div>
+                        <div class="small text-muted">Given by you</div>
                     </div>
                 </div>
             </div>
@@ -429,7 +429,7 @@
                 </a>
             </div>
             <div class="col-6 col-md-3">
-                <a href="#" class="text-decoration-none">
+                <a href="{{ route('orders.my-orders') }}" class="text-decoration-none">
                     <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
                         <div class="card-body p-2">
                             <div class="fs-3 mb-2">📦</div>
@@ -449,11 +449,11 @@
                 </a>
             </div>
             <div class="col-6 col-md-3">
-                <a href="#" class="text-decoration-none">
+                <a href="{{ route('profile.edit') }}" class="text-decoration-none">
                     <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
                         <div class="card-body p-2">
-                            <div class="fs-3 mb-2">❤️</div>
-                            <h6 class="fw-bold mb-0">Wishlist</h6>
+                            <div class="fs-3 mb-2">👤</div>
+                            <h6 class="fw-bold mb-0">Profile</h6>
                         </div>
                     </div>
                 </a>

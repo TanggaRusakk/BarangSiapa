@@ -29,13 +29,19 @@ class Vendor extends Model
     public function getLogoUrlAttribute()
     {
         if ($this->logo_path) {
+            // Try vendors folder
+            $pathVendors = public_path('images/vendors/' . ltrim($this->logo_path, '/'));
+            if (file_exists($pathVendors)) {
+                return asset('images/vendors/' . ltrim($this->logo_path, '/'));
+            }
+            // Try vendor folder (singular - legacy)
             $path = public_path('images/vendor/' . ltrim($this->logo_path, '/'));
             if (file_exists($path)) {
                 return asset('images/vendor/' . ltrim($this->logo_path, '/'));
             }
         }
 
-        // Use items placeholder for vendor logo
-        return asset('images/items/item_placeholder.jpg');
+        // Use products placeholder for vendor logo
+        return asset('images/products/product_placeholder.jpg');
     }
 }

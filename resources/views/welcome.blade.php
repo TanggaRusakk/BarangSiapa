@@ -57,7 +57,7 @@
                     <div class="carousel-item">
                         <div class="product-card">
                             <div class="product-badge badge-flash">Flash Sale</div>
-                            <img src="{{ asset('images/items/item_placeholder.png') }}" alt="Product" class="product-image">
+                            <img src="{{ asset('images/products/product_placeholder.jpg') }}" alt="Product" class="product-image">
                             <div class="p-4">
                                 <h3 class="text-lg font-bold mb-2">Premium Headphones</h3>
                                 <p class="text-sm text-soft-lilac mb-3">High-quality wireless audio</p>
