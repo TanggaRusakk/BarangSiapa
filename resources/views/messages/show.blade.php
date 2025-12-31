@@ -2,50 +2,52 @@
     <x-slot name="title">Chat - {{ $otherUser->name ?? 'Messages' }}</x-slot>
 
     <div class="container-fluid p-0">
-        <div class="row g-0">
+        <div class="row g-0" style="min-height: calc(100vh - 120px);">
             <!-- Chat List Sidebar (visible on desktop) -->
-            <div class="col-lg-4 border-end d-none d-lg-block">
-                <div class="p-3 border-bottom bg-light">
-                    <h3 class="h5 mb-3">Messages</h3>
-                    <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" placeholder="Search conversations...">
-                        <span class="input-group-text">🔍</span>
+            <div class="col-lg-4 d-none d-lg-block">
+                <div class="chat-sidebar h-100" style="background: rgba(26, 26, 46, 0.95); border-right: 1px solid rgba(106, 56, 194, 0.3);">
+                    <!-- Header -->
+                    <div class="p-4" style="border-bottom: 1px solid rgba(106, 56, 194, 0.3);">
+                        <h4 class="fw-bold mb-3" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                            💬 Messages
+                        </h4>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search conversations..." 
+                                   style="background: rgba(45, 45, 65, 0.8); border: 1px solid rgba(106, 56, 194, 0.3); color: var(--soft-lilac); border-radius: 25px; padding: 10px 20px;">
+                        </div>
                     </div>
-                </div>
 
-                <div class="chat-list" style="max-height: calc(100vh - 220px); overflow-y: auto;">
-                    @foreach($allChats as $c)
-                        @php
-                            $lastMsg = $c->messages()->latest()->first();
-                            $user = $c->user_id === auth()->id() ? ($lastMsg ? $lastMsg->user : null) : $c->user;
-                        @endphp
-                        <a href="{{ route('messages.show', $c->id) }}" 
-                           class="chat-item d-block p-3 border-bottom text-decoration-none {{ $c->id === $chat->id ? 'bg-light' : '' }} hover-bg-light">
-                            <div class="d-flex align-items-start gap-3">
-                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" 
-                                     style="width: 40px; height: 40px;">
-                                    <span class="text-white fw-bold small">{{ $user ? strtoupper(substr($user->name, 0, 1)) : '?' }}</span>
+                    <div class="chat-list" style="max-height: calc(100vh - 220px); overflow-y: auto;">
+                        @foreach($allChats as $c)
+                            @php
+                                $lastMsg = $c->messages()->latest()->first();
+                                $chatUser = $c->user_id === auth()->id() ? ($lastMsg ? $lastMsg->user : null) : $c->user;
+                            @endphp
+                            <a href="{{ route('messages.show', $c->id) }}" 
+                               class="chat-item d-flex align-items-center p-3 text-decoration-none {{ $c->id === $chat->id ? 'active' : '' }}"
+                               style="border-bottom: 1px solid rgba(106, 56, 194, 0.2);">
+                                <div class="avatar-circle me-3" style="width: 45px; height: 45px; min-width: 45px; background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <span class="text-white fw-bold">{{ $chatUser ? strtoupper(substr($chatUser->name, 0, 1)) : '?' }}</span>
                                 </div>
                                 <div class="flex-grow-1 min-w-0">
-                                    <div class="d-flex justify-content-between">
-                                        <span class="fw-semibold small">{{ $user->name ?? 'Unknown' }}</span>
-                                        <small class="text-muted">{{ $lastMsg ? $lastMsg->created_at->format('H:i') : '' }}</small>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-semibold small text-truncate" style="color: var(--soft-lilac);">{{ $chatUser->name ?? 'Unknown' }}</span>
+                                        <small style="color: rgba(200, 162, 200, 0.5); font-size: 0.7rem;">{{ $lastMsg ? $lastMsg->created_at->format('H:i') : '' }}</small>
                                     </div>
-                                    <p class="mb-0 text-muted small text-truncate">{{ $lastMsg ? Str::limit($lastMsg->content, 35) : '' }}</p>
+                                    <p class="mb-0 small text-truncate" style="color: rgba(200, 162, 200, 0.4);">{{ $lastMsg ? Str::limit($lastMsg->content, 30) : '' }}</p>
                                 </div>
-                            </div>
-                        </a>
-                    @endforeach
+                            </a>
+                        @endforeach
+                    </div>
                 </div>
             </div>
 
             <!-- Chat Window -->
-            <div class="col-12 col-lg-8 d-flex flex-column" style="height: calc(100vh - 120px);">
+            <div class="col-12 col-lg-8 d-flex flex-column" style="background: rgba(13, 13, 13, 0.95);">
                 <!-- Chat Header -->
-                <div class="p-3 border-bottom bg-white d-flex align-items-center gap-3 sticky-top">
-                    <a href="{{ route('messages.index') }}" class="btn btn-sm btn-outline-secondary d-lg-none">←</a>
-                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" 
-                         style="width: 48px; height: 48px;">
+                <div class="p-3 d-flex align-items-center gap-3" style="background: rgba(26, 26, 46, 0.9); border-bottom: 1px solid rgba(106, 56, 194, 0.3);">
+                    <a href="{{ route('messages.index') }}" class="btn btn-sm d-lg-none" style="background: rgba(106, 56, 194, 0.3); color: var(--soft-lilac); border: none;">←</a>
+                    <div class="avatar-circle" style="width: 48px; height: 48px; background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(106, 56, 194, 0.4);">
                         @if($otherUser && $otherUser->photo_url)
                             <img src="{{ $otherUser->photo_url }}" alt="{{ $otherUser->name ?? 'User' }}" class="rounded-circle w-100 h-100 object-fit-cover">
                         @else
@@ -53,46 +55,58 @@
                         @endif
                     </div>
                     <div>
-                        <h6 class="mb-0">{{ $otherUser->name ?? 'Unknown User' }}</h6>
-                        <small class="text-muted">{{ $otherUser && $otherUser->vendor ? $otherUser->vendor->vendor_name : 'Customer' }}</small>
+                        <h6 class="mb-0 fw-bold" style="color: var(--soft-lilac);">{{ $otherUser->name ?? 'Unknown User' }}</h6>
+                        <small style="color: rgba(200, 162, 200, 0.6);">
+                            <span class="online-dot me-1" style="display: inline-block; width: 8px; height: 8px; background: #00D26A; border-radius: 50%; animation: pulse 2s infinite;"></span>
+                            {{ $otherUser && $otherUser->vendor ? $otherUser->vendor->vendor_name : 'Online' }}
+                        </small>
                     </div>
                 </div>
 
                 <!-- Messages Container -->
-                <div class="flex-grow-1 p-3 overflow-auto" id="messages-container" style="background: #f8f9fa;">
+                <div class="flex-grow-1 p-4 overflow-auto" id="messages-container" style="background: radial-gradient(circle at 50% 50%, rgba(106, 56, 194, 0.05) 0%, transparent 50%);">
                     <div id="messages-list">
                         @forelse($messages as $message)
-                            <div class="mb-3 d-flex {{ $message->user_id === auth()->id() ? 'justify-content-end' : 'justify-content-start' }}">
-                                <div class="message-bubble {{ $message->user_id === auth()->id() ? 'sent' : 'received' }}" 
-                                     style="max-width: 70%;">
-                                    <div class="p-2 rounded {{ $message->user_id === auth()->id() ? 'bg-primary text-white' : 'bg-white border' }}">
-                                        <p class="mb-1 small">{{ $message->content }}</p>
-                                        <small class="opacity-75" style="font-size: 0.7rem;">{{ $message->created_at->format('H:i') }}</small>
-                                    </div>
+                            @php $isMine = $message->user_id === auth()->id(); @endphp
+                            <div class="mb-3 d-flex {{ $isMine ? 'justify-content-end' : 'justify-content-start' }}">
+                                <div class="message-bubble p-3" style="max-width: 70%; border-radius: {{ $isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px' }}; background: {{ $isMine ? 'linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%)' : 'rgba(45, 45, 65, 0.9)' }}; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                                    <p class="mb-1 small" style="color: {{ $isMine ? 'white' : 'var(--soft-lilac)' }};">{{ $message->content }}</p>
+                                    <small style="color: {{ $isMine ? 'rgba(255,255,255,0.7)' : 'rgba(200, 162, 200, 0.5)' }}; font-size: 0.65rem;">
+                                        {{ $message->created_at->format('H:i') }}
+                                        @if($isMine)
+                                            <span class="ms-1">{{ $message->is_read ? '✓✓' : '✓' }}</span>
+                                        @endif
+                                    </small>
                                 </div>
                             </div>
                         @empty
-                            <div class="text-center text-muted py-5">
-                                <p>No messages yet. Start the conversation!</p>
+                            <div class="text-center py-5">
+                                <div class="mb-3" style="opacity: 0.5;">
+                                    <svg width="60" height="60" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--soft-lilac);">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                    </svg>
+                                </div>
+                                <p style="color: rgba(200, 162, 200, 0.5);">No messages yet. Start the conversation!</p>
                             </div>
                         @endforelse
                     </div>
                 </div>
 
                 <!-- Message Input -->
-                <div class="p-3 border-top bg-white">
-                    <form id="send-message-form" class="d-flex gap-2">
+                <div class="p-3" style="background: rgba(26, 26, 46, 0.9); border-top: 1px solid rgba(106, 56, 194, 0.3);">
+                    <form id="send-message-form" class="d-flex gap-2 align-items-center">
                         @csrf
                         <input type="hidden" name="chat_id" value="{{ $chat->id }}">
                         <input type="text" 
                                name="content" 
                                id="message-input" 
-                               class="form-control" 
+                               class="form-control flex-grow-1" 
                                placeholder="Type a message..." 
                                required 
-                               autocomplete="off">
-                        <button type="submit" class="btn btn-primary" id="send-btn">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               autocomplete="off"
+                               style="background: rgba(45, 45, 65, 0.8); border: 1px solid rgba(106, 56, 194, 0.3); color: var(--soft-lilac); border-radius: 25px; padding: 12px 20px;">
+                        <button type="submit" class="btn send-btn" id="send-btn" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(106, 56, 194, 0.4); transition: all 0.2s;">
+                            <svg width="22" height="22" fill="none" stroke="white" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                             </svg>
                         </button>
@@ -103,9 +117,70 @@
     </div>
 
     <style>
-        .hover-bg-light:hover { background-color: rgba(0,0,0,0.03) !important; }
-        .message-bubble { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-item {
+            transition: all 0.2s ease;
+        }
+        .chat-item:hover {
+            background: rgba(106, 56, 194, 0.15) !important;
+        }
+        .chat-item.active {
+            background: rgba(106, 56, 194, 0.25) !important;
+            border-left: 3px solid #FF3CAC !important;
+        }
+        
+        .message-bubble {
+            animation: fadeInUp 0.3s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(106, 56, 194, 0.6) !important;
+        }
+        
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+        
+        #message-input:focus {
+            outline: none;
+            border-color: #6A38C2 !important;
+            box-shadow: 0 0 0 3px rgba(106, 56, 194, 0.2);
+        }
+        
+        #message-input::placeholder {
+            color: rgba(200, 162, 200, 0.4);
+        }
+        
+        /* Custom Scrollbar */
+        .chat-list::-webkit-scrollbar,
+        #messages-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-list::-webkit-scrollbar-track,
+        #messages-container::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+        }
+        .chat-list::-webkit-scrollbar-thumb,
+        #messages-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%);
+            border-radius: 3px;
+        }
     </style>
 
     <script>
@@ -157,14 +232,20 @@
                     if (data.messages) {
                         messagesList.innerHTML = data.messages.map(msg => {
                             const isMine = msg.user_id === {{ auth()->id() }};
-                            const time = new Date(msg.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                            const time = new Date(msg.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+                            const borderRadius = isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px';
+                            const bgStyle = isMine 
+                                ? 'background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%);' 
+                                : 'background: rgba(45, 45, 65, 0.9);';
+                            const textColor = isMine ? 'white' : 'var(--soft-lilac)';
+                            const timeColor = isMine ? 'rgba(255,255,255,0.7)' : 'rgba(200, 162, 200, 0.5)';
+                            const checkMark = isMine ? (msg.is_read ? ' ✓✓' : ' ✓') : '';
+                            
                             return `
                                 <div class="mb-3 d-flex ${isMine ? 'justify-content-end' : 'justify-content-start'}">
-                                    <div class="message-bubble ${isMine ? 'sent' : 'received'}" style="max-width: 70%;">
-                                        <div class="p-2 rounded ${isMine ? 'bg-primary text-white' : 'bg-white border'}">
-                                            <p class="mb-1 small">${msg.content}</p>
-                                            <small class="opacity-75" style="font-size: 0.7rem;">${time}</small>
-                                        </div>
+                                    <div class="message-bubble p-3" style="max-width: 70%; border-radius: ${borderRadius}; ${bgStyle} box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                                        <p class="mb-1 small" style="color: ${textColor};">${msg.content}</p>
+                                        <small style="color: ${timeColor}; font-size: 0.65rem;">${time}${checkMark}</small>
                                     </div>
                                 </div>
                             `;

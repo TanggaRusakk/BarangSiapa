@@ -18,14 +18,10 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="bg-animated cyber-grid">
+    <body class="cyber-grid" style="background: linear-gradient(135deg, #0D0D0D 0%, #1A1A2E 50%, #16213E 100%);">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
-                <div class="w-full sm:max-w-md mt-6">
-                    {{ $slot }}
-                </div>
-            
-            <div class="mt-4 text-center">
-                <a href="{{ url('/') }}" class="text-soft-lilac hover:text-neon-pink transition">← Back to Home</a>
+            <div class="w-full sm:max-w-md mt-6">
+                {{ $slot }}
             </div>
         </div>
     </body>

@@ -35,10 +35,7 @@ class Vendor extends Model
             }
         }
 
-        if (file_exists(public_path('images/vendor/vendor_placeholder.jpg'))) {
-            return asset('images/vendor/vendor_placeholder.jpg');
-        }
-
-        return asset('images/vendor/vendor_placeholder.png');
+        // Use items placeholder for vendor logo
+        return asset('images/items/item_placeholder.jpg');
     }
 }

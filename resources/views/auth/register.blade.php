@@ -5,32 +5,19 @@
     <!-- Site Title above form -->
     <div class="text-center mb-4">
         <h1 class="h3 fw-bold text-gradient mb-1">BarangSiapa</h1>
-    </div>
-
-    <!-- Page Title -->
-    <div class="text-center mb-4">
-        <h2 class="text-3xl font-bold text-gradient mb-2">Create Account</h2>
-        <p class="text-secondary">Join BarangSiapa marketplace</p>
+         <p class="text-secondary">Create Account to Continue to BarangSiapa</p>
     </div>
 
     <!-- Role Selector -->
     <div class="mb-4 text-center">
         <div class="btn-group w-100" role="group">
-            <a href="{{ route('register') }}?role=user" class="btn {{ $role==='user' ? 'btn-primary' : 'btn-outline-secondary' }}" style="text-decoration:none;">👤 User</a>
-            <a href="{{ route('register') }}?role=vendor" class="btn {{ $role==='vendor' ? 'btn-primary' : 'btn-outline-secondary' }}" style="text-decoration:none;">🏪 Vendor</a>
+            <a href="{{ route('register') }}?role=user" class="btn {{ $role==='user' ? 'btn-primary' : 'btn-outline-secondary' }}" style="text-decoration:none;">User</a>
+            <a href="{{ route('register') }}?role=vendor" class="btn {{ $role==='vendor' ? 'btn-primary' : 'btn-outline-secondary' }}" style="text-decoration:none;">Vendor</a>
         </div>
     </div>
 
     <form method="POST" action="{{ route('register') }}">
         @csrf
-
-        <div class="alert {{ $role === 'vendor' ? 'alert-info' : 'alert-light' }} mb-4 small">
-            @if($role === 'vendor')
-                <strong>🏪 Vendor Account:</strong> Create a store and list products for sale or rent.
-            @else
-                <strong>👤 User Account:</strong> Browse and rent items from the marketplace.
-            @endif
-        </div>
 
         <input type="hidden" name="role" value="{{ $role }}">
 
@@ -83,6 +70,11 @@
             </a>
         </div>
 
+        <div class="mt-4 text-center">
+            <a href="{{ url('/') }}" style="color: var(--soft-lilac); text-decoration: none; font-size: 0.9rem;" 
+               onmouseover="this.style.color='var(--neon-pink)';" 
+               onmouseout="this.style.color='var(--soft-lilac)';">← Back to Home</a>
+        </div>
         
     </form>
     </div>

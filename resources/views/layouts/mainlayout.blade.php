@@ -11,46 +11,22 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{{ asset('styles/style.css') }}">
     <style>
-        /* Animated Background - White Moving Squares */
-        .animated-bg {
+        /* Static Background with Gradient */
+        .static-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -1;
-            overflow: hidden;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        }
-        .square {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(5px);
-            border-radius: 10px;
-            animation: float linear infinite;
-        }
-        @keyframes float {
-            0% {
-                transform: translateY(100vh) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100vh) rotate(360deg);
-                opacity: 0;
-            }
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8e0f0 50%, #f0e6f6 100%);
         }
     </style>
     @stack('styles')
 </head>
 <body>
-    <!-- Animated Background -->
-    <div class="animated-bg" id="animatedBg"></div>
+    <!-- Static Background -->
+    <div class="static-bg"></div>
 
     @include('layouts.navigation')
 
@@ -76,28 +52,6 @@
     </style>
 
     <script>
-        // Generate animated squares
-        function createSquares() {
-            const bg = document.getElementById('animatedBg');
-            const squareCount = 15;
-            
-            for (let i = 0; i < squareCount; i++) {
-                const square = document.createElement('div');
-                square.className = 'square';
-                
-                const size = Math.random() * 80 + 40;
-                square.style.width = size + 'px';
-                square.style.height = size + 'px';
-                square.style.left = Math.random() * 100 + '%';
-                square.style.animationDuration = (Math.random() * 10 + 15) + 's';
-                square.style.animationDelay = Math.random() * 5 + 's';
-                
-                bg.appendChild(square);
-            }
-        }
-        
-        createSquares();
-
         // Axios default CSRF header from Laravel meta tag
         (function(){
             var token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');

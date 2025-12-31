@@ -50,9 +50,9 @@ body {
 
 /* ===== ANIMATED BACKGROUND ===== */
 .bg-animated {
+    /* Static gradient background (animation disabled) */
     background: linear-gradient(135deg, #09090F 0%, #1a0a2e 50%, #09090F 100%);
-    background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite;
+    background-size: cover;
     position: relative;
 }
 
@@ -63,16 +63,12 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
+    /* subtle static grid overlay */
     background-image: 
-        linear-gradient(rgba(106, 56, 194, 0.05) 2px, transparent 2px),
-        linear-gradient(90deg, rgba(106, 56, 194, 0.05) 2px, transparent 2px);
+        linear-gradient(rgba(106, 56, 194, 0.04) 2px, transparent 2px),
+        linear-gradient(90deg, rgba(106, 56, 194, 0.04) 2px, transparent 2px);
     background-size: 60px 60px;
     pointer-events: none;
-}
-
-@keyframes gradientShift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
 }
 
 /* Cyberpunk Grid */
@@ -282,13 +278,8 @@ h3 {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(106, 56, 194, 0.15) 0%, transparent 50%);
-    animation: pulse 8s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 0.5; }
-    50% { transform: scale(1.2); opacity: 0.8; }
+    background: radial-gradient(circle, rgba(106, 56, 194, 0.12) 0%, transparent 50%);
+    /* static decorative gradient, no animation */
 }
 
 .hero-content {

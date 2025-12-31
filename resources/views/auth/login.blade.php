@@ -3,13 +3,9 @@
     <!-- Site Title above form -->
     <div class="text-center mb-4">
         <h1 class="h3 fw-bold text-gradient mb-1">BarangSiapa</h1>
+              <p class="text-secondary">Sign in to continue to BarangSiapa</p>
     </div>
 
-    <!-- Page Title -->
-    <div class="text-center mb-4">
-        <h2 class="text-3xl font-bold text-gradient mb-2">Welcome Back</h2>
-        <p class="text-secondary">Sign in to continue to BarangSiapa</p>
-    </div>
 
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
@@ -57,13 +53,16 @@
         </div>
         
         <div class="mt-6 pt-6 border-top text-center">
-            <p class="text-secondary mb-3">Don't have an account?</p>
-            <div class="d-flex gap-2 justify-content-center">
-                <a href="{{ route('register') }}" class="btn btn-sm btn-outline-primary">Register as User</a>
-                <a href="{{ route('register') }}?role=vendor" class="btn btn-sm" style="background: #FF3CAC; color: #000; border: none;">Register as Vendor</a>
-            </div>
+            <a class="text-sm" style="color: var(--soft-lilac); text-decoration: none;" href="{{ route('register') }}" onmouseover="this.style.color='var(--neon-pink)';" onmouseout="this.style.color='var(--soft-lilac)';">
+                Don't have an account? <strong>Register</strong>
+            </a>
         </div>
 
+        <div class="mt-4 text-center">
+            <a href="{{ url('/') }}" style="color: var(--soft-lilac); text-decoration: none; font-size: 0.9rem;" 
+               onmouseover="this.style.color='var(--neon-pink)';" 
+               onmouseout="this.style.color='var(--soft-lilac)';">← Back to Home</a>
+        </div>
         
     </form>
     </div>

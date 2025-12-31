@@ -1,107 +1,203 @@
 @php
-    $userReview = $item->reviews->where('user_id', auth()->id() ?? -1)->first();
+    $reviews = $item->reviews ?? collect();
+    $averageRating = $reviews->avg('rating') ?? 0;
+    $reviewCount = $reviews->count();
 @endphp
 
-<!-- Write Review Form (Only for Users) -->
+<!-- Review Summary -->
+@if($reviewCount > 0)
+    <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded" style="background: rgba(106,56,194,0.05);">
+        <div class="text-center">
+            <div class="h2 fw-bold mb-0" style="color: #6A38C2;">{{ number_format($averageRating, 1) }}</div>
+            <div class="d-flex gap-1 justify-content-center">
+                @for($i = 1; $i <= 5; $i++)
+                    <span style="color: {{ $i <= round($averageRating) ? '#FFD700' : '#ddd' }};">★</span>
+                @endfor
+            </div>
+        </div>
+        <div class="text-secondary">
+            Based on {{ $reviewCount }} {{ Str::plural('review', $reviewCount) }}
+        </div>
+    </div>
+@endif
+
+<!-- Review Form -->
 @auth
-    @if(auth()->user()->role === 'user')
-        <div class="mb-8 p-6 bg-midnight-black bg-opacity-50 rounded-lg border border-royal-purple border-opacity-30">
-            <h3 class="text-lg font-semibold text-white mb-4">{{ $userReview ? 'Edit Your Review' : 'Write a Review' }}</h3>
-
-            <form action="{{ $userReview ? route('reviews.update', $userReview->id) : route('reviews.store') }}" method="POST" id="reviewForm">
-                @csrf
-                @if($userReview)
-                    @method('PATCH')
-                @endif
-                <input type="hidden" name="item_id" value="{{ $item->id }}">
-
-                <!-- Rating -->
-                <div class="mb-4">
-                    <label class="block text-white font-semibold mb-2">Rating</label>
-                    <div class="flex gap-2">
-                        @for($i = 1; $i <= 5; $i++)
-                            <button type="button" class="star-btn w-10 h-10 transition-transform hover:scale-110" data-rating="{{ $i }}">
-                                <svg class="w-full h-full {{ $userReview && $i <= $userReview->rating ? 'text-yellow-400' : 'text-gray-600' }}" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                </svg>
-                            </button>
-                        @endfor
-                    </div>
-                    <input type="hidden" name="rating" id="ratingInput" value="{{ $userReview->rating ?? 0 }}" required>
-                    @error('rating')
-                        <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Comment -->
-                <div class="mb-4">
-                    <label for="comment" class="block text-white font-semibold mb-2">Your Review</label>
-                    <textarea name="comment" id="comment" rows="4" class="w-full px-4 py-3 bg-midnight-black border border-royal-purple border-opacity-30 rounded-lg text-white placeholder-soft-lilac focus:border-neon-pink focus:outline-none focus:ring-2 focus:ring-neon-pink focus:ring-opacity-20" placeholder="Share your experience with this item..." required>{{ $userReview->comment ?? old('comment') }}</textarea>
-                    @error('comment')
-                        <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Buttons -->
-                <div class="flex gap-3">
-                    <button type="submit" class="btn btn-primary">{{ $userReview ? 'Update Review' : 'Submit Review' }}</button>
-                    @if($userReview)
-                        <button type="button" onclick="if(confirm('Are you sure you want to delete your review?')) document.getElementById('deleteReviewForm').submit();" class="btn bg-red-600 hover:bg-red-700 text-white">Delete Review</button>
-                    @endif
-                </div>
-            </form>
-
-            @if($userReview)
-                <form id="deleteReviewForm" action="{{ route('reviews.destroy', $userReview->id) }}" method="POST" class="hidden">
+    @php
+        $userHasReviewed = $reviews->where('user_id', auth()->id())->isNotEmpty();
+    @endphp
+    
+    @if(!$userHasReviewed)
+        <div class="card mb-4" style="background: rgba(106,56,194,0.05); border: 1px solid rgba(106,56,194,0.2);">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3">Write a Review</h6>
+                <form action="{{ route('reviews.store', $item->id) }}" method="POST">
                     @csrf
-                    @method('DELETE')
+                    
+                    <!-- Star Rating -->
+                    <div class="mb-3">
+                        <label class="form-label">Your Rating</label>
+                        <div class="d-flex gap-1" id="starRating">
+                            @for($i = 1; $i <= 5; $i++)
+                                <button type="button" class="btn btn-link p-0 star-btn" data-rating="{{ $i }}" style="font-size: 24px; color: #ddd; text-decoration: none;">
+                                    ★
+                                </button>
+                            @endfor
+                        </div>
+                        <input type="hidden" name="rating" id="ratingInput" value="0" required>
+                        @error('rating')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Comment -->
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Your Review</label>
+                        <textarea name="comment" id="comment" rows="3" class="form-control" placeholder="Share your experience with this product..." required>{{ old('comment') }}</textarea>
+                        @error('comment')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <button type="submit" class="btn" style="background: #6A38C2; color: white;">Submit Review</button>
                 </form>
-            @endif
+            </div>
+        </div>
+    @else
+        <div class="alert alert-info mb-4">
+            <svg class="d-inline-block me-2" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            You have already reviewed this product.
         </div>
     @endif
-    @else
-    <div class="mb-4 p-4 bg-midnight-black bg-opacity-30 rounded text-center">
+@else
+    <div class="text-center py-4 mb-4" style="background: rgba(106,56,194,0.05); border-radius: 8px;">
         <p class="text-secondary mb-2">Want to share your experience?</p>
-        <a href="{{ route('login') }}" class="btn btn-primary">Login to Write a Review</a>
+        <a href="{{ route('login') }}" class="btn" style="background: #6A38C2; color: white;">Login to Write a Review</a>
     </div>
 @endauth
 
 <!-- Reviews List -->
-@if($item->reviews->count() > 0)
-    <div class="space-y-6">
-        @foreach($item->reviews as $review)
-            <div class="border-b border-royal-purple border-opacity-30 pb-6 last:border-0">
-                <div class="flex items-start gap-4">
+@if($reviewCount > 0)
+    <div class="d-flex flex-column gap-4">
+        @foreach($reviews as $review)
+            <div class="pb-4 {{ !$loop->last ? 'border-bottom' : '' }}">
+                <div class="d-flex gap-3">
                     <div class="flex-shrink-0">
-                        <div class="w-12 h-12 rounded-full bg-royal-purple bg-opacity-30 flex items-center justify-center text-neon-pink font-bold">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); color: white; font-weight: bold;">
                             {{ substr($review->user->name ?? 'U', 0, 1) }}
                         </div>
                     </div>
 
-                    <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-2">
-                            <span class="font-semibold text-white">{{ $review->user->name ?? 'Anonymous' }}</span>
-                            <div class="flex items-center gap-1">
-                                @for($i = 1; $i <= 5; $i++)
-                                    <svg class="w-4 h-4 {{ $i <= ($review->rating ?? 0) ? 'text-yellow-400' : 'text-gray-600' }}" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                @endfor
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="fw-bold mb-1">{{ $review->user->name ?? 'Anonymous' }}</h6>
+                                <div class="d-flex gap-1">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <span style="color: {{ $i <= ($review->rating ?? 0) ? '#FFD700' : '#ddd' }}; font-size: 14px;">★</span>
+                                    @endfor
+                                </div>
                             </div>
-                            <span class="text-xs text-secondary">{{ $review->created_at->diffForHumans() }}</span>
+                            <small class="text-secondary">{{ $review->created_at->diffForHumans() }}</small>
                         </div>
 
-                        <p class="text-secondary leading-relaxed">{{ $review->comment ?? 'No review content.' }}</p>
+                        <p class="text-secondary mb-0">{{ $review->comment ?? 'No review content.' }}</p>
+
+                        @auth
+                            @if($review->user_id === auth()->id())
+                                <div class="mt-2 d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editReview{{ $review->id }}">Edit</button>
+                                    <form action="{{ route('reviews.destroy', $review->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this review?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </div>
+
+                                <!-- Edit Modal -->
+                                <div class="modal fade" id="editReview{{ $review->id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form action="{{ route('reviews.update', $review->id) }}" method="POST">
+                                                @csrf
+                                                @method('PATCH')
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Edit Review</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Rating</label>
+                                                        <select name="rating" class="form-select" required>
+                                                            @for($i = 5; $i >= 1; $i--)
+                                                                <option value="{{ $i }}" {{ $review->rating == $i ? 'selected' : '' }}>{{ $i }} Star{{ $i > 1 ? 's' : '' }}</option>
+                                                            @endfor
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Comment</label>
+                                                        <textarea name="comment" rows="3" class="form-control" required>{{ $review->comment }}</textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn" style="background: #6A38C2; color: white;">Save Changes</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endauth
                     </div>
                 </div>
             </div>
         @endforeach
     </div>
 @else
-    <div class="text-center py-8 text-secondary">
-        <svg class="w-8 h-8 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+    <div class="text-center py-5">
+        <svg class="mb-3" width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity: 0.5;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
         </svg>
-        <p>No reviews yet. Be the first to review this item!</p>
+        <p class="text-secondary mb-0">No reviews yet. Be the first to share your experience!</p>
     </div>
 @endif
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const starButtons = document.querySelectorAll('.star-btn');
+    const ratingInput = document.getElementById('ratingInput');
+    
+    if (!starButtons.length || !ratingInput) return;
+
+    starButtons.forEach((btn, index) => {
+        btn.addEventListener('click', function() {
+            const rating = this.dataset.rating;
+            ratingInput.value = rating;
+            
+            // Update star colors
+            starButtons.forEach((star, i) => {
+                star.style.color = i < rating ? '#FFD700' : '#ddd';
+            });
+        });
+
+        btn.addEventListener('mouseover', function() {
+            const rating = this.dataset.rating;
+            starButtons.forEach((star, i) => {
+                star.style.color = i < rating ? '#FFD700' : '#ddd';
+            });
+        });
+
+        btn.addEventListener('mouseout', function() {
+            const currentRating = ratingInput.value;
+            starButtons.forEach((star, i) => {
+                star.style.color = i < currentRating ? '#FFD700' : '#ddd';
+            });
+        });
+    });
+});
+</script>
+@endpush
