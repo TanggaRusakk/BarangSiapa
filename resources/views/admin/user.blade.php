@@ -1,6 +1,5 @@
 <x-dashboard-layout>
     @php
-        use Illuminate\Support\Str;
         $user = $user ?? null;
         $orders = $orders ?? collect();
         $reviews = $reviews ?? collect();
@@ -90,7 +89,7 @@
                                         <span style="color: {{ $i <= ($rev->rating ?? 0) ? '#FFD700' : '#555' }};">★</span>
                                     @endfor
                                 </div>
-                                <div class="small text-secondary">{{ Str::limit($rev->review_text ?? $rev->comment ?? '', 180) }}</div>
+                                <div class="small text-secondary">{{ \Illuminate\Support\Str::limit($rev->review_text ?? $rev->comment ?? '', 180) }}</div>
                             </div>
                         @endforeach
                     </div>

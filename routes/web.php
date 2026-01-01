@@ -724,6 +724,7 @@ Route::middleware('auth')->group(function () {
         if (auth()->user()->role !== 'vendor') abort(403);
         $vendor = auth()->user()->vendor;
         if (!$vendor || $item->vendor_id !== $vendor->id) abort(403);
+        $item->load('galleries'); // Load gallery images
         return view('vendor.products-edit', compact('item'));
     })->name('vendor.products.edit');
 
@@ -762,6 +763,29 @@ Route::middleware('auth')->group(function () {
         $item->update(collect($data)->only(['item_name','item_description','item_price','item_type','item_status','item_stock'])->toArray());
         return redirect()->route('vendor.products.list')->with('success', 'Product updated');
     })->name('vendor.products.update');
+
+    // Delete gallery image
+    Route::delete('/vendor/gallery/{gallery}', function (\App\Models\ItemGallery $gallery) {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $vendor = auth()->user()->vendor;
+        if (!$vendor || !$gallery->item || $gallery->item->vendor_id !== $vendor->id) abort(403);
+
+        // Delete the actual file if it exists
+        $paths = [
+            public_path('images/products/' . $gallery->image_path),
+            public_path('images/items/' . $gallery->image_path),
+            public_path('images/item/' . $gallery->image_path),
+        ];
+        foreach ($paths as $path) {
+            if (file_exists($path)) {
+                @unlink($path);
+                break;
+            }
+        }
+
+        $gallery->delete();
+        return redirect()->back()->with('success', 'Image deleted successfully');
+    })->name('vendor.gallery.destroy');
 });
 
 Route::get('/payment', [App\Http\Controllers\PaymentController::class, 'payment']);

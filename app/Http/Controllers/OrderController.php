@@ -85,8 +85,9 @@ class OrderController extends Controller
             OrderItem::create([
                 'order_id' => $order->id,
                 'item_id' => $item->id,
-                'quantity' => $request->quantity,
-                'price' => $item->item_price,
+                'order_item_quantity' => $request->quantity,
+                'order_item_price' => $item->item_price,
+                'order_item_subtotal' => $itemTotal,
             ]);
 
             // If it's a rental, create rental info

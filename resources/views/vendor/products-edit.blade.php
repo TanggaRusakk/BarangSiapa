@@ -18,8 +18,31 @@
                 <x-input-error class="mt-2" :messages="$errors->get('item_description')" />
             </div>
 
+            <!-- Current Gallery Images -->
             <div>
-                <x-input-label for="image" :value="__('Product Image')" />
+                <x-input-label :value="__('Current Gallery Images')" />
+                @if($item->galleries && $item->galleries->count() > 0)
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-2">
+                        @foreach($item->galleries as $gallery)
+                            <div class="relative group">
+                                <img src="{{ $gallery->url }}" alt="Product Image" class="w-full h-24 object-cover rounded-lg border-2 border-royal-purple border-opacity-40">
+                                <form method="POST" action="{{ route('vendor.gallery.destroy', $gallery->id) }}" class="absolute top-1 right-1" onsubmit="return confirm('Are you sure you want to delete this image?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg transition" title="Delete Image">
+                                        ✕
+                                    </button>
+                                </form>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-sm text-soft-lilac mt-2">No images in gallery. A default placeholder will be shown.</p>
+                @endif
+            </div>
+
+            <div>
+                <x-input-label for="image" :value="__('Add New Image')" />
                 <input id="image" name="image" type="file" accept="image/*" class="mt-1 block w-full text-sm text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-neon-pink file:text-black" />
                 <p class="text-sm text-soft-lilac mt-2">Upload a new image to add to the product gallery.</p>
                 <x-input-error class="mt-2" :messages="$errors->get('image')" />
