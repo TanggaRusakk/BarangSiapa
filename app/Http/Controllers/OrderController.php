@@ -92,10 +92,15 @@ class OrderController extends Controller
 
             // If it's a rental, create rental info
             if ($isRent) {
+                $startDate = new \DateTime($request->rental_start_date);
+                $endDate = new \DateTime($request->rental_end_date);
+                $durationDays = $startDate->diff($endDate)->days;
+                
                 \App\Models\RentalInfo::create([
                     'order_id' => $order->id,
                     'start_date' => $request->rental_start_date,
                     'end_date' => $request->rental_end_date,
+                    'duration_days' => $durationDays,
                 ]);
             }
 
