@@ -410,25 +410,21 @@ Route::middleware('auth')->group(function () {
         }
         
         // Check if chat already exists between these two users
-        $chat = \App\Models\Chat::where('user_id', auth()->id())
-            ->whereHas('messages', function($q) use ($vendorUser) {
-                $q->where('user_id', $vendorUser->id);
+        $chat = \App\Models\Chat::where(function($q) use ($vendorUser) {
+                $q->where('user_id', auth()->id())
+                  ->where('vendor_user_id', $vendorUser->id);
+            })
+            ->orWhere(function($q) use ($vendorUser) {
+                $q->where('user_id', $vendorUser->id)
+                  ->where('vendor_user_id', auth()->id());
             })
             ->first();
-        
-        if (!$chat) {
-            // Check reverse (vendor owns the chat)
-            $chat = \App\Models\Chat::where('user_id', $vendorUser->id)
-                ->whereHas('messages', function($q) {
-                    $q->where('user_id', auth()->id());
-                })
-                ->first();
-        }
         
         // If no chat exists, create new one
         if (!$chat) {
             $chat = \App\Models\Chat::create([
                 'user_id' => auth()->id(),
+                'vendor_user_id' => $vendorUser->id,
                 'last_message_at' => now()
             ]);
             
