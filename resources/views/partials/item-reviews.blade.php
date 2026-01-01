@@ -24,15 +24,17 @@
 <!-- Review Form -->
 @auth
     @php
+        $userRole = auth()->user()->role ?? 'user';
         $userHasReviewed = $reviews->where('user_id', auth()->id())->isNotEmpty();
     @endphp
     
-    @if(!$userHasReviewed)
+    @if($userRole === 'user' && !$userHasReviewed)
         <div class="card mb-4" style="background: rgba(106,56,194,0.05); border: 1px solid rgba(106,56,194,0.2);">
             <div class="card-body">
                 <h6 class="fw-bold mb-3">Write a Review</h6>
-                <form action="{{ route('reviews.store', $item->id) }}" method="POST">
+                <form action="{{ route('reviews.store') }}" method="POST">
                     @csrf
+                    <input type="hidden" name="item_id" value="{{ $item->id }}">
                     
                     <!-- Star Rating -->
                     <div class="mb-3">
@@ -62,6 +64,13 @@
                     <button type="submit" class="btn" style="background: #6A38C2; color: white;">Submit Review</button>
                 </form>
             </div>
+        </div>
+    @elseif($userRole !== 'user')
+        <div class="alert alert-info mb-4">
+            <svg class="d-inline-block me-2" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Only customers can write reviews.
         </div>
     @else
         <div class="alert alert-info mb-4">

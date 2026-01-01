@@ -18,9 +18,10 @@
                     @if(isset($chats) && $chats->count() > 0)
                         @foreach($chats as $chat)
                             @php
+                                // Determine the other participant in the chat
                                 $otherUser = $chat->user_id === auth()->id() 
-                                    ? ($chat->messages->first()?->user ?? null)
-                                    : $chat->user;
+                                    ? $chat->vendorUser  // I'm the user, show vendor
+                                    : $chat->user;       // I'm the vendor, show user
                             @endphp
                             <a href="{{ route('messages.show', $chat->id) }}" 
                                class="chat-item d-flex align-items-center p-3 text-decoration-none transition-all {{ request()->route('chat') && request()->route('chat')->id == $chat->id ? 'active' : '' }}"

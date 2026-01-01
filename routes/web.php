@@ -379,12 +379,10 @@ Route::middleware('auth')->group(function () {
     // Message routes (Shopee-like chat)
     Route::get('/messages', function () {
         $user = auth()->user();
-        // Get all chats for this user
+        // Get all chats for this user (either as user_id or vendor_user_id)
         $chats = \App\Models\Chat::where('user_id', $user->id)
-            ->orWhereHas('messages', function($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })
-            ->with(['user', 'messages' => function($q) {
+            ->orWhere('vendor_user_id', $user->id)
+            ->with(['user', 'vendorUser', 'messages' => function($q) {
                 $q->latest()->take(1);
             }])
             ->orderBy('last_message_at', 'desc')
@@ -451,9 +449,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/messages/{chat}', function (\App\Models\Chat $chat) {
         $user = auth()->user();
         
-        // Verify user has access to this chat
-        $hasAccess = $chat->user_id === $user->id || 
-                     $chat->messages()->where('user_id', $user->id)->exists();
+        // Verify user has access to this chat (either as user_id or vendor_user_id)
+        $hasAccess = $chat->user_id === $user->id || $chat->vendor_user_id === $user->id;
         
         if (!$hasAccess) {
             abort(403, 'Unauthorized access to this chat');
@@ -468,19 +465,15 @@ Route::middleware('auth')->group(function () {
             ->where('is_read', false)
             ->update(['is_read' => true]);
         
-        // Determine other user
-        $otherUserId = $chat->user_id === $user->id 
-            ? $chat->messages()->where('user_id', '!=', $user->id)->first()?->user_id
-            : $chat->user_id;
-        
-        $otherUser = $otherUserId ? \App\Models\User::find($otherUserId) : null;
+        // Determine other user (the person we're chatting with)
+        $otherUser = $chat->user_id === $user->id 
+            ? $chat->vendorUser  // I'm the user, show vendor
+            : $chat->user;       // I'm the vendor, show user
         
         // Get all chats for sidebar
         $allChats = \App\Models\Chat::where('user_id', $user->id)
-            ->orWhereHas('messages', function($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })
-            ->with(['user', 'messages' => function($q) {
+            ->orWhere('vendor_user_id', $user->id)
+            ->with(['user', 'vendorUser', 'messages' => function($q) {
                 $q->latest()->take(1);
             }])
             ->orderBy('last_message_at', 'desc')
@@ -635,6 +628,8 @@ Route::middleware('auth')->group(function () {
             'item_type' => 'required|string',
             'item_status' => 'nullable|string',
             'item_stock' => 'required|integer|min:0',
+            'rental_duration_value' => 'nullable|integer|min:1',
+            'rental_duration_unit' => 'nullable|string|in:day,week,month',
             'images' => 'nullable|array',
             'images.*' => 'image|max:4096',
         ]);
@@ -735,6 +730,8 @@ Route::middleware('auth')->group(function () {
             'item_type' => 'required|in:jual,sewa',
             'item_status' => 'nullable|in:available,unavailable',
             'item_stock' => 'nullable|integer|min:0',
+            'rental_duration_value' => 'nullable|integer|min:1',
+            'rental_duration_unit' => 'nullable|string|in:day,week,month',
             'image' => 'nullable|image|max:2048',
         ]);
 
@@ -756,7 +753,7 @@ Route::middleware('auth')->group(function () {
         }
 
         // Update item fields
-        $item->update(collect($data)->only(['item_name','item_description','item_price','item_type','item_status','item_stock'])->toArray());
+        $item->update(collect($data)->only(['item_name','item_description','item_price','item_type','item_status','item_stock','rental_duration_value','rental_duration_unit'])->toArray());
         return redirect()->route('vendor.products.list')->with('success', 'Product updated');
     })->name('vendor.products.update');
 

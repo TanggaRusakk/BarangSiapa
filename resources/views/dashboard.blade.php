@@ -239,7 +239,7 @@
                                 <tr>
                                     <td>#{{ $o->id }}</td>
                                     <td>{{ optional($o->user)->name ?? '—' }}</td>
-                                    <td>{{ optional(optional($o->orderItems->first())->item->vendor)->vendor_name ?? '—' }}</td>
+                                    <td>{{ optional(optional(optional($o->orderItems->first())->item)->vendor)->vendor_name ?? '—' }}</td>
                                     <td>Rp{{ number_format($o->order_total_amount ?? 0, 0) }}</td>
                                     <td><span class="badge bg-info text-dark">{{ ucfirst($o->order_status ?? '—') }}</span></td>
                                     <td><a href="{{ route('admin.orders.show', $o) }}" class="btn btn-sm btn-primary">View</a></td>

@@ -79,6 +79,14 @@
                                 <label for="rental_end_date" class="form-label fw-bold">End Date</label>
                                 <input type="date" class="form-control" id="rental_end_date" name="rental_end_date" min="{{ date('Y-m-d') }}" required>
                             </div>
+
+                            <div class="mb-3">
+                                <div class="p-3 rounded" style="background: rgba(106, 56, 194, 0.1);">
+                                    <small class="text-muted d-block mb-1">Rental Period</small>
+                                    <div class="fw-bold" style="color: #6A38C2;" id="rentalPeriodDisplay">Please select dates</div>
+                                    <small class="text-muted">Price: Rp {{ number_format($item->item_price, 0, ',', '.') }} per {{ $item->rental_duration_value ?? 1 }} {{ $item->rental_duration_unit ?? 'day' }}</small>
+                                </div>
+                            </div>
                         @endif
 
                         <!-- Order Summary -->
@@ -121,15 +129,76 @@
 @push('scripts')
 <script>
     const itemPrice = {{ $item->item_price }};
+    const isRental = {{ in_array($item->item_type, ['sewa', 'rent']) ? 'true' : 'false' }};
+    const rentalDurationValue = {{ $item->rental_duration_value ?? 1 }};
+    const rentalDurationUnit = '{{ $item->rental_duration_unit ?? 'day' }}';
+    
     const qtyInput = document.getElementById('quantity');
     const qtyDisplay = document.getElementById('qtyDisplay');
     const subtotalEl = document.getElementById('subtotal');
     const serviceFeeEl = document.getElementById('serviceFee');
     const totalEl = document.getElementById('total');
+    const rentalPeriodDisplay = document.getElementById('rentalPeriodDisplay');
+    const startDateInput = document.getElementById('rental_start_date');
+    const endDateInput = document.getElementById('rental_end_date');
+
+    function calculateRentalUnits(startDate, endDate) {
+        if (!startDate || !endDate) return 0;
+        
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0) return 0;
+        
+        // Calculate how many rental units are needed
+        let units = 0;
+        if (rentalDurationUnit === 'day') {
+            units = Math.ceil(diffDays / rentalDurationValue);
+        } else if (rentalDurationUnit === 'week') {
+            units = Math.ceil(diffDays / (rentalDurationValue * 7));
+        } else if (rentalDurationUnit === 'month') {
+            units = Math.ceil(diffDays / (rentalDurationValue * 30));
+        }
+        
+        return Math.max(units, 1); // At least 1 unit
+    }
 
     function updateTotal() {
         const qty = parseInt(qtyInput.value) || 1;
-        const subtotal = itemPrice * qty;
+        let priceMultiplier = 1;
+        
+        if (isRental && startDateInput && endDateInput) {
+            const startDate = startDateInput.value;
+            const endDate = endDateInput.value;
+            
+            if (startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                const diffTime = Math.abs(end - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays > 0) {
+                    priceMultiplier = calculateRentalUnits(startDate, endDate);
+                    
+                    // Update rental period display
+                    if (rentalPeriodDisplay) {
+                        rentalPeriodDisplay.innerHTML = `
+                            <div>${diffDays} day(s) selected</div>
+                            <div class="mt-1">= ${priceMultiplier} × ${rentalDurationValue} ${rentalDurationUnit} period(s)</div>
+                        `;
+                    }
+                } else {
+                    if (rentalPeriodDisplay) {
+                        rentalPeriodDisplay.textContent = 'Please select valid dates';
+                    }
+                }
+            }
+        }
+        
+        const itemTotal = itemPrice * priceMultiplier;
+        const subtotal = itemTotal * qty;
         const serviceFee = subtotal * 0.05;
         const total = subtotal + serviceFee;
 
@@ -140,6 +209,20 @@
     }
 
     qtyInput.addEventListener('input', updateTotal);
+    
+    if (startDateInput) {
+        startDateInput.addEventListener('change', function() {
+            // Set minimum end date to start date
+            if (this.value) {
+                endDateInput.min = this.value;
+            }
+            updateTotal();
+        });
+    }
+    
+    if (endDateInput) {
+        endDateInput.addEventListener('change', updateTotal);
+    }
 </script>
 @endpush
 @endsection

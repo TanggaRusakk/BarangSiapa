@@ -26,13 +26,12 @@
                         @foreach($item->galleries as $gallery)
                             <div class="relative group">
                                 <img src="{{ $gallery->url }}" alt="Product Image" class="w-full h-24 object-cover rounded-lg border-2 border-royal-purple border-opacity-40">
-                                <form method="POST" action="{{ route('vendor.gallery.destroy', $gallery->id) }}" class="absolute top-1 right-1" onsubmit="return confirm('Are you sure you want to delete this image?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg transition" title="Delete Image">
-                                        ✕
-                                    </button>
-                                </form>
+                                <button type="button" 
+                                        onclick="deleteGalleryImage({{ $gallery->id }})" 
+                                        class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg transition" 
+                                        title="Delete Image">
+                                    ✕
+                                </button>
                             </div>
                         @endforeach
                     </div>
@@ -65,6 +64,30 @@
                 </div>
             </div>
 
+            <!-- Rental Duration Fields (shown when type is Sewa) -->
+            <div id="rentalFields" style="display: none;">
+                <div class="p-4 rounded" style="background: rgba(106, 56, 194, 0.1); border: 1px solid rgba(106, 56, 194, 0.3);">
+                    <h6 class="fw-bold mb-3" style="color: #C8A2C8;">Rental Duration</h6>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <x-input-label for="rental_duration_value" :value="__('Duration Value')" />
+                            <x-text-input id="rental_duration_value" name="rental_duration_value" type="number" class="mt-1 block w-full" value="{{ old('rental_duration_value', $item->rental_duration_value) }}" min="1" />
+                            <small class="text-muted">e.g., 1, 2, 3</small>
+                            <x-input-error class="mt-2" :messages="$errors->get('rental_duration_value')" />
+                        </div>
+                        <div>
+                            <x-input-label for="rental_duration_unit" :value="__('Duration Unit')" />
+                            <select id="rental_duration_unit" name="rental_duration_unit" class="w-full px-4 py-3 bg-midnight-black bg-opacity-60 border-2 border-royal-purple border-opacity-40 rounded-lg text-white focus:border-neon-pink focus:ring-0 transition appearance-none">
+                                <option value="day" {{ old('rental_duration_unit', $item->rental_duration_unit) === 'day' ? 'selected' : '' }}>Per Day</option>
+                                <option value="week" {{ old('rental_duration_unit', $item->rental_duration_unit) === 'week' ? 'selected' : '' }}>Per Week</option>
+                                <option value="month" {{ old('rental_duration_unit', $item->rental_duration_unit) === 'month' ? 'selected' : '' }}>Per Month</option>
+                            </select>
+                            <x-input-error class="mt-2" :messages="$errors->get('rental_duration_unit')" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div>
                 <x-input-label for="item_status" :value="__('Status')" />
                 <select id="item_status" name="item_status" class="w-full px-4 py-3 bg-midnight-black bg-opacity-60 border-2 border-royal-purple border-opacity-40 rounded-lg text-white focus:border-neon-pink focus:ring-0 transition appearance-none">
@@ -80,5 +103,50 @@
             </div>
         </form>
     </div>
+
+    @push('scripts')
+    <script>
+        // Show/hide rental fields based on item type
+        const itemTypeSelect = document.getElementById('item_type');
+        const rentalFields = document.getElementById('rentalFields');
+        
+        function toggleRentalFields() {
+            if (itemTypeSelect.value === 'sewa') {
+                rentalFields.style.display = 'block';
+            } else {
+                rentalFields.style.display = 'none';
+            }
+        }
+        
+        itemTypeSelect.addEventListener('change', toggleRentalFields);
+        toggleRentalFields(); // Run on page load
+
+        // Delete gallery image function
+        function deleteGalleryImage(galleryId) {
+            if (confirm('Are you sure you want to delete this image?')) {
+                // Create a hidden form and submit it
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/vendor/gallery/${galleryId}`;
+                
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+                
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'DELETE';
+                form.appendChild(methodInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+    @endpush
 
 </x-dashboard-layout>

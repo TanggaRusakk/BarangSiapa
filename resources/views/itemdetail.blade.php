@@ -147,7 +147,7 @@
                     </div>
 
                     @auth
-                        <a href="{{ url('/messages?vendor=' . $item->vendor->id) }}" class="btn w-100" style="background: transparent; border: 2px solid #6A38C2; color: #C4B5FD;">
+                        <a href="{{ route('messages.start', ['vendor_id' => $item->vendor->id, 'item_id' => $item->id]) }}" class="btn w-100" style="background: transparent; border: 2px solid #6A38C2; color: #C4B5FD;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="d-inline-block me-2">
                                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                             </svg>

@@ -21,7 +21,8 @@
                         @foreach($allChats as $c)
                             @php
                                 $lastMsg = $c->messages()->latest()->first();
-                                $chatUser = $c->user_id === auth()->id() ? ($lastMsg ? $lastMsg->user : null) : $c->user;
+                                // Determine the other participant
+                                $chatUser = $c->user_id === auth()->id() ? $c->vendorUser : $c->user;
                             @endphp
                             <a href="{{ route('messages.show', $c->id) }}" 
                                class="chat-item d-flex align-items-center p-3 text-decoration-none {{ $c->id === $chat->id ? 'active' : '' }}"

@@ -34,6 +34,30 @@
                 </div>
             </div>
 
+            <!-- Rental Duration Fields (shown when type is Sewa) -->
+            <div id="rentalFields" style="display: none;">
+                <div class="p-4 rounded" style="background: rgba(106, 56, 194, 0.1); border: 1px solid rgba(106, 56, 194, 0.3);">
+                    <h6 class="fw-bold mb-3" style="color: #C8A2C8;">Rental Duration</h6>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <x-input-label for="rental_duration_value" :value="__('Duration Value')" />
+                            <x-text-input id="rental_duration_value" name="rental_duration_value" type="number" class="mt-1 block w-full" min="1" />
+                            <small class="text-muted">e.g., 1, 2, 3</small>
+                            <x-input-error class="mt-2" :messages="$errors->get('rental_duration_value')" />
+                        </div>
+                        <div>
+                            <x-input-label for="rental_duration_unit" :value="__('Duration Unit')" />
+                            <select id="rental_duration_unit" name="rental_duration_unit" class="w-full px-4 py-3 bg-midnight-black bg-opacity-60 border-2 border-royal-purple border-opacity-40 rounded-lg text-white focus:border-neon-pink focus:ring-0 transition appearance-none" style="background: rgba(9,9,15,0.6); color: #ffffff;">
+                                <option value="day">Per Day</option>
+                                <option value="week">Per Week</option>
+                                <option value="month">Per Month</option>
+                            </select>
+                            <x-input-error class="mt-2" :messages="$errors->get('rental_duration_unit')" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div>
                 <x-input-label for="item_stock" :value="__('Stock')" />
                 <x-text-input id="item_stock" name="item_stock" type="number" class="mt-1 block w-full" value="1" min="0" required />
@@ -63,5 +87,24 @@
             </div>
         </form>
     </div>
+
+    @push('scripts')
+    <script>
+        // Show/hide rental fields based on item type
+        const itemTypeSelect = document.getElementById('item_type');
+        const rentalFields = document.getElementById('rentalFields');
+        
+        function toggleRentalFields() {
+            if (itemTypeSelect.value === 'sewa') {
+                rentalFields.style.display = 'block';
+            } else {
+                rentalFields.style.display = 'none';
+            }
+        }
+        
+        itemTypeSelect.addEventListener('change', toggleRentalFields);
+        toggleRentalFields(); // Run on page load
+    </script>
+    @endpush
 
 </x-dashboard-layout>
