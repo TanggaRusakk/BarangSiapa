@@ -94,9 +94,8 @@ class OrderController extends Controller
             if ($isRent) {
                 \App\Models\RentalInfo::create([
                     'order_id' => $order->id,
-                    'rental_start_date' => $request->rental_start_date,
-                    'rental_end_date' => $request->rental_end_date,
-                    'rental_status' => 'pending',
+                    'start_date' => $request->rental_start_date,
+                    'end_date' => $request->rental_end_date,
                 ]);
             }
 
