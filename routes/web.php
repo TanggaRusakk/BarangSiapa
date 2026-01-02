@@ -418,32 +418,26 @@ Route::middleware('auth')->group(function () {
             })
             ->first();
         
-        // If no chat exists, create new one
+        // Prepare initial message (will be pre-filled in chat input)
+        $initialMessage = null;
+        if ($itemId) {
+            $item = \App\Models\Item::find($itemId);
+            $initialMessage = "Hi, I'm interested in: " . ($item ? $item->item_name : "your item");
+        } else {
+            $initialMessage = "Hi, I have a question about your products.";
+        }
+        
+        // If no chat exists, create new one (without sending message)
         if (!$chat) {
             $chat = \App\Models\Chat::create([
                 'user_id' => auth()->id(),
                 'vendor_user_id' => $vendorUser->id,
                 'last_message_at' => now()
             ]);
-            
-            // Send initial message about the item
-            if ($itemId) {
-                $item = \App\Models\Item::find($itemId);
-                $initialMessage = "Hi, I'm interested in: " . ($item ? $item->item_name : "your item");
-            } else {
-                $initialMessage = "Hi, I have a question about your products.";
-            }
-            
-            \App\Models\Message::create([
-                'chat_id' => $chat->id,
-                'user_id' => auth()->id(),
-                'content' => $initialMessage,
-                'sent_at' => now(),
-                'is_read' => false
-            ]);
         }
         
-        return redirect()->route('messages.show', $chat->id);
+        // Redirect with initial message as query parameter
+        return redirect()->route('messages.show', ['chat' => $chat->id, 'initial_message' => $initialMessage]);
     })->name('messages.start');
 
     Route::get('/messages/{chat}', function (\App\Models\Chat $chat) {
@@ -501,6 +495,9 @@ Route::middleware('auth')->group(function () {
         
         // Update chat last_message_at
         $chat->update(['last_message_at' => now()]);
+        
+        // Broadcast the message to WebSocket
+        broadcast(new \App\Events\MessageSent($message))->toOthers();
         
         return response()->json([
             'success' => true,

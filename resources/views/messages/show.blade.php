@@ -191,6 +191,16 @@
             const sendForm = document.getElementById('send-message-form');
             const messageInput = document.getElementById('message-input');
             const chatId = {{ $chat->id }};
+            const currentUserId = {{ auth()->id() }};
+
+            // Pre-fill initial message if provided (from item detail page)
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialMessage = urlParams.get('initial_message');
+            if (initialMessage) {
+                messageInput.value = initialMessage;
+                messageInput.focus();
+                messageInput.setSelectionRange(messageInput.value.length, messageInput.value.length);
+            }
 
             // Scroll to bottom on load
             function scrollToBottom() {
@@ -198,11 +208,53 @@
             }
             scrollToBottom();
 
+            // Helper function to render a single message
+            function renderMessage(msg) {
+                const isMine = msg.user_id === currentUserId;
+                const time = msg.sent_at || new Date(msg.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+                const borderRadius = isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px';
+                const bgStyle = isMine 
+                    ? 'background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%);' 
+                    : 'background: rgba(45, 45, 65, 0.9);';
+                const textColor = isMine ? 'white' : 'var(--soft-lilac)';
+                const timeColor = isMine ? 'rgba(255,255,255,0.7)' : 'rgba(200, 162, 200, 0.5)';
+                const checkMark = isMine ? (msg.is_read ? ' ✓✓' : ' ✓') : '';
+                
+                return `
+                    <div class="mb-3 d-flex ${isMine ? 'justify-content-end' : 'justify-content-start'}" data-message-id="${msg.id}">
+                        <div class="message-bubble p-3" style="max-width: 70%; border-radius: ${borderRadius}; ${bgStyle} box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                            <p class="mb-1 small" style="color: ${textColor};">${escapeHtml(msg.content)}</p>
+                            <small style="color: ${timeColor}; font-size: 0.65rem;">${time}${checkMark}</small>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Escape HTML to prevent XSS
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // Add new message to the list
+            function addMessage(msg) {
+                // Check if message already exists
+                if (messagesList.querySelector(`[data-message-id="${msg.id}"]`)) {
+                    return;
+                }
+                messagesList.insertAdjacentHTML('beforeend', renderMessage(msg));
+                scrollToBottom();
+            }
+
             // Send message via AJAX
             sendForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const content = messageInput.value.trim();
                 if (!content) return;
+
+                const sendBtn = document.getElementById('send-btn');
+                sendBtn.disabled = true;
 
                 try {
                     const response = await fetch('{{ route("messages.send") }}', {
@@ -217,49 +269,28 @@
                     const data = await response.json();
                     if (data.success) {
                         messageInput.value = '';
-                        loadMessages();
+                        // Add own message immediately
+                        addMessage(data.message);
                     }
                 } catch (error) {
                     console.error('Error sending message:', error);
+                    alert('Failed to send message. Please try again.');
+                } finally {
+                    sendBtn.disabled = false;
+                    messageInput.focus();
                 }
             });
 
-            // Poll for new messages every 2 seconds
-            async function loadMessages() {
-                try {
-                    const response = await fetch(`{{ route('messages.fetch', $chat->id) }}`);
-                    const data = await response.json();
-                    
-                    if (data.messages) {
-                        messagesList.innerHTML = data.messages.map(msg => {
-                            const isMine = msg.user_id === {{ auth()->id() }};
-                            const time = new Date(msg.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-                            const borderRadius = isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px';
-                            const bgStyle = isMine 
-                                ? 'background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%);' 
-                                : 'background: rgba(45, 45, 65, 0.9);';
-                            const textColor = isMine ? 'white' : 'var(--soft-lilac)';
-                            const timeColor = isMine ? 'rgba(255,255,255,0.7)' : 'rgba(200, 162, 200, 0.5)';
-                            const checkMark = isMine ? (msg.is_read ? ' ✓✓' : ' ✓') : '';
-                            
-                            return `
-                                <div class="mb-3 d-flex ${isMine ? 'justify-content-end' : 'justify-content-start'}">
-                                    <div class="message-bubble p-3" style="max-width: 70%; border-radius: ${borderRadius}; ${bgStyle} box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-                                        <p class="mb-1 small" style="color: ${textColor};">${msg.content}</p>
-                                        <small style="color: ${timeColor}; font-size: 0.65rem;">${time}${checkMark}</small>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('');
-                        scrollToBottom();
-                    }
-                } catch (error) {
-                    console.error('Error loading messages:', error);
-                }
+            // Listen for real-time messages via Laravel Echo
+            if (window.Echo) {
+                window.Echo.private(`chat.${chatId}`)
+                    .listen('.message.sent', (e) => {
+                        console.log('New message received:', e);
+                        addMessage(e);
+                    });
+            } else {
+                console.error('Laravel Echo is not initialized');
             }
-
-            // Poll every 2 seconds
-            setInterval(loadMessages, 2000);
 
             // Focus input
             messageInput.focus();
