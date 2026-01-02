@@ -7,39 +7,53 @@
             @method('PATCH')
             
             <div class="mb-4">
-                <label class="block mb-2 font-bold">Ad Title</label>
-                <input type="text" name="ad_title" value="{{ $ad->ad_title }}" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac" required>
-            </div>
-
-            <div class="mb-4">
-                <label class="block mb-2 font-bold">Vendor</label>
-                <select name="vendor_id" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac" required>
-                    @foreach($vendors as $v)
-                        <option value="{{ $v->id }}" {{ $ad->vendor_id == $v->id ? 'selected' : '' }}>
-                            {{ $v->vendor_name }}
+                <label class="block mb-2 font-bold">Item</label>
+                <select name="item_id" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac" required>
+                    @foreach($items as $item)
+                        <option value="{{ $item->id }}" {{ $ad->item_id == $item->id ? 'selected' : '' }}>
+                            {{ $item->item_name }} - {{ $item->vendor->vendor_name ?? 'No Vendor' }}
                         </option>
                     @endforeach
                 </select>
+                @error('item_id')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div class="mb-4">
                 <label class="block mb-2 font-bold">Start Date</label>
-                <input type="date" name="ad_start_date" value="{{ $ad->ad_start_date }}" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac" required>
+                <input type="datetime-local" name="start_date" value="{{ $ad->start_date ? \Carbon\Carbon::parse($ad->start_date)->format('Y-m-d\TH:i') : '' }}" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac" required>
+                @error('start_date')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div class="mb-4">
                 <label class="block mb-2 font-bold">End Date</label>
-                <input type="date" name="ad_end_date" value="{{ $ad->ad_end_date }}" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac" required>
+                <input type="datetime-local" name="end_date" value="{{ $ad->end_date ? \Carbon\Carbon::parse($ad->end_date)->format('Y-m-d\TH:i') : '' }}" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac" required>
+                @error('end_date')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div class="mb-4">
-                <label class="block mb-2 font-bold">Image Path</label>
-                <input type="text" name="ad_image_path" value="{{ $ad->ad_image_path }}" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac">
+                <label class="block mb-2 font-bold">Price</label>
+                <input type="number" name="price" value="{{ $ad->price }}" min="0" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac" required>
+                @error('price')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div class="mb-4">
-                <label class="block mb-2 font-bold">Description</label>
-                <textarea name="ad_description" rows="4" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac">{{ $ad->ad_description }}</textarea>
+                <label class="block mb-2 font-bold">Status</label>
+                <select name="status" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac" required>
+                    <option value="active" {{ $ad->status == 'active' ? 'selected' : '' }}>Active</option>
+                    <option value="inactive" {{ $ad->status == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                    <option value="expired" {{ $ad->status == 'expired' ? 'selected' : '' }}>Expired</option>
+                </select>
+                @error('status')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div class="flex gap-2">

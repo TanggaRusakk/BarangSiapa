@@ -312,25 +312,39 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/admin/ads/create', function () {
         if (auth()->user()->role !== 'admin') abort(403);
-        $vendors = \App\Models\Vendor::all();
-        return view('admin.ads-create', compact('vendors'));
+        $items = \App\Models\Item::with('vendor')->get();
+        return view('admin.ads-create', compact('items'));
     })->name('admin.ads.create');
 
     Route::post('/admin/ads', function (Request $request) {
         if (auth()->user()->role !== 'admin') abort(403);
-        \App\Models\Ad::create($request->all());
+        $validated = $request->validate([
+            'item_id' => 'required|exists:items,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'price' => 'required|integer|min:0',
+            'status' => 'required|in:active,inactive,expired'
+        ]);
+        \App\Models\Ad::create($validated);
         return redirect()->route('admin.ads')->with('success', 'Ad created');
     })->name('admin.ads.store');
 
     Route::get('/admin/ads/{ad}/edit', function (\App\Models\Ad $ad) {
         if (auth()->user()->role !== 'admin') abort(403);
-        $vendors = \App\Models\Vendor::all();
-        return view('admin.ads-edit', compact('ad', 'vendors'));
+        $items = \App\Models\Item::with('vendor')->get();
+        return view('admin.ads-edit', compact('ad', 'items'));
     })->name('admin.ads.edit');
 
     Route::patch('/admin/ads/{ad}', function (Request $request, \App\Models\Ad $ad) {
         if (auth()->user()->role !== 'admin') abort(403);
-        $ad->update($request->all());
+        $validated = $request->validate([
+            'item_id' => 'required|exists:items,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'price' => 'required|integer|min:0',
+            'status' => 'required|in:active,inactive,expired'
+        ]);
+        $ad->update($validated);
         return redirect()->route('admin.ads')->with('success', 'Ad updated');
     })->name('admin.ads.update');
 
