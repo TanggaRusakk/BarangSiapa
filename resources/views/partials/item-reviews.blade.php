@@ -112,12 +112,45 @@
                             <small class="text-secondary">{{ $review->created_at->diffForHumans() }}</small>
                         </div>
 
-                        <p class="text-secondary mb-0">{{ $review->comment ?? 'No review content.' }}</p>
+                        <!-- Review Content (Show or Edit Mode) -->
+                        <div id="reviewContent{{ $review->id }}">
+                            <p class="text-secondary mb-0">{{ $review->comment ?? 'No review content.' }}</p>
+                        </div>
+
+                        <!-- Inline Edit Form (Hidden by default) -->
+                        <div id="editForm{{ $review->id }}" style="display: none;">
+                            <form action="{{ route('reviews.update', $review->id) }}" method="POST">
+                                @csrf
+                                @method('PATCH')
+                                
+                                <div class="mb-3">
+                                    <label class="form-label small">Rating</label>
+                                    <div class="d-flex gap-1 mb-2" id="editStarRating{{ $review->id }}">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <button type="button" class="btn btn-link p-0 edit-star-btn" data-review-id="{{ $review->id }}" data-rating="{{ $i }}" style="font-size: 24px; color: {{ $i <= ($review->rating ?? 0) ? '#FFD700' : '#ddd' }}; text-decoration: none;">
+                                                ★
+                                            </button>
+                                        @endfor
+                                    </div>
+                                    <input type="hidden" name="rating" id="editRatingInput{{ $review->id }}" value="{{ $review->rating }}" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small">Comment</label>
+                                    <textarea name="comment" rows="3" class="form-control" required>{{ $review->comment }}</textarea>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-sm" style="background: #6A38C2; color: white;">Save Changes</button>
+                                    <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit{{ $review->id }}()">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
 
                         @auth
                             @if($review->user_id === auth()->id())
                                 <div class="mt-2 d-flex gap-2">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editReview{{ $review->id }}">Edit</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="showEditForm{{ $review->id }}()">Edit</button>
                                     <form action="{{ route('reviews.destroy', $review->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this review?');">
                                         @csrf
                                         @method('DELETE')
@@ -125,39 +158,36 @@
                                     </form>
                                 </div>
 
-                                <!-- Edit Modal -->
-                                <div class="modal fade" id="editReview{{ $review->id }}" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <form action="{{ route('reviews.update', $review->id) }}" method="POST">
-                                                @csrf
-                                                @method('PATCH')
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Edit Review</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Rating</label>
-                                                        <select name="rating" class="form-select" required>
-                                                            @for($i = 5; $i >= 1; $i--)
-                                                                <option value="{{ $i }}" {{ $review->rating == $i ? 'selected' : '' }}>{{ $i }} Star{{ $i > 1 ? 's' : '' }}</option>
-                                                            @endfor
-                                                        </select>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Comment</label>
-                                                        <textarea name="comment" rows="3" class="form-control" required>{{ $review->comment }}</textarea>
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                    <button type="submit" class="btn" style="background: #6A38C2; color: white;">Save Changes</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
+                                <script>
+                                    function showEditForm{{ $review->id }}() {
+                                        document.getElementById('reviewContent{{ $review->id }}').style.display = 'none';
+                                        document.getElementById('editForm{{ $review->id }}').style.display = 'block';
+                                    }
+
+                                    function cancelEdit{{ $review->id }}() {
+                                        document.getElementById('reviewContent{{ $review->id }}').style.display = 'block';
+                                        document.getElementById('editForm{{ $review->id }}').style.display = 'none';
+                                    }
+
+                                    // Star rating for edit form
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const editStarButtons{{ $review->id }} = document.querySelectorAll('#editStarRating{{ $review->id }} .edit-star-btn');
+                                        const editRatingInput{{ $review->id }} = document.getElementById('editRatingInput{{ $review->id }}');
+                                        
+                                        if (editStarButtons{{ $review->id }}.length && editRatingInput{{ $review->id }}) {
+                                            editStarButtons{{ $review->id }}.forEach((btn) => {
+                                                btn.addEventListener('click', function() {
+                                                    const rating = this.dataset.rating;
+                                                    editRatingInput{{ $review->id }}.value = rating;
+                                                    
+                                                    editStarButtons{{ $review->id }}.forEach((star, i) => {
+                                                        star.style.color = i < rating ? '#FFD700' : '#ddd';
+                                                    });
+                                                });
+                                            });
+                                        }
+                                    });
+                                </script>
                             @endif
                         @endauth
                     </div>
