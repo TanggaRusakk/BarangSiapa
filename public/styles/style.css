@@ -470,6 +470,67 @@ h3 {
     opacity: 1;
 }
 
+/* ===== VENDOR GALLERY THUMBNAILS ===== */
+/* Make thumbnails smaller and ensure delete button sits above image */
+.gallery-grid {
+    display: grid;
+}
+.gallery-grid img {
+    width: 100% !important;
+    height: 120px !important;
+    max-height: 120px !important;
+    object-fit: contain !important;
+    background: rgba(9,9,15,0.12) !important;
+    display: block !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(106,56,194,0.12) !important;
+}
+.gallery-grid .delete-btn {
+    z-index: 60 !important;
+    position: absolute !important;
+    bottom: 0.5rem !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0.25rem 0.6rem !important;
+    font-size: 0.85rem !important;
+    border-radius: 999px !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.35) !important;
+    background-color: #ff3b30 !important; /* vivid red */
+    color: #ffffff !important;
+}
+
+.gallery-grid .delete-btn:hover {
+    background-color: #e03131 !important; /* slightly darker on hover */
+}
+
+/* Ensure overlay sits inside the thumbnail container */
+.gallery-grid .relative { overflow: visible !important; position: relative !important; }
+
+/* Fallback visible button under thumbnails (always shown) */
+.remove-btn-below {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.6rem;
+    background: #ff3b30;
+    color: #fff;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+}
+
+.remove-btn-below:hover { background: #e03131; }
+
+/* Ensure gallery-item spacing allows button to show */
+.gallery-item { display: flex; flex-direction: column; gap: 0.5rem; }
+
 .product-image {
     width: 100%;
     aspect-ratio: 4/3;
@@ -1311,6 +1372,162 @@ a.text-sm:hover {
 .text-sm.text-red-600 {
     color: #ff4757;
     font-size: 0.875rem;
+}
+
+/* ===== VENDOR PRODUCT FORMS (uniform field styling) ===== */
+/* Uniform height and box sizing for form fields */
+.uniform-field {
+    /* Increased slightly so inputs and selects match visually */
+    height: 3.95rem;
+    line-height: 1.2;
+    box-sizing: border-box;
+    padding: 0.65rem 0.9rem;
+}
+
+/* Ensure inputs and selects use the uniform height and align their inner text */
+input.uniform-field,
+select.uniform-field {
+    display: block;
+    width: 100%;
+    height: 3.95rem;
+    padding: 0.65rem 0.9rem;
+    vertical-align: middle;
+}
+
+/* Textareas slightly taller but consistent with the new sizing */
+textarea.uniform-field {
+    min-height: 5.1rem;
+    height: auto;
+    padding: 0.7rem 0.9rem;
+}
+
+.uniform-field.file {
+    padding: 0.45rem 0.6rem;
+}
+
+/* Disable hover effects on form fields (boxes) except file chooser
+   Keep file chooser hover color changes intact */
+.uniform-field:not(.file):hover {
+    box-shadow: none !important;
+    transform: none !important;
+    border-color: rgba(106, 56, 194, 0.3) !important;
+    background-color: inherit !important;
+}
+
+/* Remove any hover/focus color or animation that turns text white for form fields
+   scoped to uniform-field so global search inputs and other components keep their effects */
+.uniform-field:hover,
+.uniform-field:focus,
+.uniform-field:focus-visible {
+    color: #ffffff !important;
+    background-color: inherit !important;
+    box-shadow: none !important;
+    transform: none !important;
+    outline: none !important;
+    transition: none !important;
+}
+
+/* Stronger scoped overrides for any inputs/selects/textareas inside card forms
+   This prevents other global hover/focus rules from turning text or background white */
+.card input,
+.card select,
+.card textarea,
+.card .uniform-field {
+    transition: none !important;
+}
+
+.card input:hover,
+.card select:hover,
+.card textarea:hover,
+.card .uniform-field:hover,
+.card input:focus,
+.card select:focus,
+.card textarea:focus,
+.card .uniform-field:focus {
+    color: #ffffff !important;
+    background-color: rgba(9,9,15,0.6) !important;
+    box-shadow: none !important;
+    outline: none !important;
+    transform: none !important;
+}
+
+/* Strongest fallback to ensure text stays white in all browsers (including WebKit)
+   This overrides any other color rules that may be applied on focus/hover */
+.card input,
+.card select,
+.card textarea,
+.card .uniform-field,
+.uniform-field,
+input.uniform-field,
+select.uniform-field,
+textarea.uniform-field {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.card input:hover,
+.card select:hover,
+.card textarea:hover,
+.card .uniform-field:hover,
+.card input:focus,
+.card select:focus,
+.card textarea:focus,
+.card .uniform-field:focus,
+.uniform-field:hover,
+.uniform-field:focus {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Also disable utility hover text color inside cards (safety) */
+.card .hover\:text-neon-pink:hover,
+.card .hover\:text-white:hover {
+    color: inherit !important;
+    text-shadow: none !important;
+}
+
+/* ===== PRODUCT IMAGE INPUT FIXES ===== */
+/* Target only the product image fields to avoid global side-effects */
+input#images.uniform-field,
+input#image.uniform-field {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: .6rem .75rem !important;
+    background: linear-gradient(180deg, rgba(9,9,15,0.6), rgba(9,9,15,0.55)) !important;
+    border-radius: var(--radius-md) !important;
+    border: 2px solid rgba(106,56,194,0.15) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 24px rgba(106,56,194,0.06);
+    transition: box-shadow .18s ease, border-color .18s ease, transform .12s ease;
+}
+
+input#images.uniform-field::file-selector-button,
+input#image.uniform-field::file-selector-button,
+input#images.uniform-field::-webkit-file-upload-button,
+input#image.uniform-field::-webkit-file-upload-button {
+    padding: .35rem .8rem !important;
+    margin: 0 !important;
+    border-radius: var(--radius-md) !important;
+    background: var(--gradient-primary) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255,60,172,0.18) !important;
+    box-shadow: var(--glow-purple) !important;
+}
+
+input#images.uniform-field::file-selector-button:hover,
+input#image.uniform-field::file-selector-button:hover,
+input#images.uniform-field::-webkit-file-upload-button:hover,
+input#image.uniform-field::-webkit-file-upload-button:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 0 40px rgba(106, 56, 194, 0.8), 0 0 80px rgba(255, 60, 172, 0.5);
+}
+
+/* Make the outer file input border glow on hover to match the neon button */
+input#images.uniform-field:hover,
+input#image.uniform-field:hover {
+    border-color: rgba(255,60,172,0.45) !important;
+    box-shadow: 0 10px 40px rgba(255,60,172,0.06), 0 0 30px rgba(255,60,172,0.06) inset;
 }
 
 /* ===== RESPONSIVE ===== */
