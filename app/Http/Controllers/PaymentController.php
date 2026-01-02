@@ -54,11 +54,14 @@ class PaymentController extends Controller
         // Prepare item details
         $itemDetails = [];
         foreach ($order->orderItems as $orderItem) {
+            $price = (int) ($orderItem->order_item_price ?? $orderItem->price ?? 0);
+            $quantity = (int) ($orderItem->order_item_quantity ?? $orderItem->quantity ?? 1);
+            
             $itemDetails[] = [
-                'id' => $orderItem->item->id,
-                'price' => (int) $orderItem->price,
-                'quantity' => $orderItem->quantity,
-                'name' => substr($orderItem->item->item_name, 0, 50),
+                'id' => $orderItem->item->id ?? 'ITEM-' . $orderItem->id,
+                'price' => $price,
+                'quantity' => $quantity,
+                'name' => substr($orderItem->item->item_name ?? 'Item', 0, 50),
             ];
         }
 
