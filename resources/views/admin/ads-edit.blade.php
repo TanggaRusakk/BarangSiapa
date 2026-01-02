@@ -2,7 +2,7 @@
     <x-slot name="title">Edit Advertisement</x-slot>
 
     <div class="card">
-        <form method="POST" action="{{ route('admin.ads.update', $ad->id) }}">
+        <form method="POST" action="{{ route('admin.ads.update', $ad->id) }}" class="admin-ads-form">
             @csrf
             @method('PATCH')
             

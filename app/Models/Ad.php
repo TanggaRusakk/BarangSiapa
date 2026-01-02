@@ -15,12 +15,19 @@ class Ad extends Model
         'start_date',
         'end_date',
         'price',
-        'status'
+        'status',
+        'payment_id',
+        'ad_image'
     ];
 
     public function item()
     {
         return $this->belongsTo(Item::class);
+    }
+
+    public function payment()
+    {
+        return $this->belongsTo(Payment::class);
     }
 
     /**

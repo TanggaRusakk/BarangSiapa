@@ -57,9 +57,10 @@ Route::get('/dashboard', function (Request $request) {
     $activeVendors = \App\Models\Vendor::count();
     $totalProducts = \App\Models\Item::count();
 
-    // Revenue this month (sum payments)
+    // Revenue this month (sum payments - including ad payments)
     $revenueThisMonth = \App\Models\Payment::whereYear('created_at', now()->year)
         ->whereMonth('created_at', now()->month)
+        ->where('payment_status', 'settlement') // Only count successful payments
         ->sum('payment_total_amount');
 
     // Recent entities
@@ -303,56 +304,12 @@ Route::middleware('auth')->group(function () {
         return view('admin.messages', compact('messages'));
     })->name('admin.messages');
 
-    // Admin: Ads CRUD
+    // Admin: Ads View-Only (vendors manage their own ads)
     Route::get('/admin/ads', function () {
         if (auth()->user()->role !== 'admin') abort(403);
-        $ads = \App\Models\Ad::with('vendor')->paginate(25);
+        $ads = \App\Models\Ad::with(['item.vendor', 'payment'])->paginate(25);
         return view('admin.ads', compact('ads'));
     })->name('admin.ads');
-
-    Route::get('/admin/ads/create', function () {
-        if (auth()->user()->role !== 'admin') abort(403);
-        $items = \App\Models\Item::with('vendor')->get();
-        return view('admin.ads-create', compact('items'));
-    })->name('admin.ads.create');
-
-    Route::post('/admin/ads', function (Request $request) {
-        if (auth()->user()->role !== 'admin') abort(403);
-        $validated = $request->validate([
-            'item_id' => 'required|exists:items,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'price' => 'required|integer|min:0',
-            'status' => 'required|in:active,inactive,expired'
-        ]);
-        \App\Models\Ad::create($validated);
-        return redirect()->route('admin.ads')->with('success', 'Ad created');
-    })->name('admin.ads.store');
-
-    Route::get('/admin/ads/{ad}/edit', function (\App\Models\Ad $ad) {
-        if (auth()->user()->role !== 'admin') abort(403);
-        $items = \App\Models\Item::with('vendor')->get();
-        return view('admin.ads-edit', compact('ad', 'items'));
-    })->name('admin.ads.edit');
-
-    Route::patch('/admin/ads/{ad}', function (Request $request, \App\Models\Ad $ad) {
-        if (auth()->user()->role !== 'admin') abort(403);
-        $validated = $request->validate([
-            'item_id' => 'required|exists:items,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'price' => 'required|integer|min:0',
-            'status' => 'required|in:active,inactive,expired'
-        ]);
-        $ad->update($validated);
-        return redirect()->route('admin.ads')->with('success', 'Ad updated');
-    })->name('admin.ads.update');
-
-    Route::delete('/admin/ads/{ad}', function (\App\Models\Ad $ad) {
-        if (auth()->user()->role !== 'admin') abort(403);
-        $ad->delete();
-        return redirect()->route('admin.ads')->with('success', 'Ad deleted');
-    })->name('admin.ads.destroy');
 
     // Admin: Categories CRUD
     Route::get('/admin/categories', function () {
@@ -620,8 +577,53 @@ Route::middleware('auth')->group(function () {
     Route::get('/vendor/dashboard', function () {
         if (auth()->user()->role !== 'vendor') abort(403);
         $vendor = auth()->user()->vendor;
+
+        // Recent products (for display)
         $recentProducts = $vendor ? $vendor->items()->orderBy('created_at', 'desc')->take(6)->get() : collect();
-        return view('vendor.dashboard', compact('recentProducts'));
+
+        // Orders related to this vendor (orders that contain items belonging to vendor)
+        if ($vendor) {
+            // Get ALL orders that have ANY of vendor's items (simpler approach)
+            $vendorItems = $vendor->items()->pluck('id');
+            
+            $allOrders = \App\Models\Order::with(['user','orderItems.item'])->get();
+            $vendorOrders = $allOrders->filter(function($order) use ($vendorItems) {
+                return $order->orderItems->pluck('item_id')->intersect($vendorItems)->isNotEmpty();
+            });
+
+            // Total Orders (exclude cancelled)
+            $ordersCount = $vendorOrders->where('order_status', '!=', 'cancelled')->count();
+            
+            // Recent 3 orders (any status)
+            $recentOrders = $vendorOrders->sortByDesc('created_at')->take(3);
+
+            // Total Sales: revenue from completed orders only
+            $completedOrders = $vendorOrders->where('order_status', 'completed');
+            $revenue = 0;
+            foreach ($completedOrders as $order) {
+                foreach ($order->orderItems as $item) {
+                    if ($vendorItems->contains($item->item_id)) {
+                        $revenue += ($item->order_item_price ?? 0) * ($item->order_item_quantity ?? 1);
+                    }
+                }
+            }
+
+            $productsCount = $vendor->items()->count();
+
+            // Store Rating: average rating from all vendor's items
+            $storeRating = \App\Models\Review::whereHas('item', function ($q) use ($vendor) {
+                $q->where('vendor_id', $vendor->id ?? 0);
+            })->avg('review_rating') ?? 0;
+            $storeRating = round($storeRating, 1);
+        } else {
+            $ordersCount = 0;
+            $recentOrders = collect();
+            $revenue = 0;
+            $productsCount = 0;
+            $storeRating = 0;
+        }
+
+        return view('vendor.dashboard', compact('recentProducts', 'ordersCount', 'recentOrders', 'revenue', 'productsCount', 'storeRating'));
     })->name('vendor.dashboard');
 
     Route::get('/vendor/products/create', function () {
@@ -704,22 +706,161 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('vendor.orders.list')->with('success', 'Order status updated');
     })->name('vendor.orders.updateStatus');
 
+    // Vendor Ads Management
+    Route::get('/vendor/ads', function () {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $vendor = auth()->user()->vendor;
+        $ads = \App\Models\Ad::whereHas('item', function($q) use ($vendor) {
+            $q->where('vendor_id', $vendor->id ?? 0);
+        })->with(['item', 'payment'])->orderBy('created_at', 'desc')->paginate(25);
+        return view('vendor.ads', compact('ads'));
+    })->name('vendor.ads.index');
+
     Route::get('/vendor/ads/create', function () {
         if (auth()->user()->role !== 'vendor') abort(403);
-        return view('vendor.ads-create');
+        $vendor = auth()->user()->vendor;
+        $items = $vendor ? $vendor->items()->get() : collect();
+        return view('vendor.ads-create', compact('items'));
     })->name('vendor.ads.create');
 
-    Route::post('/vendor/ads', function (Request $request) {
+    // Vendor pays for ad (before creating)
+    Route::post('/vendor/ads/pay', function (Request $request) {
         if (auth()->user()->role !== 'vendor') abort(403);
-        $data = $request->validate([
-            'ad_title' => 'required|string',
-            'ad_image' => 'nullable|string',
-            'ad_url' => 'nullable|url',
+        $validated = $request->validate([
+            'item_id' => 'required|exists:items,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'ad_price' => 'required|integer|min:1000',
+            'ad_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-        $data['vendor_id'] = auth()->user()->vendor->id ?? null;
-        \App\Models\Ad::create($data);
-        return redirect()->route('vendor.dashboard')->with('success', 'Ad created');
-    })->name('vendor.ads.store');
+        
+        $vendor = auth()->user()->vendor;
+        $item = \App\Models\Item::find($validated['item_id']);
+        if (!$vendor || $item->vendor_id !== $vendor->id) abort(403);
+        
+        // Handle image upload
+        $imageName = null;
+        if ($request->hasFile('ad_image')) {
+            $image = $request->file('ad_image');
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('images/ads'), $imageName);
+        }
+        
+        // Create ad payment record (payment_method will be set after Midtrans callback)
+        $payment = \App\Models\Payment::create([
+            'order_id' => null, // Not related to order
+            'midtrans_order_id' => 'AD-' . time() . '-' . $vendor->id,
+            'payment_method' => 'bank_transfer', // default
+            'payment_type' => 'full',
+            'payment_total_amount' => $validated['ad_price'],
+            'payment_status' => 'pending',
+        ]);
+        
+        // Store ad data in session for after payment
+        session([
+            'pending_ad' => [
+                'item_id' => $validated['item_id'],
+                'start_date' => $validated['start_date'],
+                'end_date' => $validated['end_date'],
+                'price' => $validated['ad_price'],
+                'ad_image' => $imageName,
+                'payment_id' => $payment->id,
+            ]
+        ]);
+        
+        // Redirect to payment page (simplified - in production use Midtrans)
+        return redirect()->route('vendor.ads.payment', $payment->id);
+    })->name('vendor.ads.pay');
+
+    // Show payment page
+    Route::get('/vendor/ads/payment/{payment}', function (\App\Models\Payment $payment) {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $pendingAd = session('pending_ad');
+        if (!$pendingAd || $pendingAd['payment_id'] !== $payment->id) {
+            return redirect()->route('vendor.ads.index')->with('error', 'Invalid payment session');
+        }
+        return view('vendor.ads-payment', compact('payment', 'pendingAd'));
+    })->name('vendor.ads.payment');
+
+    // Confirm payment (simulate payment success)
+    Route::post('/vendor/ads/payment/{payment}/confirm', function (Request $request, \App\Models\Payment $payment) {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $pendingAd = session('pending_ad');
+        if (!$pendingAd || $pendingAd['payment_id'] !== $payment->id) {
+            return redirect()->route('vendor.ads.index')->with('error', 'Invalid payment session');
+        }
+        
+        // Mark payment as settled
+        $payment->update([
+            'payment_status' => 'settlement',
+            'paid_at' => now(),
+        ]);
+        
+        // Create the ad
+        \App\Models\Ad::create([
+            'item_id' => $pendingAd['item_id'],
+            'start_date' => $pendingAd['start_date'],
+            'end_date' => $pendingAd['end_date'],
+            'price' => $pendingAd['price'],
+            'ad_image' => $pendingAd['ad_image'] ?? 'ad_placeholder.jpg',
+            'status' => 'active',
+            'payment_id' => $payment->id,
+        ]);
+        
+        session()->forget('pending_ad');
+        return redirect()->route('vendor.ads.index')->with('success', 'Ad payment successful and ad created!');
+    })->name('vendor.ads.payment.confirm');
+
+    Route::get('/vendor/ads/{ad}/edit', function (\App\Models\Ad $ad) {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $vendor = auth()->user()->vendor;
+        if (!$vendor || $ad->item->vendor_id !== $vendor->id) abort(403);
+        $items = $vendor->items()->get();
+        return view('vendor.ads-edit', compact('ad', 'items'));
+    })->name('vendor.ads.edit');
+
+    Route::patch('/vendor/ads/{ad}', function (Request $request, \App\Models\Ad $ad) {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $vendor = auth()->user()->vendor;
+        if (!$vendor || $ad->item->vendor_id !== $vendor->id) abort(403);
+        
+        $validated = $request->validate([
+            'item_id' => 'required|exists:items,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'status' => 'required|in:active,inactive,expired',
+            'ad_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+        
+        // Verify item belongs to vendor
+        $item = \App\Models\Item::find($validated['item_id']);
+        if ($item->vendor_id !== $vendor->id) abort(403);
+        
+        // Handle image upload
+        if ($request->hasFile('ad_image')) {
+            // Delete old image if exists and not placeholder
+            if ($ad->ad_image && $ad->ad_image !== 'ad_placeholder.jpg' && file_exists(public_path('images/ads/' . $ad->ad_image))) {
+                unlink(public_path('images/ads/' . $ad->ad_image));
+            }
+            
+            $image = $request->file('ad_image');
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('images/ads'), $imageName);
+            $validated['ad_image'] = $imageName;
+        }
+        
+        // ensure only allowed fields are updated
+        $ad->update(collect($validated)->only(['item_id','start_date','end_date','status','ad_image'])->toArray());
+        return redirect()->route('vendor.ads.index')->with('success', 'Ad updated');
+    })->name('vendor.ads.update');
+
+    Route::delete('/vendor/ads/{ad}', function (\App\Models\Ad $ad) {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        $vendor = auth()->user()->vendor;
+        if (!$vendor || $ad->item->vendor_id !== $vendor->id) abort(403);
+        $ad->delete();
+        return redirect()->route('vendor.ads.index')->with('success', 'Ad deleted');
+    })->name('vendor.ads.destroy');
 
     // Edit vendor product
     Route::get('/vendor/products/{item}/edit', function (\App\Models\Item $item) {

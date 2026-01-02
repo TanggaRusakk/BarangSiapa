@@ -21,6 +21,7 @@ class AdSeeder extends Seeder
                     'start_date' => $now->copy()->subDays($i),
                     'end_date' => $now->copy()->addDays(7),
                     'price' => intval($it->item_price * 0.2),
+                    'ad_image' => 'ad_placeholder.jpg',
                     'status' => 'active'
                 ]
             );

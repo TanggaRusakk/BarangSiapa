@@ -18,24 +18,38 @@
 
         <div class="col-12 col-md-4">
             <div class="card subtle-hover p-6">
-                <div class="stat-label">Active Orders</div>
+                <div class="stat-label">Total Orders</div>
                 <div class="stat-value text-3xl font-extrabold">{{ $ordersCount ?? 0 }}</div>
-                <div class="text-sm text-soft-lilac mt-2">Recently placed orders</div>
+                <div class="text-sm text-soft-lilac mt-2">Excluding cancelled orders</div>
             </div>
         </div>
 
         <div class="col-12 col-md-4">
             <div class="card subtle-hover p-6">
-                <div class="stat-label">Revenue (This Month)</div>
+                <div class="stat-label">Total Sales</div>
                 <div class="stat-value text-3xl font-extrabold">Rp{{ number_format($revenue ?? 0) }}</div>
-                <div class="text-sm text-soft-lilac mt-2">Net sales for current month</div>
+                <div class="text-sm text-soft-lilac mt-2">From completed orders</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Store Rating Card -->
+    <div class="row g-4 mb-6">
+        <div class="col-12">
+            <div class="card subtle-hover p-6 text-center">
+                <div class="stat-label">Store Rating</div>
+                <div class="stat-value text-3xl font-extrabold">
+                    <span class="text-gradient">{{ $storeRating ?? 0 }}</span>
+                    <span class="text-2xl text-soft-lilac">/ 5.0</span>
+                </div>
+                <div class="text-sm text-soft-lilac mt-2">Average rating from all products</div>
             </div>
         </div>
     </div>
 
     <!-- Quick Actions: clear 3-column boxes -->
     <div class="row g-4 mb-4">
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
             <a href="{{ route('vendor.products.create') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
                 <div class="text-4xl mb-2">➕</div>
                 <h3 class="font-bold text-lg mb-1">Add New Product</h3>
@@ -43,7 +57,7 @@
             </a>
         </div>
 
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
             <a href="{{ route('vendor.products.list') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
                 <div class="text-4xl mb-2">📦</div>
                 <h3 class="font-bold text-lg mb-1">My Products</h3>
@@ -51,11 +65,19 @@
             </a>
         </div>
 
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
             <a href="{{ route('vendor.orders.list') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
                 <div class="text-4xl mb-2">🛒</div>
                 <h3 class="font-bold text-lg mb-1">Orders</h3>
                 <p class="text-sm text-secondary mb-0">Manage recent orders</p>
+            </a>
+        </div>
+
+        <div class="col-12 col-md-3">
+            <a href="{{ route('vendor.ads.index') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                <div class="text-4xl mb-2">📢</div>
+                <h3 class="font-bold text-lg mb-1">My Ads</h3>
+                <p class="text-sm text-secondary mb-0">Create & manage ads</p>
             </a>
         </div>
     </div>

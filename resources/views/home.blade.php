@@ -28,12 +28,26 @@
                 <div class="carousel-inner">
                     @foreach($ads as $index => $ad)
                         <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                            <a href="{{ $ad->item ? route('items.show', $ad->item->id) : '#' }}" class="d-block">
-                                <img src="{{ optional($ad->item)->first_image_url ?? asset('images/products/product_placeholder.jpg') }}" class="d-block w-100 rounded" alt="{{ $ad->item ? $ad->item->item_name : 'Ad' }}" style="max-height: 400px; object-fit: cover;">
+                            <a href="{{ $ad->item ? route('items.show', $ad->item->id) : '#' }}" class="d-block" style="cursor: pointer;">
+                                <img src="{{ optional($ad->item)->first_image_url ?? asset('images/products/product_placeholder.jpg') }}" class="d-block w-100 rounded" alt="{{ $ad->item ? $ad->item->item_name : 'Ad' }}" style="max-height: 400px; object-fit: cover; transition: transform 0.3s ease;">
+                                @if($ad->item)
+                                <div class="position-absolute bottom-0 start-0 end-0 p-4" style="background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);">
+                                    <h4 class="text-white mb-2">{{ $ad->item->item_name }}</h4>
+                                    <p class="text-white-50 mb-0">Click to view item details</p>
+                                </div>
+                                @endif
                             </a>
                         </div>
                     @endforeach
                 </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#adsCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#adsCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
             </div>
         </div>
     </section>

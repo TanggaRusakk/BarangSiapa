@@ -2,7 +2,7 @@
     <x-slot name="title">Create Advertisement</x-slot>
 
     <div class="card">
-        <form method="POST" action="{{ route('admin.ads.store') }}">
+        <form method="POST" action="{{ route('admin.ads.store') }}" class="admin-ads-form">
             @csrf
             
             <div class="mb-4">

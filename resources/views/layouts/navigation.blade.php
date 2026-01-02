@@ -74,6 +74,14 @@
                                     </svg>
                                     <span class="fw-medium">My Orders</span>
                                 </a>
+                                @if(auth()->check() && auth()->user()->role === 'vendor')
+                                    <a class="dropdown-item py-2 px-4 d-flex align-items-center gap-2 text-white" href="{{ route('vendor.ads.index') }}" style="transition: background-color 0.2s; color: #ffffff;">
+                                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                                        </svg>
+                                        <span class="fw-medium">My Ads</span>
+                                    </a>
+                                @endif
                                 @if(auth()->check() && auth()->user()->image_path)
                                     <div class="dropdown-divider my-1" style="border-color: rgba(255,255,255,0.06);"></div>
                                     <form method="POST" action="{{ route('profile.photo.remove') }}" class="m-0">
@@ -130,6 +138,9 @@
                 <a href="{{ route('dashboard') }}" class="d-block py-2 text-white text-decoration-none">Dashboard</a>
                 <a href="{{ route('profile.edit') }}" class="d-block py-2 text-white text-decoration-none">Profile</a>
                 <a href="{{ route('orders.my-orders') }}" class="d-block py-2 text-white text-decoration-none">My Orders</a>
+                @if(auth()->check() && auth()->user()->role === 'vendor')
+                    <a href="{{ route('vendor.ads.index') }}" class="d-block py-2 text-white text-decoration-none">My Ads</a>
+                @endif
                 <div class="dropdown-divider bg-white opacity-25"></div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

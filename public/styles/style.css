@@ -33,6 +33,68 @@
     --radius-xl: 24px;
 }
 
+/* Final override: ensure admin ads datetime inputs stay muted grey despite global card rules */
+.card .admin-ads-form input[type="datetime-local"],
+.card .admin-ads-form input[name="start_date"],
+.card .admin-ads-form input[name="end_date"] {
+    color: #666666 !important;
+    -webkit-text-fill-color: #666666 !important;
+    background-color: rgba(9,9,15,0.12) !important;
+    border-color: rgba(106,56,194,0.12) !important;
+}
+
+.card .admin-ads-form input[type="datetime-local"]:hover,
+.card .admin-ads-form input[type="datetime-local"]:focus,
+.card .admin-ads-form input[name="start_date"]:hover,
+.card .admin-ads-form input[name="start_date"]:focus,
+.card .admin-ads-form input[name="end_date"]:hover,
+.card .admin-ads-form input[name="end_date"]:focus {
+    color: #666666 !important;
+    -webkit-text-fill-color: #666666 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.card .admin-ads-form input[type="datetime-local"]::-webkit-datetime-edit,
+.card .admin-ads-form input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper,
+.card .admin-ads-form input[type="datetime-local"]::-webkit-datetime-edit-text {
+    color: #666666 !important;
+    -webkit-text-fill-color: #666666 !important;
+}
+
+/* Vendor ads form: make datetime inputs white text like other form fields */
+.vendor-ads-form,
+.vendor-ads-form:focus,
+.vendor-ads-form:hover {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.vendor-ads-form::-webkit-datetime-edit,
+.vendor-ads-form::-webkit-datetime-edit-fields-wrapper,
+.vendor-ads-form::-webkit-datetime-edit-text,
+.vendor-ads-form::-webkit-datetime-edit-year-field,
+.vendor-ads-form::-webkit-datetime-edit-month-field,
+.vendor-ads-form::-webkit-datetime-edit-day-field,
+.vendor-ads-form::-webkit-datetime-edit-hour-field,
+.vendor-ads-form::-webkit-datetime-edit-minute-field {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.vendor-ads-form::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.8;
+}
+
+/* Stronger selectors to override .card input rules */
+.card input.vendor-ads-form,
+.card input.vendor-ads-form:focus,
+.card input.vendor-ads-form:hover {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
 /* ===== GLOBAL STYLES ===== */
 * {
     margin: 0;
@@ -257,6 +319,35 @@ h3 {
         opacity: 1;
         pointer-events: all;
     }
+}
+
+/* Re-apply admin ads datetime overrides at the end to override global white-text rules */
+.admin-ads-form input[type="datetime-local"],
+.admin-ads-form input[name="start_date"],
+.admin-ads-form input[name="end_date"] {
+    color: #666666 !important;
+    -webkit-text-fill-color: #666666 !important;
+    background-color: rgba(9,9,15,0.12) !important;
+    border-color: rgba(106,56,194,0.12) !important;
+}
+
+.admin-ads-form input[type="datetime-local"]:hover,
+.admin-ads-form input[type="datetime-local"]:focus,
+.admin-ads-form input[name="start_date"]:hover,
+.admin-ads-form input[name="start_date"]:focus,
+.admin-ads-form input[name="end_date"]:hover,
+.admin-ads-form input[name="end_date"]:focus {
+    color: #666666 !important;
+    -webkit-text-fill-color: #666666 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.admin-ads-form input[type="datetime-local"]::-webkit-datetime-edit,
+.admin-ads-form input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper,
+.admin-ads-form input[type="datetime-local"]::-webkit-datetime-edit-text {
+    color: #666666 !important;
+    -webkit-text-fill-color: #666666 !important;
 }
 
 /* ===== HERO SECTION (Festival Vibes) ===== */
@@ -653,6 +744,26 @@ h3 {
     }
 }
 
+/* ===== ADS CAROUSEL HOVER EFFECTS ===== */
+#adsCarousel .carousel-item a {
+    text-decoration: none;
+    display: block;
+    position: relative;
+    overflow: hidden;
+}
+
+#adsCarousel .carousel-item img {
+    transition: transform 0.3s ease;
+}
+
+#adsCarousel .carousel-item a:hover img {
+    transform: scale(1.05);
+}
+
+#adsCarousel .carousel-item a:hover {
+    box-shadow: 0 0 20px rgba(106, 56, 194, 0.6);
+}
+
 /* ===== CAROUSEL (Trending Section) ===== */
 .carousel {
     position: relative;
@@ -797,6 +908,36 @@ h3 {
     display: flex;
     gap: 0.5rem;
     align-items: center;
+}
+
+/* Admin ads form: make start/end datetime inputs use muted grey and disable hover/focus color changes */
+.admin-ads-form input[type="datetime-local"],
+.admin-ads-form input[name="start_date"],
+.admin-ads-form input[name="end_date"] {
+    color: #666666 !important;
+    -webkit-text-fill-color: #666666 !important;
+    background-color: rgba(9,9,15,0.12) !important;
+    border-color: rgba(106,56,194,0.12) !important;
+}
+
+.admin-ads-form input[type="datetime-local"]:hover,
+.admin-ads-form input[type="datetime-local"]:focus,
+.admin-ads-form input[name="start_date"]:hover,
+.admin-ads-form input[name="start_date"]:focus,
+.admin-ads-form input[name="end_date"]:hover,
+.admin-ads-form input[name="end_date"]:focus {
+    color: #666666 !important;
+    -webkit-text-fill-color: #666666 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* If browser renders nested internal controls, target their pseudo-elements too */
+.admin-ads-form input[type="datetime-local"]::-webkit-datetime-edit,
+.admin-ads-form input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper,
+.admin-ads-form input[type="datetime-local"]::-webkit-datetime-edit-text {
+    color: #666666 !important;
+    -webkit-text-fill-color: #666666 !important;
 }
 .create-input {
     min-width: 180px;
