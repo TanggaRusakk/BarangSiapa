@@ -771,6 +771,57 @@ h3 {
     padding: 2rem 0;
 }
 
+/* ===== PAYMENT PAGE STYLES ===== */
+.payment-page .card {
+    background: rgba(22, 20, 28, 0.95);
+    border-radius: 14px;
+    color: #ddd;
+    padding: 1.25rem;
+    border: 1px solid rgba(255,255,255,0.03);
+}
+
+.payment-page .card .card-body {
+    padding: 1rem;
+}
+
+.payment-page h1, .payment-page h5, .payment-page h6 {
+    color: var(--royal-purple);
+}
+
+.payment-page .text-muted { color: rgba(255,255,255,0.55) !important; }
+
+.payment-page .fw-bold { color: #ffffff; }
+
+.payment-page img.rounded { width: 90px; height: 90px; }
+
+.payment-page .badge.bg-warning {
+    background: #FFB020 !important;
+    color: #000 !important;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.payment-page #pay-button {
+    font-size: 1.05rem;
+    padding: 14px 22px;
+    border-radius: 40px;
+    box-shadow: 0 10px 30px rgba(106,56,194,0.25);
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.payment-page #pay-button svg { width: 22px; height: 22px; }
+
+.payment-page .card .border-top { border-color: rgba(255,255,255,0.06) !important; }
+
+.payment-page .fs-4 { font-size: 1.25rem; }
+
+.payment-page .text-center small.text-muted { color: rgba(255,255,255,0.6); }
+
+
 .carousel-track {
     display: flex;
     gap: 2rem;

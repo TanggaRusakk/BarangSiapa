@@ -119,16 +119,27 @@ class PaymentController extends Controller
     // Handle payment success callback
     public function success(Request $request)
     {
-        $orderId = $request->query('order_id');
+        $midtransOrderId = $request->query('order_id');
         
-        if ($orderId) {
-            // Extract order id from midtrans order id (ORDER-{id}-{timestamp})
-            $parts = explode('-', $orderId);
-            if (count($parts) >= 2) {
-                $orderIdNum = $parts[1];
-                $order = Order::find($orderIdNum);
+        if ($midtransOrderId) {
+            // Find payment by midtrans_order_id
+            $payment = Payment::where('midtrans_order_id', $midtransOrderId)->first();
+            
+            if ($payment && $payment->order_id) {
+                $order = Order::find($payment->order_id);
                 
-                if ($order) {
+                if ($order && $order->user_id === auth()->id()) {
+                    // Update payment status to settlement if still pending
+                    if ($payment->payment_status === 'pending') {
+                        $payment->update([
+                            'payment_status' => 'settlement',
+                            'paid_at' => now(),
+                        ]);
+                        
+                        // Update order status
+                        $order->update(['order_status' => 'processing']);
+                    }
+                    
                     return redirect()->route('orders.show', $order->id)->with('success', 'Pembayaran berhasil!');
                 }
             }

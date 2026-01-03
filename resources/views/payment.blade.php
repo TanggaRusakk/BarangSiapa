@@ -1,7 +1,7 @@
 @extends('layouts.mainlayout')
 
 @section('content')
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="payment-page max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Breadcrumb -->
     <div class="mb-6 text-sm text-secondary">
         <a href="{{ route('orders.my-orders') }}" class="hover:text-primary" style="color: #6A38C2;">My Orders</a>

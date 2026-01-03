@@ -57,11 +57,17 @@ class MidtransNotification extends Controller
                 // Jika sudah ada, UPDATE
                 $existingPayment->payment_status = $transactionStatus;
                 $existingPayment->payment_method = $paymentMethod;
-                
+
+                // Ensure user_id is set from order if missing
+                if (empty($existingPayment->user_id) && $existingPayment->order_id) {
+                    $ord = Order::find($existingPayment->order_id);
+                    if ($ord) $existingPayment->user_id = $ord->user_id;
+                }
+
                 if (in_array($transactionStatus, ['settlement', 'capture'])) {
                     $existingPayment->paid_at = now();
                 }
-                
+
                 $existingPayment->save();
                 $payment = $existingPayment;
             } else {
@@ -75,7 +81,8 @@ class MidtransNotification extends Controller
                 }
                 
                 // CREATE payment baru dengan semua field required
-                $payment = Payment::create([
+                $order = Order::find($orderId);
+                $paymentData = [
                     'order_id' => $orderId,
                     'midtrans_order_id' => $midtransOrderId,
                     'payment_method' => $paymentMethod,
@@ -83,7 +90,14 @@ class MidtransNotification extends Controller
                     'payment_total_amount' => (int)$grossAmount,
                     'payment_status' => $transactionStatus,
                     'paid_at' => in_array($transactionStatus, ['settlement', 'capture']) ? now() : null,
-                ]);
+                ];
+
+                // Attach user_id when possible
+                if ($order) {
+                    $paymentData['user_id'] = $order->user_id;
+                }
+
+                $payment = Payment::create($paymentData);
             }
 
             // 4. Update order status dan stock jika payment successful
@@ -92,12 +106,13 @@ class MidtransNotification extends Controller
                 if ($order) {
                     $order->order_status = 'processing';
                     $order->save();
-                    
-                    // Reduce item stock
+
+                    // Reduce item stock - use order_item_quantity if available
                     foreach ($order->orderItems as $orderItem) {
                         $item = $orderItem->item;
                         if ($item) {
-                            $item->item_stock -= $orderItem->quantity;
+                            $qty = $orderItem->order_item_quantity ?? $orderItem->quantity ?? 1;
+                            $item->item_stock = max(0, $item->item_stock - $qty);
                             if ($item->item_stock <= 0) {
                                 $item->item_status = 'unavailable';
                             }
