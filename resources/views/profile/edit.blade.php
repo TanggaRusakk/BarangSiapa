@@ -9,13 +9,6 @@
                 <div class="card-body text-center">
                     <!-- Profile Photo (vertical layout: image above, controls below) -->
                     <div class="mb-3">
-                        <style>
-                        /* Disable hover effects inside this box and make text smaller for the upload button */
-                        .no-hover * { transition: none !important; }
-                        .no-hover:hover { transform: none !important; box-shadow: none !important; }
-                        .no-hover .btn { box-shadow: none !important; }
-                        .upload-text { font-size: 0.85rem; }
-                        </style>
 
                         <div class="d-flex flex-column align-items-center gap-2 no-hover">
                             <img src="{{ auth()->user()->photo_url }}"

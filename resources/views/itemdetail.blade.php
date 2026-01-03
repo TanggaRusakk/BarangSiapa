@@ -172,15 +172,6 @@
 @endsection
 
 @push('styles')
-<style>
-    .gallery-thumb {
-        transition: border-color 0.2s ease;
-    }
-    .gallery-thumb.active,
-    .gallery-thumb:focus {
-        border-color: #6A38C2 !important;
-    }
-</style>
 @endpush
 
 @push('scripts')

@@ -96,6 +96,78 @@
 }
 
 /* ===== GLOBAL STYLES ===== */
+/* ===== MOVED FROM VIEWS =====
+   Styles previously in inline <style> blocks inside Blade views.
+   Consolidated here so all CSS is loaded from public/styles/style.css
+*/
+
+/* resources/views/items.blade.php */
+.category-filter { overflow-x: auto; white-space: nowrap; }
+.category-chip { display: inline-block; padding: 12px 28px; margin-right: 12px; border-radius: 30px; background: var(--royal-purple); color: #fff; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; border: none; cursor: pointer; box-shadow: none; text-decoration: none; transition: all 0.2s ease; }
+.category-chip.inactive { background: rgba(107, 114, 128, 0.15); color: #6B7280; font-weight: 600; text-transform: uppercase; border: 1px solid rgba(107, 114, 128, 0.3); }
+.category-chip.inactive:hover { background: rgba(107, 114, 128, 0.25); border-color: rgba(107, 114, 128, 0.5); }
+.category-chip:focus, .category-chip:active { outline: none; box-shadow: none; }
+.category-chip:hover { transform: none; box-shadow: none; }
+
+/* Fix text contrast for product cards on items page (only colors) */
+.container.py-5 .card.h-100 .card-body .card-title a.text-decoration-none {
+    color: #E5E5E8 !important; /* light neutral for title */
+}
+.container.py-5 .card.h-100 .card-body .card-text.text-secondary {
+    color: #9CA3AF !important; /* muted but readable for description */
+}
+.container.py-5 .card.h-100 .card-body small.text-secondary {
+    color: #9CA3AF !important; /* small meta text */
+}
+.container.py-5 .card.h-100 .card-body a.text-secondary.small.text-truncate {
+    color: #C4B5FD !important; /* vendor name slightly lilac */
+}
+
+/* resources/views/messages/show.blade.php */
+.chat-item { transition: all 0.2s ease; }
+.chat-item:hover { background: rgba(106, 56, 194, 0.15) !important; }
+.chat-item.active { background: rgba(106, 56, 194, 0.25) !important; border-left: 3px solid #FF3CAC !important; }
+.message-bubble { animation: fadeInUp 0.3s ease; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.send-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(106, 56, 194, 0.6) !important; }
+.send-btn:active { transform: scale(0.95); }
+#message-input:focus { outline: none; border-color: var(--royal-purple) !important; box-shadow: 0 0 0 3px rgba(106, 56, 194, 0.2); }
+#message-input::placeholder { color: rgba(200, 162, 200, 0.4); }
+.chat-list::-webkit-scrollbar, #messages-container::-webkit-scrollbar { width: 6px; }
+.chat-list::-webkit-scrollbar-track, #messages-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+.chat-list::-webkit-scrollbar-thumb, #messages-container::-webkit-scrollbar-thumb { background: linear-gradient(135deg, var(--royal-purple) 0%, var(--neon-pink) 100%); border-radius: 3px; }
+
+/* resources/views/vendor/orders-list.blade.php */
+.rotate-180 { transform: rotate(180deg); }
+[x-cloak] { display: none !important; }
+
+/* resources/views/itemdetail.blade.php */
+.gallery-thumb { transition: border-color 0.2s ease; }
+.gallery-thumb.active, .gallery-thumb:focus { border-color: var(--royal-purple) !important; }
+
+/* resources/views/profile/edit.blade.php */
+.no-hover * { transition: none !important; }
+.no-hover:hover { transform: none !important; box-shadow: none !important; }
+.no-hover .btn { box-shadow: none !important; }
+.upload-text { font-size: 0.85rem; }
+
+/* resources/views/messages/index.blade.php */
+.chat-item { transition: all 0.2s ease; }
+.chat-item:hover { background: rgba(106, 56, 194, 0.15) !important; }
+.chat-item.active { background: rgba(106, 56, 194, 0.2) !important; border-left: 3px solid #FF3CAC !important; }
+.chat-list::-webkit-scrollbar { width: 6px; }
+.chat-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+.chat-list::-webkit-scrollbar-thumb { background: linear-gradient(135deg, var(--royal-purple) 0%, var(--neon-pink) 100%); border-radius: 3px; }
+@media (max-width: 991.98px) {
+    .chat-sidebar { border-radius: 20px 20px 0 0 !important; }
+    .chat-placeholder { border-radius: 0 0 20px 20px !important; border-left: 1px solid rgba(106, 56, 194, 0.3) !important; border-top: none !important; }
+}
+
+/* resources/views/layouts/mainlayout.blade.php */
+.static-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(135deg, #f5f7fa 0%, #e8e0f0 50%, #f0e6f6 100%); }
+.dropdown-item:hover { background-color: #f8f9fa !important; }
+
 * {
     margin: 0;
     padding: 0;
@@ -109,6 +181,70 @@ body {
     overflow-x: hidden;
     line-height: 1.6;
 }
+
+/* My Orders Page - Fix text colors for better contrast */
+/* Target cards specifically in order list context */
+.container .d-flex.flex-column.gap-4 .card {
+    background: #2D2D3A !important;
+    color: #E5E5E8 !important;
+    border: 1px solid #4A4A5A !important;
+}
+
+/* Card Header - Order number and status */
+.container .d-flex.flex-column.gap-4 .card .card-header {
+    background: rgba(58, 58, 74, 0.5) !important;
+    border-bottom: 1px solid #4A4A5A !important;
+}
+
+.container .d-flex.flex-column.gap-4 .card .card-header .fw-bold {
+    color: #E5E5E8 !important;
+}
+
+.container .d-flex.flex-column.gap-4 .card .card-header .text-secondary {
+    color: #9CA3AF !important;
+}
+
+/* Card Body - Product details */
+.container .d-flex.flex-column.gap-4 .card .card-body h6.fw-bold {
+    color: #E5E5E8 !important;
+}
+
+.container .d-flex.flex-column.gap-4 .card .card-body h6.fw-bold a {
+    color: #C4B5FD !important;
+}
+
+.container .d-flex.flex-column.gap-4 .card .card-body h6.fw-bold a:hover {
+    color: #A78BFA !important;
+}
+
+.container .d-flex.flex-column.gap-4 .card .card-body .text-secondary,
+.container .d-flex.flex-column.gap-4 .card .card-body p.text-secondary {
+    color: #9CA3AF !important;
+}
+
+.container .d-flex.flex-column.gap-4 .card .card-body .text-end .fw-bold {
+    color: #C4B5FD !important;
+}
+
+/* Card Footer - Total and buttons */
+.container .d-flex.flex-column.gap-4 .card .card-footer {
+    background: rgba(42, 42, 58, 0.3) !important;
+    border-top: 1px solid #4A4A5A !important;
+}
+
+.container .d-flex.flex-column.gap-4 .card .card-footer .text-secondary {
+    color: #9CA3AF !important;
+}
+
+.container .d-flex.flex-column.gap-4 .card .card-footer .fw-bold {
+    color: #C4B5FD !important;
+}
+
+/* Status badges */
+.container .d-flex.flex-column.gap-4 .card .badge {
+    color: #ffffff !important;
+}
+
 
 /* ===== ANIMATED BACKGROUND ===== */
 .bg-animated {
@@ -294,6 +430,45 @@ h3 {
 }
 
 @media (max-width: 768px) {
+
+/* ===== MESSAGES (Chat) - Ensure fixed-height scrollable messages area ===== */
+/* Scoped to the chat view structure used in resources/views/messages/show.blade.php */
+/* Keep this at the end so it overrides earlier/inline rules */
+.container-fluid .row.g-0 > .col-12.col-lg-8.d-flex.flex-column {
+    /* allow children to shrink so the messages container can scroll */
+    min-height: 0;
+}
+
+#messages-container {
+    /* take remaining vertical space and be scrollable */
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: calc(100vh - 220px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* Ensure messages list won't expand the container unexpectedly */
+#messages-list {
+    display: block;
+}
+
+/* Optional: small visual polish for scrollbar */
+#messages-container::-webkit-scrollbar {
+    width: 8px;
+}
+#messages-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+#messages-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, rgba(106,56,194,0.4), rgba(255,60,172,0.4));
+    border-radius: 8px;
+}
+
+/* Make sure message bubbles don't cause horizontal overflow */
+.message-bubble { word-break: break-word; }
+
     .menu-toggle {
         display: flex;
     }

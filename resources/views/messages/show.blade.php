@@ -107,8 +107,8 @@
                                autocomplete="off"
                                style="background: rgba(45, 45, 65, 0.8); border: 1px solid rgba(106, 56, 194, 0.3); color: var(--soft-lilac); border-radius: 25px; padding: 12px 20px;">
                         <button type="submit" class="btn send-btn" id="send-btn" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(106, 56, 194, 0.4); transition: all 0.2s;">
-                            <svg width="22" height="22" fill="none" stroke="white" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 16 16">
+                                <path d="M15.9 8.1a.5.5 0 0 0-.2-.4L1.2.3a.75.75 0 0 0-1 .9l2.8 6.8-2.8 6.8a.75.75 0 0 0 1 .9l14.5-7.4a.5.5 0 0 0 .2-.4ZM3.9 8l-2-4.8L13.4 8 1.9 12.8z"/>
                             </svg>
                         </button>
                     </form>
@@ -117,72 +117,7 @@
         </div>
     </div>
 
-    <style>
-        .chat-item {
-            transition: all 0.2s ease;
-        }
-        .chat-item:hover {
-            background: rgba(106, 56, 194, 0.15) !important;
-        }
-        .chat-item.active {
-            background: rgba(106, 56, 194, 0.25) !important;
-            border-left: 3px solid #FF3CAC !important;
-        }
-        
-        .message-bubble {
-            animation: fadeInUp 0.3s ease;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .send-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(106, 56, 194, 0.6) !important;
-        }
-        
-        .send-btn:active {
-            transform: scale(0.95);
-        }
-        
-        #message-input:focus {
-            outline: none;
-            border-color: #6A38C2 !important;
-            box-shadow: 0 0 0 3px rgba(106, 56, 194, 0.2);
-        }
-        
-        #message-input::placeholder {
-            color: rgba(200, 162, 200, 0.4);
-        }
-        
-        /* Custom Scrollbar */
-        .chat-list::-webkit-scrollbar,
-        #messages-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        .chat-list::-webkit-scrollbar-track,
-        #messages-container::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.2);
-        }
-        .chat-list::-webkit-scrollbar-thumb,
-        #messages-container::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%);
-            border-radius: 3px;
-        }
-    </style>
+    
 
     <script>
         (function() {

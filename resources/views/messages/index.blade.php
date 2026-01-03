@@ -90,39 +90,5 @@
     </div>
 </div>
 
-<style>
-    .chat-item {
-        transition: all 0.2s ease;
-    }
-    .chat-item:hover {
-        background: rgba(106, 56, 194, 0.15) !important;
-    }
-    .chat-item.active {
-        background: rgba(106, 56, 194, 0.2) !important;
-        border-left: 3px solid #FF3CAC !important;
-    }
-    
-    /* Custom Scrollbar */
-    .chat-list::-webkit-scrollbar {
-        width: 6px;
-    }
-    .chat-list::-webkit-scrollbar-track {
-        background: rgba(0,0,0,0.2);
-    }
-    .chat-list::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%);
-        border-radius: 3px;
-    }
-    
-    @media (max-width: 991.98px) {
-        .chat-sidebar {
-            border-radius: 20px 20px 0 0 !important;
-        }
-        .chat-placeholder {
-            border-radius: 0 0 20px 20px !important;
-            border-left: 1px solid rgba(106, 56, 194, 0.3) !important;
-            border-top: none !important;
-        }
-    }
-</style>
+ 
 @endsection

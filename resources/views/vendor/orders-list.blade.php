@@ -91,8 +91,5 @@
         <div class="mt-4">{{ $orders->links() }}</div>
     </div>
 
-    <style>
-        .rotate-180 { transform: rotate(180deg); }
-        [x-cloak] { display: none !important; }
-    </style>
+    
 </x-dashboard-layout>

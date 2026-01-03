@@ -10,18 +10,6 @@
     <script>tailwind = window.tailwind || {}; tailwind.config = tailwind.config || {}; tailwind.config.important = true;</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{{ asset('styles/style.css') }}">
-    <style>
-        /* Static Background with Gradient */
-        .static-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e8e0f0 50%, #f0e6f6 100%);
-        }
-    </style>
     @stack('styles')
 </head>
 <body>
@@ -41,15 +29,7 @@
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
-    <style>
-        /* Dropdown styling */
-        .dropdown-item:hover {
-            background-color: #f8f9fa !important;
-        }
-        [x-cloak] {
-            display: none !important;
-        }
-    </style>
+    
 
     <script>
         // Axios default CSRF header from Laravel meta tag
