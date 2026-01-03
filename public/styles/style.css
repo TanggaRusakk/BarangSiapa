@@ -429,21 +429,28 @@ h3 {
     transition: var(--transition);
 }
 
-@media (max-width: 768px) {
-
-/* ===== MESSAGES (Chat) - Ensure fixed-height scrollable messages area ===== */
-/* Scoped to the chat view structure used in resources/views/messages/show.blade.php */
-/* Keep this at the end so it overrides earlier/inline rules */
 .container-fluid .row.g-0 > .col-12.col-lg-8.d-flex.flex-column {
-    /* allow children to shrink so the messages container can scroll */
     min-height: 0;
 }
 
 #messages-container {
-    /* take remaining vertical space and be scrollable */
     flex: 1 1 auto;
     min-height: 0;
-    max-height: calc(100vh - 220px);
+    max-height: calc(100vh - 300px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+@media (max-width: 768px) {
+.container-fluid .row.g-0 > .col-12.col-lg-8.d-flex.flex-column {
+    min-height: 0;
+}
+
+#messages-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: calc(100vh - 300px);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
