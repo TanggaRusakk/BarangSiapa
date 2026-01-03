@@ -27,7 +27,7 @@ class MidtransNotification extends Controller
         $grossAmount = $notification['gross_amount'] ?? null;
         $signatureKey = $notification['signature_key'] ?? null;
         $transactionStatus = $notification['transaction_status'] ?? null;
-        $paymentType = $notification['payment_type'] ?? null;
+        $paymentMethod = $notification['payment_type'] ?? null; // Metode pembayaran dari Midtrans
 
         if (!$midtransOrderId || !$statusCode || !$grossAmount || !$signatureKey) {
             Log::warning('Midtrans: missing required fields', $notification);
@@ -47,25 +47,47 @@ class MidtransNotification extends Controller
             return response()->json(['message' => 'Invalid signature key'], 403);
         }
 
-        // 3. Cari payment di database
-        $payment = Payment::where('midtrans_order_id', $midtransOrderId)->first();
-
-        if (!$payment) {
-            Log::warning('Midtrans: payment not found', ['midtrans_order_id' => $midtransOrderId]);
-            return response()->json(['message' => 'Payment not found'], 404);
-        }
-
+        // 3. Update atau buat payment baru berdasarkan midtrans_order_id
         DB::beginTransaction();
         try {
-            // 4. Update payment status
-            $payment->payment_status = $transactionStatus;
-            $payment->payment_method = $paymentType;
+            // Cek apakah payment sudah ada
+            $existingPayment = Payment::where('midtrans_order_id', $midtransOrderId)->first();
             
-            // If payment is successful, update paid_at and order status
-            if (in_array($transactionStatus, ['settlement', 'capture'])) {
-                $payment->paid_at = now();
+            if ($existingPayment) {
+                // Jika sudah ada, UPDATE
+                $existingPayment->payment_status = $transactionStatus;
+                $existingPayment->payment_method = $paymentMethod;
                 
-                // Update order status
+                if (in_array($transactionStatus, ['settlement', 'capture'])) {
+                    $existingPayment->paid_at = now();
+                }
+                
+                $existingPayment->save();
+                $payment = $existingPayment;
+            } else {
+                // Jika belum ada, ekstrak order_id dari midtrans_order_id
+                // Format: ORDER-{order_id}-{timestamp}
+                $parts = explode('-', $midtransOrderId);
+                $orderId = isset($parts[1]) ? (int)$parts[1] : null;
+                
+                if (!$orderId) {
+                    throw new \Exception("Cannot extract order_id from midtrans_order_id: {$midtransOrderId}");
+                }
+                
+                // CREATE payment baru dengan semua field required
+                $payment = Payment::create([
+                    'order_id' => $orderId,
+                    'midtrans_order_id' => $midtransOrderId,
+                    'payment_method' => $paymentMethod,
+                    'payment_type' => 'full', // Default ke 'full', sesuaikan jika perlu
+                    'payment_total_amount' => (int)$grossAmount,
+                    'payment_status' => $transactionStatus,
+                    'paid_at' => in_array($transactionStatus, ['settlement', 'capture']) ? now() : null,
+                ]);
+            }
+
+            // 4. Update order status dan stock jika payment successful
+            if (in_array($transactionStatus, ['settlement', 'capture'])) {
                 $order = Order::find($payment->order_id);
                 if ($order) {
                     $order->order_status = 'processing';
@@ -94,7 +116,6 @@ class MidtransNotification extends Controller
                 }
             }
 
-            $payment->save();
             DB::commit();
 
             Log::info('Midtrans notification processed', [

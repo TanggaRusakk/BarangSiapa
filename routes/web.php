@@ -36,7 +36,6 @@ Route::get('/order-items', [OrderItemController::class, 'index'])->name('order-i
 Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
 
 // Midtrans notification webhook
-Route::post('/midtrans/notification', [MidtransNotification::class, 'handle'])->name('midtrans.notification');
 Route::get('/service-fees', [ServiceFeeController::class, 'index'])->name('service-fees.index');
 Route::get('/rental-infos', [RentalInfoController::class, 'index'])->name('rental-infos.index');
 Route::get('/item-categories', [ItemCategoryController::class, 'index'])->name('item-categories.index');
