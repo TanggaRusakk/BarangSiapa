@@ -51,7 +51,9 @@
     <div class="row g-4 mb-4">
         <div class="col-12 col-md-3">
             <a href="{{ route('vendor.products.create') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                <div class="text-4xl mb-2">➕</div>
+                <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
                 <h3 class="font-bold text-lg mb-1">Add New Product</h3>
                 <p class="text-sm text-secondary mb-0">Create product listing</p>
             </a>
@@ -59,7 +61,10 @@
 
         <div class="col-12 col-md-3">
             <a href="{{ route('vendor.products.list') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                <div class="text-4xl mb-2">📦</div>
+                <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                </svg>
                 <h3 class="font-bold text-lg mb-1">My Products</h3>
                 <p class="text-sm text-secondary mb-0">View & manage all items</p>
             </a>
@@ -67,7 +72,10 @@
 
         <div class="col-12 col-md-3">
             <a href="{{ route('vendor.orders.list') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                <div class="text-4xl mb-2">🛒</div>
+                <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
                 <h3 class="font-bold text-lg mb-1">Orders</h3>
                 <p class="text-sm text-secondary mb-0">Manage recent orders</p>
             </a>
@@ -75,7 +83,10 @@
 
         <div class="col-12 col-md-3">
             <a href="{{ route('vendor.ads.index') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                <div class="text-4xl mb-2">📢</div>
+                <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                    <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+                </svg>
                 <h3 class="font-bold text-lg mb-1">My Ads</h3>
                 <p class="text-sm text-secondary mb-0">Create & manage ads</p>
             </a>
@@ -108,7 +119,10 @@
                         </div>
                     @else
                         <div class="text-center py-5">
-                            <div class="text-secondary mb-2">📦</div>
+                            <svg class="mb-3 text-secondary" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                            </svg>
                             <p class="text-secondary mb-0">No products yet</p>
                         </div>
                     @endif
@@ -142,7 +156,10 @@
                         </div>
                     @else
                         <div class="text-center py-5">
-                            <div class="text-secondary mb-2">🛒</div>
+                            <svg class="mb-3 text-secondary" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                            </svg>
                             <p class="text-secondary mb-0">No orders yet</p>
                         </div>
                     @endif

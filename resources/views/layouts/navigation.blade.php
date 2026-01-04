@@ -68,12 +68,14 @@
                                     </svg>
                                     <span class="fw-medium">Profile</span>
                                 </a>
-                                <a class="dropdown-item py-2 px-4 d-flex align-items-center gap-2 text-white" href="{{ route('orders.my-orders') }}" style="transition: background-color 0.2s; color: #ffffff;">
-                                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                                    </svg>
-                                    <span class="fw-medium">My Orders</span>
-                                </a>
+                                @if(!(auth()->check() && auth()->user()->role === 'vendor'))
+                                    <a class="dropdown-item py-2 px-4 d-flex align-items-center gap-2 text-white" href="{{ route('orders.my-orders') }}" style="transition: background-color 0.2s; color: #ffffff;">
+                                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                        </svg>
+                                        <span class="fw-medium">My Orders</span>
+                                    </a>
+                                @endif
                                 @if(auth()->check() && auth()->user()->role === 'vendor')
                                     <a class="dropdown-item py-2 px-4 d-flex align-items-center gap-2 text-white" href="{{ route('vendor.ads.index') }}" style="transition: background-color 0.2s; color: #ffffff;">
                                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -139,7 +141,9 @@
                 <div class="dropdown-divider bg-white opacity-25"></div>
                 <a href="{{ route('dashboard') }}" class="d-block py-2 text-white text-decoration-none">Dashboard</a>
                 <a href="{{ route('profile.edit') }}" class="d-block py-2 text-white text-decoration-none">Profile</a>
-                <a href="{{ route('orders.my-orders') }}" class="d-block py-2 text-white text-decoration-none">My Orders</a>
+                @if(!(auth()->check() && auth()->user()->role === 'vendor'))
+                    <a href="{{ route('orders.my-orders') }}" class="d-block py-2 text-white text-decoration-none">My Orders</a>
+                @endif
                 @if(auth()->check() && auth()->user()->role === 'vendor')
                     <a href="{{ route('vendor.ads.index') }}" class="d-block py-2 text-white text-decoration-none">My Ads</a>
                 @endif

@@ -45,13 +45,43 @@
             </p>
         </div>
 
-        <form method="POST" action="{{ route('vendor.ads.payment.confirm', $payment->id) }}">
-            @csrf
-            <div class="flex gap-2">
-                <button type="submit" class="btn btn-primary">Confirm Payment (Demo)</button>
+        @if(session('pending_ad.snap_token') || ($pendingAd['snap_token'] ?? null))
+            <div class="mb-4">
+                <button id="launch-snap" class="btn btn-primary">Pay with Midtrans</button>
                 <a href="{{ route('vendor.ads.index') }}" class="btn btn-secondary">Cancel</a>
             </div>
-        </form>
+            <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+            <script>
+                document.getElementById('launch-snap').addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var snapToken = '{{ session('pending_ad.snap_token') ?? ($pendingAd['snap_token'] ?? '') }}';
+                    if (!snapToken) {
+                        alert('Missing snap token');
+                        return;
+                    }
+                    window.snap.pay(snapToken, {
+                        onSuccess: function(result){
+                            // After success, call confirm route to finish demo flow (webhook will also update)
+                            window.location = '{{ route('vendor.ads.payment.confirm', $payment->id) }}';
+                        },
+                        onPending: function(result){
+                            window.location = '{{ route('vendor.ads.payment.confirm', $payment->id) }}';
+                        },
+                        onError: function(result){
+                            alert('Payment failed or cancelled');
+                        }
+                    });
+                });
+            </script>
+        @else
+            <form method="POST" action="{{ route('vendor.ads.payment.confirm', $payment->id) }}">
+                @csrf
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary">Confirm Payment (Demo)</button>
+                    <a href="{{ route('vendor.ads.index') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        @endif
 
         <div class="mt-6 text-xs text-gray-500">
             <p>Note: After confirming payment, your ad will be automatically created and activated.</p>

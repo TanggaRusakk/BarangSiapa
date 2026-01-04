@@ -179,10 +179,14 @@ class PaymentController extends Controller
                 return response()->json(['message' => 'Payment not found'], 404);
             }
 
-            $order = Order::find($payment->order_id);
-            if (!$order) {
-                Log::error('Order not found in webhook', ['payment_id' => $payment->id]);
-                return response()->json(['message' => 'Order not found'], 404);
+            // If this payment is linked to an order, load it; otherwise handle ad payments
+            $order = null;
+            if ($payment->order_id) {
+                $order = Order::find($payment->order_id);
+                if (!$order) {
+                    Log::error('Order not found in webhook', ['payment_id' => $payment->id]);
+                    return response()->json(['message' => 'Order not found'], 404);
+                }
             }
 
             // WHY: Validate amount untuk prevent manipulation attack
@@ -204,15 +208,19 @@ class PaymentController extends Controller
                 return response()->json(['message' => 'Payment already processed'], 200);
             }
 
-            // Process transaction status - extracted ke method terpisah untuk clean code
-            $this->processTransactionStatus(
-                $payment,
-                $order,
-                $transactionStatus,
-                $fraudStatus,
-                $paymentType,
-                $orderId
-            );
+            // Process transaction status - if payment_type is 'ad' handle Ad creation/activation
+            if ($payment->payment_type === 'ad') {
+                $this->processAdPaymentWebhook($payment, $transactionStatus, $fraudStatus, $paymentType, $orderId);
+            } else {
+                $this->processTransactionStatus(
+                    $payment,
+                    $order,
+                    $transactionStatus,
+                    $fraudStatus,
+                    $paymentType,
+                    $orderId
+                );
+            }
 
             return response()->json(['message' => 'OK'], 200);
 
@@ -322,6 +330,57 @@ class PaymentController extends Controller
             'order_id' => $orderId,
             'reason' => $status,
         ]);
+    }
+
+    /**
+     * Handle ad payment webhook processing (create/activate Ad)
+     */
+    private function processAdPaymentWebhook(
+        Payment $payment,
+        string $transactionStatus,
+        ?string $fraudStatus,
+        string $paymentType,
+        string $orderId
+    ): void {
+        switch ($transactionStatus) {
+            case 'capture':
+            case 'settlement':
+                // Mark payment as settled
+                $payment->update([
+                    'payment_status' => 'settlement',
+                    'payment_method' => $paymentType,
+                    'paid_at' => now(),
+                ]);
+
+                // If there's a pending_ad stored (session-based flow) we cannot access session here,
+                // so create ad by searching for Ad with this payment_id or create new active Ad record.
+                $existingAd = \App\Models\Ad::where('payment_id', $payment->id)->first();
+                if ($existingAd) {
+                    $existingAd->update(['status' => 'active']);
+                } else {
+                    // No ad found — attempt to create a placeholder active ad if session flow was used
+                    // In normal flow the app stores ad data upon payment creation in session, so
+                    // webhook will complement by flipping status. Here we log and leave it to UI.
+                    Log::info('Ad payment settled but no Ad found for payment', ['payment_id' => $payment->id]);
+                }
+
+                Log::info('Ad payment settled', ['order_id' => $orderId, 'payment_id' => $payment->id]);
+                break;
+
+            case 'pending':
+                $payment->update(['payment_status' => 'pending', 'payment_method' => $paymentType]);
+                break;
+
+            case 'deny':
+            case 'expire':
+            case 'cancel':
+                $payment->update(['payment_status' => $transactionStatus]);
+                Log::info('Ad payment failed', ['payment_id' => $payment->id, 'reason' => $transactionStatus]);
+                break;
+
+            default:
+                Log::warning('Unhandled ad transaction status', ['status' => $transactionStatus, 'order_id' => $orderId]);
+        }
     }
 
     /**

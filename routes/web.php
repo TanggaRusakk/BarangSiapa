@@ -44,6 +44,8 @@ Route::get('/order-service-fees', [OrderServiceFeeController::class, 'index'])->
 use Illuminate\Http\Request;
 
 Route::get('/dashboard', function (Request $request) {
+    $user = auth()->user();
+    
     // Core datasets
     $recentProducts = \App\Models\Item::orderBy('created_at', 'desc')->take(6)->get();
     $lastViewed = null;
@@ -51,29 +53,64 @@ Route::get('/dashboard', function (Request $request) {
         $lastViewed = \App\Models\Item::find(session('last_viewed_item'));
     }
 
-    // Metrics
+    // Admin metrics
     $totalUsers = \App\Models\User::count();
     $activeVendors = \App\Models\Vendor::count();
     $totalProducts = \App\Models\Item::count();
-
-    // Revenue this month (sum payments - including ad payments)
     $revenueThisMonth = \App\Models\Payment::whereYear('created_at', now()->year)
         ->whereMonth('created_at', now()->month)
-        ->where('payment_status', 'settlement') // Only count successful payments
+        ->where('payment_status', 'settlement')
         ->sum('payment_total_amount');
-
-    // Recent entities
     $recentUsers = \App\Models\User::orderBy('created_at', 'desc')->take(6)->get();
-    $recentOrders = \App\Models\Order::orderBy('created_at', 'desc')->take(6)->get();
+    $recentOrders = \App\Models\Order::with(['user', 'orderItems.item.vendor'])->orderBy('created_at', 'desc')->take(6)->get();
 
-    // Vendor specific quick numbers (if current user is vendor)
+    // Vendor specific
     $vendorProductsCount = 0;
-    if (auth()->check() && auth()->user()->vendor) {
-        $vendorProductsCount = auth()->user()->vendor->items()->count();
+    if ($user->vendor) {
+        $vendorProductsCount = $user->vendor->items()->count();
     }
 
+    // Member specific - recent orders and rentals
+    $userOrders = \App\Models\Order::with(['orderItems.item'])
+        ->where('user_id', $user->id)
+        ->orderBy('created_at', 'desc')
+        ->take(3)
+        ->get();
+    
+    $userRentals = \App\Models\Order::with(['orderItems.item'])
+        ->where('user_id', $user->id)
+        ->whereHas('orderItems.item', function($q) {
+            $q->whereIn('item_type', ['rent', 'sewa']);
+        })
+        ->orderBy('created_at', 'desc')
+        ->take(3)
+        ->get();
+    
+    // Member stats
+    $activeOrdersCount = \App\Models\Order::where('user_id', $user->id)
+        ->whereIn('order_status', ['pending', 'processing', 'paid'])
+        ->count();
+    
+    $activeRentalsCount = \App\Models\Order::where('user_id', $user->id)
+        ->whereIn('order_status', ['pending', 'processing', 'paid'])
+        ->whereHas('orderItems.item', function($q) {
+            $q->whereIn('item_type', ['rent', 'sewa']);
+        })
+        ->count();
+    
+    $totalSpent = \App\Models\Payment::where('user_id', $user->id)
+        ->where('payment_status', 'settlement')
+        ->whereYear('created_at', now()->year)
+        ->whereMonth('created_at', '>=', now()->subDays(30))
+        ->sum('payment_total_amount');
+    
+    $reviewsGiven = \App\Models\Review::where('user_id', $user->id)->count();
+
     return view('dashboard', compact(
-        'recentProducts', 'lastViewed', 'totalUsers', 'activeVendors', 'totalProducts', 'revenueThisMonth', 'recentUsers', 'recentOrders', 'vendorProductsCount'
+        'recentProducts', 'lastViewed', 'totalUsers', 'activeVendors', 'totalProducts', 
+        'revenueThisMonth', 'recentUsers', 'recentOrders', 'vendorProductsCount',
+        'userOrders', 'userRentals', 'activeOrdersCount', 'activeRentalsCount', 
+        'totalSpent', 'reviewsGiven'
     ));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -599,8 +636,11 @@ Route::middleware('auth')->group(function () {
             // Total Orders (exclude cancelled)
             $ordersCount = $vendorOrders->where('order_status', '!=', 'cancelled')->count();
             
-            // Recent 3 orders (any status)
-            $recentOrders = $vendorOrders->sortByDesc('created_at')->take(3);
+            // Recent 3 completed orders (newest first)
+            $recentOrders = $vendorOrders
+                ->where('order_status', 'completed')
+                ->sortByDesc('created_at')
+                ->take(3);
 
             // Total Sales: revenue from completed orders only
             $completedOrders = $vendorOrders->where('order_status', 'completed');
@@ -728,21 +768,20 @@ Route::middleware('auth')->group(function () {
         return view('vendor.ads-create', compact('items'));
     })->name('vendor.ads.create');
 
-    // Vendor pays for ad (before creating)
+    // Vendor pays for ad (before creating) - compute price automatically and create Midtrans Snap
     Route::post('/vendor/ads/pay', function (Request $request) {
         if (auth()->user()->role !== 'vendor') abort(403);
         $validated = $request->validate([
             'item_id' => 'required|exists:items,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
-            'ad_price' => 'required|integer|min:1000',
             'ad_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-        
+
         $vendor = auth()->user()->vendor;
         $item = \App\Models\Item::find($validated['item_id']);
         if (!$vendor || $item->vendor_id !== $vendor->id) abort(403);
-        
+
         // Handle image upload
         $imageName = null;
         if ($request->hasFile('ad_image')) {
@@ -750,31 +789,83 @@ Route::middleware('auth')->group(function () {
             $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('images/ads'), $imageName);
         }
-        
+
+        // Calculate days and price: 50,000/day (inclusive of both start and end)
+        $start = \Carbon\Carbon::parse($validated['start_date'])->startOfDay();
+        $end = \Carbon\Carbon::parse($validated['end_date'])->endOfDay();
+        $days = max(1, $start->diffInDays($end) + 1);
+        $pricePerDay = 50000;
+        $totalPrice = $days * $pricePerDay;
+
         // Create ad payment record (payment_method will be set after Midtrans callback)
+        $midtransOrderId = 'AD-' . time() . '-' . $vendor->id;
         $payment = \App\Models\Payment::create([
             'order_id' => null, // Not related to order
-            'midtrans_order_id' => 'AD-' . time() . '-' . $vendor->id,
-            'payment_method' => 'bank_transfer', // default
-            'payment_type' => 'full',
-            'payment_total_amount' => $validated['ad_price'],
+            'midtrans_order_id' => $midtransOrderId,
+            'payment_method' => 'midtrans',
+            'payment_type' => 'ad',
+            'payment_total_amount' => $totalPrice,
             'payment_status' => 'pending',
         ]);
-        
-        // Store ad data in session for after payment
-        session([
-            'pending_ad' => [
-                'item_id' => $validated['item_id'],
-                'start_date' => $validated['start_date'],
-                'end_date' => $validated['end_date'],
-                'price' => $validated['ad_price'],
-                'ad_image' => $imageName,
-                'payment_id' => $payment->id,
-            ]
-        ]);
-        
-        // Redirect to payment page (simplified - in production use Midtrans)
-        return redirect()->route('vendor.ads.payment', $payment->id);
+
+        // Build Midtrans Snap payload
+        $transactionDetails = [
+            'order_id' => $midtransOrderId,
+            'gross_amount' => (int) $totalPrice,
+        ];
+
+        $itemDetails = [[
+            'id' => 'AD-' . $item->id,
+            'price' => (int) $totalPrice,
+            'quantity' => 1,
+            'name' => 'Advertisement for: ' . substr($item->item_name ?? 'Item', 0, 50),
+        ]];
+
+        $customerDetails = [
+            'first_name' => auth()->user()->name ?? 'Vendor',
+            'email' => auth()->user()->email ?? 'vendor@example.com',
+            'phone' => auth()->user()->phone ?? '081234567890',
+        ];
+
+        $params = [
+            'transaction_details' => $transactionDetails,
+            'item_details' => $itemDetails,
+            'customer_details' => $customerDetails,
+        ];
+
+        try {
+            $snapToken = \Midtrans\Snap::getSnapToken($params);
+
+            // Store ad data in session for after payment
+            session([
+                'pending_ad' => [
+                    'item_id' => $validated['item_id'],
+                    'start_date' => $validated['start_date'],
+                    'end_date' => $validated['end_date'],
+                    'price' => $totalPrice,
+                    'ad_image' => $imageName,
+                    'payment_id' => $payment->id,
+                    'snap_token' => $snapToken,
+                ]
+            ]);
+
+            return redirect()->route('vendor.ads.payment', $payment->id);
+
+        } catch (\Exception $e) {
+            // Fallback: keep existing demo flow
+            session([
+                'pending_ad' => [
+                    'item_id' => $validated['item_id'],
+                    'start_date' => $validated['start_date'],
+                    'end_date' => $validated['end_date'],
+                    'price' => $totalPrice,
+                    'ad_image' => $imageName,
+                    'payment_id' => $payment->id,
+                ]
+            ]);
+
+            return redirect()->route('vendor.ads.payment', $payment->id)->with('error', 'Failed to initialize Midtrans payment: ' . $e->getMessage());
+        }
     })->name('vendor.ads.pay');
 
     // Show payment page
@@ -829,34 +920,26 @@ Route::middleware('auth')->group(function () {
         $vendor = auth()->user()->vendor;
         if (!$vendor || $ad->item->vendor_id !== $vendor->id) abort(403);
         
+        // Only allow updating the ad image from this form. Other fields are read-only.
         $validated = $request->validate([
-            'item_id' => 'required|exists:items,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'status' => 'required|in:active,inactive,expired',
             'ad_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-        
-        // Verify item belongs to vendor
-        $item = \App\Models\Item::find($validated['item_id']);
-        if ($item->vendor_id !== $vendor->id) abort(403);
-        
+
         // Handle image upload
         if ($request->hasFile('ad_image')) {
             // Delete old image if exists and not placeholder
             if ($ad->ad_image && $ad->ad_image !== 'ad_placeholder.jpg' && file_exists(public_path('images/ads/' . $ad->ad_image))) {
-                unlink(public_path('images/ads/' . $ad->ad_image));
+                @unlink(public_path('images/ads/' . $ad->ad_image));
             }
-            
+
             $image = $request->file('ad_image');
             $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('images/ads'), $imageName);
-            $validated['ad_image'] = $imageName;
+            $ad->update(['ad_image' => $imageName]);
+            return redirect()->route('vendor.ads.index')->with('success', 'Ad image updated');
         }
-        
-        // ensure only allowed fields are updated
-        $ad->update(collect($validated)->only(['item_id','start_date','end_date','status','ad_image'])->toArray());
-        return redirect()->route('vendor.ads.index')->with('success', 'Ad updated');
+
+        return redirect()->route('vendor.ads.index')->with('info', 'No changes made. Only ad image can be updated here.');
     })->name('vendor.ads.update');
 
     Route::delete('/vendor/ads/{ad}', function (\App\Models\Ad $ad) {
