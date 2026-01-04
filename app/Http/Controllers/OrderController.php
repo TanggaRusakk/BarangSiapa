@@ -142,7 +142,9 @@ class OrderController extends Controller
             Payment::create([
                 'order_id' => $order->id,
                 'user_id' => Auth::id(),
-                'midtrans_order_id' => null,
+                // Use empty string placeholder to satisfy NOT NULL DB constraint;
+                // will be updated later when generating Midtrans order id in PaymentController
+                'midtrans_order_id' => '',
                 'payment_method' => 'midtrans',
                 'payment_type' => $paymentOption === 'dp' ? 'dp' : 'full',
                 'payment_total_amount' => $paymentAmount,
