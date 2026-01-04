@@ -123,6 +123,12 @@ Route::post('/product/viewed', function (Request $request) {
     return response()->json(['status' => 'ok']);
 })->middleware('auth');
 
+// WHY: Payment callback routes MUST be BEFORE /payment/{order} route
+// Laravel matches routes from top to bottom - specific routes must come before dynamic ones
+Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
+Route::get('/payment/pending', [PaymentController::class, 'pending'])->name('payment.pending');
+Route::get('/payment/error', [PaymentController::class, 'error'])->name('payment.error');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -137,27 +143,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
     // Payment create route - needs auth to create payment
+    // IMPORTANT: This must be AFTER /payment/success, /payment/pending, /payment/error
     Route::get('/payment/{order}', [PaymentController::class, 'create'])->name('payment.create');
-});
-
-// WHY: Payment callback routes MUST be outside auth middleware
-// Midtrans redirects to these URLs after payment, user might not have active session
-Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
-Route::get('/payment/pending', [PaymentController::class, 'pending'])->name('payment.pending');
-Route::get('/payment/error', [PaymentController::class, 'error'])->name('payment.error');
-
-// Direct test of payment success method
-Route::get('/test-payment-success-direct', function(\Illuminate\Http\Request $request) {
-    try {
-        $controller = new \App\Http\Controllers\PaymentController();
-        $response = $controller->success($request);
-        return $response;
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-        ], 500);
-    }
 });
 
 // WHY: Webhook dipindah ke routes/api.php
