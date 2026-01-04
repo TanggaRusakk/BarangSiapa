@@ -405,14 +405,44 @@ class PaymentController extends Controller
         string $paymentType,
         string $orderId
     ): void {
-        $payment->update([
-            'payment_status' => 'settlement',
-            'payment_method' => $paymentType,
-            'paid_at' => now(),
-        ]);
-        
-        $order->update(['order_status' => 'paid']);
-        
+        // Make settlement update and vendor totals atomic
+        \DB::transaction(function () use ($payment, $order, $paymentType, $orderId) {
+            $payment->update([
+                'payment_status' => 'settlement',
+                'payment_method' => $paymentType,
+                'paid_at' => now(),
+            ]);
+
+            // Only update totals if order wasn't already in a successful state
+            $alreadySuccessful = in_array($order->order_status, ['paid', 'completed']);
+
+            // Update order status to paid
+            $order->update(['order_status' => 'paid']);
+
+            if (! $alreadySuccessful) {
+                // Aggregate per-vendor sums for this order
+                $perVendor = [];
+                foreach ($order->orderItems as $oi) {
+                    $vendor = $oi->item->vendor ?? null;
+                    if (! $vendor) continue;
+                    $vid = $vendor->id;
+                    $lineTotal = ($oi->order_item_price ?? 0) * ($oi->order_item_quantity ?? 1);
+                    if (! isset($perVendor[$vid])) {
+                        $perVendor[$vid] = 0;
+                    }
+                    $perVendor[$vid] += $lineTotal;
+                }
+
+                // Persist totals: for each vendor increment revenue and count +1 order
+                foreach ($perVendor as $vid => $amount) {
+                    $vendor = \App\Models\Vendor::find($vid);
+                    if (! $vendor) continue;
+                    // Use helper to increment totals atomically
+                    $vendor->addTotals((int) $amount, 1);
+                }
+            }
+        });
+
         Log::info('Payment successfully settled', [
             'order_id' => $orderId,
             'payment_method' => $paymentType,

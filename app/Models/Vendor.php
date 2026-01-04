@@ -16,7 +16,35 @@ class Vendor extends Model
         'location',
         'description',
         'logo_path',
+        'total_revenue',
+        'total_orders',
+        'rating',
     ];
+
+    /**
+     * Recalculate and persist store rating (average of reviews across all vendor items)
+     */
+    public function recalcRating()
+    {
+        $avg = \App\Models\Review::whereHas('item', function ($q) {
+            $q->where('vendor_id', $this->id ?? 0);
+        })->avg('rating') ?? 0;
+
+        $this->update(['rating' => round($avg, 1)]);
+    }
+
+    /**
+     * Increment totals for this vendor by provided amount and order count.
+     * Uses atomic DB increment to reduce race conditions.
+     */
+    public function addTotals(int $amount, int $orders = 1)
+    {
+        $this->increment('total_revenue', $amount);
+        if ($orders !== 0) {
+            $this->increment('total_orders', $orders);
+        }
+        $this->refresh();
+    }
 
     public function user() {
         return $this->belongsTo(User::class);
