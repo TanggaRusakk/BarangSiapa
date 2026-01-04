@@ -22,8 +22,24 @@ class AdController extends Controller
             ->take(5)
             ->get();
 
-        // If there are active ads, show their related items as trending
+        // Mark expired ads as inactive so they won't show anymore
+        Ad::where('status', 'active')
+            ->whereNotNull('end_date')
+            ->where('end_date', '<', now())
+            ->update(['status' => 'inactive']);
+
+        // Only show ads that are active, have a successful payment, and whose schedule includes now
+        $finalPaymentStatuses = ['settlement', 'capture', 'success'];
         $ads = Ad::where('status', 'active')
+            ->whereHas('payment', function ($q) use ($finalPaymentStatuses) {
+                $q->whereIn('payment_status', $finalPaymentStatuses);
+            })
+            ->where(function ($q) {
+                $q->whereNull('start_date')->orWhere('start_date', '<=', now());
+            })
+            ->where(function ($q) {
+                $q->whereNull('end_date')->orWhere('end_date', '>=', now());
+            })
             ->with('item.itemGalleries')
             ->latest()
             ->take(6)

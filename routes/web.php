@@ -665,10 +665,27 @@ Route::middleware('auth')->group(function () {
             })->avg('review_rating') ?? 0;
             $storeRating = round($storeRating, 1);
 
-            // Recent Ads (3 most recent)
+            // Mark any expired ads inactive so they won't appear
+            \App\Models\Ad::where('status', 'active')
+                ->whereNotNull('end_date')
+                ->where('end_date', '<', now())
+                ->update(['status' => 'inactive']);
+
+            // Recent Ads (3 most recent) - only include ads that are active, paid and currently scheduled
+            $finalPaymentStatuses = ['settlement', 'capture', 'success'];
             $recentAds = \App\Models\Ad::with('item')
                 ->whereHas('item', function($q) use ($vendor) {
                     $q->where('vendor_id', $vendor->id);
+                })
+                ->where('status', 'active')
+                ->whereHas('payment', function($q) use ($finalPaymentStatuses) {
+                    $q->whereIn('payment_status', $finalPaymentStatuses);
+                })
+                ->where(function($q) {
+                    $q->whereNull('start_date')->orWhere('start_date', '<=', now());
+                })
+                ->where(function($q) {
+                    $q->whereNull('end_date')->orWhere('end_date', '>=', now());
                 })
                 ->orderBy('created_at', 'desc')
                 ->take(3)
