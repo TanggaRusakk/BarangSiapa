@@ -146,9 +146,22 @@ Route::get('/payment/success', [PaymentController::class, 'success'])->name('pay
 Route::get('/payment/pending', [PaymentController::class, 'pending'])->name('payment.pending');
 Route::get('/payment/error', [PaymentController::class, 'error'])->name('payment.error');
 
-// Simple test route to verify Railway can serve routes
-Route::get('/test-route-works', function() {
-    return 'Routes are working! Time: ' . now()->toDateTimeString();
+// Test if PaymentController can be loaded
+Route::get('/test-payment-controller', function() {
+    try {
+        $controller = new \App\Http\Controllers\PaymentController();
+        return response()->json([
+            'status' => 'ok',
+            'message' => 'PaymentController loaded successfully',
+            'methods' => get_class_methods($controller),
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ], 500);
+    }
 });
 
 // WHY: Webhook dipindah ke routes/api.php
