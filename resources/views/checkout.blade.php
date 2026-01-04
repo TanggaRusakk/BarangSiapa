@@ -87,6 +87,21 @@
                                     <small class="text-muted">Price: Rp {{ number_format($item->item_price, 0, ',', '.') }} per {{ $item->rental_duration_value ?? 1 }} {{ $item->rental_duration_unit ?? 'day' }}</small>
                                 </div>
                             </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Payment Option</label>
+                                <div class="d-flex gap-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="payment_option" id="payment_dp" value="dp" checked>
+                                        <label class="form-check-label" for="payment_dp">DP 30% (pay now)</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="payment_option" id="payment_full" value="full">
+                                        <label class="form-check-label" for="payment_full">Full Payment (pay 100% now)</label>
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block mt-2">Pilih apakah ingin membayar DP 30% sekarang atau lunas 100%.</small>
+                            </div>
                         @endif
 
                         <!-- Order Summary -->

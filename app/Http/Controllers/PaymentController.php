@@ -52,10 +52,18 @@ class PaymentController extends Controller
 
         // WHY: Get order total with fallback values for data consistency
         $orderTotal = $order->total_amount ?? $order->order_total_amount ?? $order->calculated_total;
-        
-        // WHY: For rental orders, only charge 30% DP
+
+        // WHY: Determine rental flag
         $isRental = $order->order_type === 'sewa';
-        $paymentAmount = $isRental ? round($orderTotal * 0.30) : $orderTotal;
+
+        // WHY: If an existing Payment record exists (created at checkout), prefer its amount/type
+        $paymentType = $isRental ? 'dp' : 'full';
+        if ($existingPayment) {
+            $paymentAmount = (int) $existingPayment->payment_total_amount;
+            $paymentType = $existingPayment->payment_type ?? $paymentType;
+        } else {
+            $paymentAmount = $isRental ? round($orderTotal * 0.30) : $orderTotal;
+        }
         
         $transactionDetails = [
             'order_id' => $midtransOrderId,
@@ -65,8 +73,8 @@ class PaymentController extends Controller
         // Build item details for Midtrans itemization
         $itemDetails = $this->buildItemDetails($order->orderItems);
         
-        // WHY: For rental, adjust item details to reflect DP amount
-        if ($isRental) {
+        // WHY: If payment type is DP, adjust item details to reflect DP amount
+        if ($paymentType === 'dp') {
             $itemDetails = array_map(function($item) {
                 $item['price'] = round($item['price'] * 0.30);
                 $item['name'] = 'DP ' . $item['name'];
@@ -107,7 +115,7 @@ class PaymentController extends Controller
                     'user_id' => $order->user_id,
                     'midtrans_order_id' => $midtransOrderId,
                     'payment_method' => 'midtrans',
-                    'payment_type' => $isRental ? 'dp' : 'full',
+                    'payment_type' => $paymentType,
                     'payment_total_amount' => $paymentAmount,
                     'payment_status' => 'pending',
                 ]
