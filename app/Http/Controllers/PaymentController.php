@@ -174,65 +174,55 @@ class PaymentController extends Controller
     // WHY: UI callbacks are READ-ONLY - webhook is single source of truth for DB updates
     public function success(Request $request)
     {
-        try {
-            Log::info('Payment success redirect hit', ['query' => $request->query()]);
-            $midtransOrderId = $request->query('order_id');
-
-            if ($midtransOrderId) {
-                $payment = Payment::where('midtrans_order_id', $midtransOrderId)->first();
-
-                if ($payment) {
-                    Log::info('Matched payment on success redirect', ['payment_id' => $payment->id, 'payment_type' => $payment->payment_type]);
-                    // If this is an ad payment, create Ad from session (webhook will activate later)
-                    if ($payment->payment_type === 'ad') {
-                        $pendingAd = session('pending_ad');
-                        Log::info('Pending ad from session', ['pending_ad_exists' => $pendingAd ? true : false]);
-
-                        if ($pendingAd && $pendingAd['payment_id'] === $payment->id) {
-                            // Check if Ad already exists (prevent duplicate)
-                            $existingAd = \App\Models\Ad::where('payment_id', $payment->id)->first();
-
-                            if (!$existingAd) {
-                                \App\Models\Ad::create([
-                                    'item_id' => $pendingAd['item_id'],
-                                    'start_date' => $pendingAd['start_date'],
-                                    'end_date' => $pendingAd['end_date'],
-                                    'price' => $pendingAd['price'],
-                                    'ad_image' => $pendingAd['ad_image'] ?? 'ad_placeholder.jpg',
-                                    'status' => 'pending', // Webhook will activate
-                                    'payment_id' => $payment->id,
-                                ]);
-                            }
-
-                            session()->forget('pending_ad');
+        Log::info('Payment success redirect hit', ['query' => $request->query()]);
+        $midtransOrderId = $request->query('order_id');
+        
+        if ($midtransOrderId) {
+            $payment = Payment::where('midtrans_order_id', $midtransOrderId)->first();
+            
+            if ($payment) {
+                Log::info('Matched payment on success redirect', ['payment_id' => $payment->id, 'payment_type' => $payment->payment_type]);
+                // If this is an ad payment, create Ad from session (webhook will activate later)
+                if ($payment->payment_type === 'ad') {
+                    $pendingAd = session('pending_ad');
+                    Log::info('Pending ad from session', ['pending_ad_exists' => $pendingAd ? true : false]);
+                    
+                    if ($pendingAd && $pendingAd['payment_id'] === $payment->id) {
+                        // Check if Ad already exists (prevent duplicate)
+                        $existingAd = \App\Models\Ad::where('payment_id', $payment->id)->first();
+                        
+                        if (!$existingAd) {
+                            \App\Models\Ad::create([
+                                'item_id' => $pendingAd['item_id'],
+                                'start_date' => $pendingAd['start_date'],
+                                'end_date' => $pendingAd['end_date'],
+                                'price' => $pendingAd['price'],
+                                'ad_image' => $pendingAd['ad_image'] ?? 'ad_placeholder.jpg',
+                                'status' => 'pending', // Webhook will activate
+                                'payment_id' => $payment->id,
+                            ]);
                         }
-
-                        return redirect()->route('vendor.ads.index')
-                            ->with('success', 'Pembayaran iklan diterima! Iklan akan aktif setelah verifikasi sistem.');
+                        
+                        session()->forget('pending_ad');
                     }
+                    
+                    return redirect()->route('vendor.ads.index')
+                        ->with('success', 'Pembayaran iklan diterima! Iklan akan aktif setelah verifikasi sistem.');
+                }
 
-                    if ($payment->order_id) {
-                        $order = Order::find($payment->order_id);
-                        // WHY: Verify user owns this order before showing success page
-                        if ($order && $order->user_id === auth()->id()) {
-                            return redirect()->route('orders.show', $order->id)
-                                ->with('info', 'Pembayaran sedang diverifikasi. Status akan diupdate otomatis.');
-                        }
+                if ($payment->order_id) {
+                    $order = Order::find($payment->order_id);
+                    // WHY: Verify user owns this order before showing success page
+                    if ($order && $order->user_id === auth()->id()) {
+                        return redirect()->route('orders.show', $order->id)
+                            ->with('info', 'Pembayaran sedang diverifikasi. Status akan diupdate otomatis.');
                     }
                 }
             }
-
-            return redirect()->route('orders.my-orders')
-                ->with('info', 'Pembayaran sedang diverifikasi oleh sistem.');
-        } catch (\Exception $e) {
-            Log::error('Error in payment success handler', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            // Fallback: return a minimal static HTML response to avoid 500 stemming from missing assets (Vite manifest issues)
-            $html = '<!doctype html><html><head><meta charset="utf-8"><title>Payment Received</title></head><body style="font-family:Arial,Helvetica,sans-serif;padding:24px;">'
-                . '<h2>Payment received</h2>'
-                . '<p>Your payment was received and is being verified. You can safely close this window or <a href="' . route('orders.my-orders') . '">view your orders</a>.</p>'
-                . '</body></html>';
-            return response($html, 200)->header('Content-Type', 'text/html');
         }
+
+        return redirect()->route('orders.my-orders')
+            ->with('info', 'Pembayaran sedang diverifikasi oleh sistem.');
     }
 
     public function pending(Request $request)

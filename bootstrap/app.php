@@ -13,10 +13,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Exclude Midtrans webhook from CSRF verification
+        // Exclude Midtrans webhook and callback routes from CSRF verification
         $middleware->validateCsrfTokens(except: [
             'midtrans/notification',
             'payment/webhook',
+            'payment/success',
+            'payment/pending',
+            'payment/error',
             'api/midtrans/webhook',
         ]);
     })
