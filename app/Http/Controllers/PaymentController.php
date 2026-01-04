@@ -121,13 +121,41 @@ class PaymentController extends Controller
         if ($midtransOrderId) {
             $payment = Payment::where('midtrans_order_id', $midtransOrderId)->first();
             
-            if ($payment && $payment->order_id) {
-                $order = Order::find($payment->order_id);
-                
-                // WHY: Verify user owns this order before showing success page
-                if ($order && $order->user_id === auth()->id()) {
-                    return redirect()->route('orders.show', $order->id)
-                        ->with('info', 'Pembayaran sedang diverifikasi. Status akan diupdate otomatis.');
+            if ($payment) {
+                // If this is an ad payment, create Ad from session (webhook will activate later)
+                if ($payment->payment_type === 'ad') {
+                    $pendingAd = session('pending_ad');
+                    
+                    if ($pendingAd && $pendingAd['payment_id'] === $payment->id) {
+                        // Check if Ad already exists (prevent duplicate)
+                        $existingAd = \App\Models\Ad::where('payment_id', $payment->id)->first();
+                        
+                        if (!$existingAd) {
+                            \App\Models\Ad::create([
+                                'item_id' => $pendingAd['item_id'],
+                                'start_date' => $pendingAd['start_date'],
+                                'end_date' => $pendingAd['end_date'],
+                                'price' => $pendingAd['price'],
+                                'ad_image' => $pendingAd['ad_image'] ?? 'ad_placeholder.jpg',
+                                'status' => 'pending', // Webhook will activate
+                                'payment_id' => $payment->id,
+                            ]);
+                        }
+                        
+                        session()->forget('pending_ad');
+                    }
+                    
+                    return redirect()->route('vendor.ads.index')
+                        ->with('success', 'Pembayaran iklan diterima! Iklan akan aktif setelah verifikasi sistem.');
+                }
+
+                if ($payment->order_id) {
+                    $order = Order::find($payment->order_id);
+                    // WHY: Verify user owns this order before showing success page
+                    if ($order && $order->user_id === auth()->id()) {
+                        return redirect()->route('orders.show', $order->id)
+                            ->with('info', 'Pembayaran sedang diverifikasi. Status akan diupdate otomatis.');
+                    }
                 }
             }
         }
@@ -138,12 +166,30 @@ class PaymentController extends Controller
 
     public function pending(Request $request)
     {
+        $midtransOrderId = $request->query('order_id');
+        if ($midtransOrderId) {
+            $payment = Payment::where('midtrans_order_id', $midtransOrderId)->first();
+            if ($payment && $payment->payment_type === 'ad') {
+                return redirect()->route('vendor.ads.index')
+                    ->with('info', 'Pembayaran iklan tertunda. Mohon selesaikan pembayaran Anda.');
+            }
+        }
+
         return redirect()->route('orders.my-orders')
             ->with('info', 'Pembayaran tertunda. Mohon selesaikan pembayaran Anda.');
     }
 
     public function error(Request $request)
     {
+        $midtransOrderId = $request->query('order_id');
+        if ($midtransOrderId) {
+            $payment = Payment::where('midtrans_order_id', $midtransOrderId)->first();
+            if ($payment && $payment->payment_type === 'ad') {
+                return redirect()->route('vendor.ads.index')
+                    ->with('error', 'Pembayaran iklan gagal atau dibatalkan. Silakan coba lagi.');
+            }
+        }
+
         return redirect()->route('orders.my-orders')
             ->with('error', 'Pembayaran gagal! Silakan coba lagi.');
     }
@@ -352,16 +398,13 @@ class PaymentController extends Controller
                     'paid_at' => now(),
                 ]);
 
-                // If there's a pending_ad stored (session-based flow) we cannot access session here,
-                // so create ad by searching for Ad with this payment_id or create new active Ad record.
+                // Find Ad by payment_id and activate it (Ad should be created by success callback)
                 $existingAd = \App\Models\Ad::where('payment_id', $payment->id)->first();
                 if ($existingAd) {
                     $existingAd->update(['status' => 'active']);
+                    Log::info('Ad activated via webhook', ['ad_id' => $existingAd->id, 'payment_id' => $payment->id]);
                 } else {
-                    // No ad found — attempt to create a placeholder active ad if session flow was used
-                    // In normal flow the app stores ad data upon payment creation in session, so
-                    // webhook will complement by flipping status. Here we log and leave it to UI.
-                    Log::info('Ad payment settled but no Ad found for payment', ['payment_id' => $payment->id]);
+                    Log::warning('Ad payment settled but no Ad record found', ['payment_id' => $payment->id]);
                 }
 
                 Log::info('Ad payment settled', ['order_id' => $orderId, 'payment_id' => $payment->id]);
