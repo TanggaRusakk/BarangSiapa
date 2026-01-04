@@ -140,6 +140,11 @@ class PaymentController extends Controller
             'transaction_details' => $transactionDetails,
             'item_details' => $itemDetails,
             'customer_details' => $customerDetails,
+            'callbacks' => [
+                'finish' => route('payment.success'),
+                'unfinish' => route('payment.pending'),
+                'error' => route('payment.error'),
+            ],
         ];
 
         try {
