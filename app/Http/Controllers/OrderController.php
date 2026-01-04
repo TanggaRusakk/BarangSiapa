@@ -135,8 +135,8 @@ class OrderController extends Controller
             }
             session(['order_payment_option_' . $order->id => $paymentOption]);
 
-            // Redirect to payment
-            return redirect()->route('payment.create', $order->id);
+            // Redirect to payment (include chosen payment option as query param to ensure persistence)
+            return redirect()->route('payment.create', ['order' => $order->id, 'payment_option' => $paymentOption]);
 
         } catch (\Exception $e) {
             DB::rollBack();

@@ -373,6 +373,7 @@
 
     @else
         <!-- MEMBER DASHBOARD -->
+        <!-- Stats Grid -->
         <div class="row g-4 mb-6">
             <div class="col-12 col-md-3">
                 <div class="card subtle-hover p-6">
@@ -381,6 +382,7 @@
                     <div class="text-sm text-soft-lilac mt-2">{{ $activeOrdersCount > 0 ? 'In progress' : 'No orders yet' }}</div>
                 </div>
             </div>
+
             <div class="col-12 col-md-3">
                 <div class="card subtle-hover p-6">
                     <div class="stat-label">Active Rentals</div>
@@ -388,25 +390,27 @@
                     <div class="text-sm text-soft-lilac mt-2">{{ $activeRentalsCount > 0 ? 'Currently renting' : 'No rentals' }}</div>
                 </div>
             </div>
+
             <div class="col-12 col-md-3">
                 <div class="card subtle-hover p-6">
                     <div class="stat-label">Total Spent</div>
-                    <div class="stat-value text-2xl font-extrabold">Rp{{ number_format($totalSpent ?? 0) }}</div>
+                    <div class="stat-value text-3xl font-extrabold">Rp{{ number_format($totalSpent ?? 0) }}</div>
                     <div class="text-sm text-soft-lilac mt-2">Last 30 days</div>
                 </div>
             </div>
+
             <div class="col-12 col-md-3">
                 <div class="card subtle-hover p-6">
-                    <div class="stat-label">Reviews</div>
+                    <div class="stat-label">Reviews Given</div>
                     <div class="stat-value text-3xl font-extrabold">{{ $reviewsGiven ?? 0 }}</div>
-                    <div class="text-sm text-soft-lilac mt-2">Given by you</div>
+                    <div class="text-sm text-soft-lilac mt-2">Product reviews</div>
                 </div>
             </div>
         </div>
 
-        <!-- Quick Actions -->
+        <!-- Quick Actions: 4-column boxes -->
         <div class="row g-4 mb-4">
-            <div class="col-6 col-md-3">
+            <div class="col-12 col-md-3">
                 <a href="{{ route('items.index') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
                     <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
@@ -416,19 +420,19 @@
                     <p class="text-sm text-secondary mb-0">Explore marketplace</p>
                 </a>
             </div>
-            @if(!(auth()->check() && auth()->user()->role === 'vendor'))
-                <div class="col-6 col-md-3">
-                    <a href="{{ route('orders.my-orders') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+
+            <div class="col-12 col-md-3">
+                <a href="{{ route('orders.my-orders') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
                     <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                         <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
                     </svg>
                     <h3 class="font-bold text-lg mb-1">My Orders</h3>
                     <p class="text-sm text-secondary mb-0">Track your purchases</p>
-                    </a>
-                </div>
-            @endif
-            <div class="col-6 col-md-3">
+                </a>
+            </div>
+
+            <div class="col-12 col-md-3">
                 <a href="{{ url('/messages') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
                     <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -437,7 +441,8 @@
                     <p class="text-sm text-secondary mb-0">Chat with vendors</p>
                 </a>
             </div>
-            <div class="col-6 col-md-3">
+
+            <div class="col-12 col-md-3">
                 <a href="{{ route('profile.edit') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
                     <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
@@ -448,25 +453,25 @@
             </div>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="row g-4 mb-4">
+        <!-- Recent Orders & Rentals (2-column layout) -->
+        <div class="row g-4">
+            <!-- Recent Orders -->
             <div class="col-12 col-lg-6">
                 <div class="card h-100">
                     <div class="card-body">
-                        @if(!(auth()->check() && auth()->user()->role === 'vendor'))
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h3 class="stat-label mb-0">Recent Orders</h3>
-                                <a href="{{ route('orders.my-orders') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); color: white;">View All →</a>
-                            </div>
-                        @endif
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="h5 fw-bold mb-0">Recent Orders</h3>
+                            <a href="{{ route('orders.my-orders') }}" class="btn btn-sm" style="background: #6A38C2; color: white;">View All →</a>
+                        </div>
+
                         @if(isset($userOrders) && $userOrders->count() > 0)
                             <div class="d-flex flex-column gap-3">
-                                @foreach($userOrders as $order)
+                                @foreach($userOrders->take(3) as $order)
                                     <div class="d-flex gap-3 p-3 rounded" style="background: rgba(106,56,194,0.05);">
                                         @if($order->orderItems->first() && $order->orderItems->first()->item)
-                                            <img src="{{ $order->orderItems->first()->item->first_image_url }}" alt="{{ $order->orderItems->first()->item->item_name }}" class="rounded" style="width:64px;height:64px;object-fit:cover;">
+                                            <img src="{{ $order->orderItems->first()->item->first_image_url }}" alt="{{ $order->orderItems->first()->item->item_name }}" class="rounded" style="width:80px;height:80px;object-fit:cover;">
                                         @else
-                                            <div class="rounded d-flex align-items-center justify-content-center" style="width:64px;height:64px;background:#f0f0f0;">
+                                            <div class="rounded d-flex align-items-center justify-content-center" style="width:80px;height:80px;background:#f0f0f0;">
                                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                                                 </svg>
@@ -474,11 +479,8 @@
                                         @endif
                                         <div class="flex-grow-1">
                                             <h6 class="mb-1 fw-bold">Order #{{ $order->id }}</h6>
-                                            <p class="mb-1 text-soft-lilac small">Rp{{ number_format($order->order_total_amount ?? 0) }}</p>
-                                            <span class="badge {{ $order->order_status === 'paid' ? 'bg-success' : ($order->order_status === 'pending' ? 'bg-warning' : 'bg-secondary') }}">{{ ucfirst($order->order_status ?? 'pending') }}</span>
-                                        </div>
-                                        <div class="text-end text-soft-lilac small">
-                                            {{ $order->created_at->format('d M Y') }}
+                                            <p class="mb-1 text-secondary small">Rp{{ number_format($order->order_total_amount ?? 0) }} • {{ $order->created_at->format('d M Y') }}</p>
+                                            <span class="badge {{ $order->order_status === 'paid' ? 'bg-success' : ($order->order_status === 'pending' ? 'bg-warning' : 'bg-secondary') }} small">{{ ucfirst($order->order_status ?? 'pending') }}</span>
                                         </div>
                                     </div>
                                 @endforeach
@@ -489,28 +491,30 @@
                                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                                     <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
                                 </svg>
-                                <p class="text-soft-lilac mb-0">No orders yet</p>
+                                <p class="text-secondary mb-0">No orders yet</p>
                             </div>
                         @endif
                     </div>
                 </div>
             </div>
 
+            <!-- Active Rentals -->
             <div class="col-12 col-lg-6">
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h3 class="stat-label mb-0">Active Rentals</h3>
-                            <a href="{{ route('orders.my-orders') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #FF3CAC 0%, #6A38C2 100%); color: white;">View All →</a>
+                            <h3 class="h5 fw-bold mb-0">Active Rentals</h3>
+                            <a href="{{ route('orders.my-orders') }}" class="btn btn-sm" style="background: #FF3CAC; color: #000;">View All →</a>
                         </div>
+
                         @if(isset($userRentals) && $userRentals->count() > 0)
                             <div class="d-flex flex-column gap-3">
-                                @foreach($userRentals as $rental)
+                                @foreach($userRentals->take(3) as $rental)
                                     <div class="d-flex gap-3 p-3 rounded" style="background: rgba(255,60,172,0.05);">
                                         @if($rental->orderItems->first() && $rental->orderItems->first()->item)
-                                            <img src="{{ $rental->orderItems->first()->item->first_image_url }}" alt="{{ $rental->orderItems->first()->item->item_name }}" class="rounded" style="width:64px;height:64px;object-fit:cover;">
+                                            <img src="{{ $rental->orderItems->first()->item->first_image_url }}" alt="{{ $rental->orderItems->first()->item->item_name }}" class="rounded" style="width:80px;height:80px;object-fit:cover;">
                                         @else
-                                            <div class="rounded d-flex align-items-center justify-content-center" style="width:64px;height:64px;background:#f0f0f0;">
+                                            <div class="rounded d-flex align-items-center justify-content-center" style="width:80px;height:80px;background:#f0f0f0;">
                                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                                                 </svg>
@@ -518,11 +522,8 @@
                                         @endif
                                         <div class="flex-grow-1">
                                             <h6 class="mb-1 fw-bold">{{ $rental->orderItems->first()->item->item_name ?? 'Rental Item' }}</h6>
-                                            <p class="mb-1 text-soft-lilac small">Rp{{ number_format($rental->order_total_amount ?? 0) }}</p>
-                                            <span class="badge {{ $rental->order_status === 'paid' ? 'bg-success' : ($rental->order_status === 'pending' ? 'bg-warning' : 'bg-secondary') }}">{{ ucfirst($rental->order_status ?? 'pending') }}</span>
-                                        </div>
-                                        <div class="text-end text-soft-lilac small">
-                                            {{ $rental->created_at->format('d M Y') }}
+                                            <p class="mb-1 text-secondary small">Rp{{ number_format($rental->order_total_amount ?? 0) }} • {{ $rental->created_at->format('d M Y') }}</p>
+                                            <span class="badge {{ $rental->order_status === 'paid' ? 'bg-success' : ($rental->order_status === 'pending' ? 'bg-warning' : 'bg-secondary') }} small">{{ ucfirst($rental->order_status ?? 'pending') }}</span>
                                         </div>
                                     </div>
                                 @endforeach
@@ -532,7 +533,7 @@
                                 <svg class="mb-3 text-secondary" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                                 </svg>
-                                <p class="text-soft-lilac mb-0">No active rentals</p>
+                                <p class="text-secondary mb-0">No active rentals</p>
                             </div>
                         @endif
                     </div>

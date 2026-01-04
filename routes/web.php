@@ -952,34 +952,7 @@ Route::middleware('auth')->group(function () {
         }
     })->name('vendor.ads.payment');
 
-    // Confirm payment (simulate payment success)
-    Route::post('/vendor/ads/payment/{payment}/confirm', function (Request $request, \App\Models\Payment $payment) {
-        if (auth()->user()->role !== 'vendor') abort(403);
-        $pendingAd = session('pending_ad');
-        if (!$pendingAd || $pendingAd['payment_id'] !== $payment->id) {
-            return redirect()->route('vendor.ads.index')->with('error', 'Invalid payment session');
-        }
-        
-        // Mark payment as settled
-        $payment->update([
-            'payment_status' => 'settlement',
-            'paid_at' => now(),
-        ]);
-        
-        // Create the ad
-        \App\Models\Ad::create([
-            'item_id' => $pendingAd['item_id'],
-            'start_date' => $pendingAd['start_date'],
-            'end_date' => $pendingAd['end_date'],
-            'price' => $pendingAd['price'],
-            'ad_image' => $pendingAd['ad_image'] ?? 'ad_placeholder.jpg',
-            'status' => 'active',
-            'payment_id' => $payment->id,
-        ]);
-        
-        session()->forget('pending_ad');
-        return redirect()->route('vendor.ads.index')->with('success', 'Ad payment successful and ad created!');
-    })->name('vendor.ads.payment.confirm');
+    // Note: Demo/manual ad-confirm route removed. Ad activation is handled exclusively by the Midtrans webhook.
 
     Route::get('/vendor/ads/{ad}/edit', function (\App\Models\Ad $ad) {
         if (auth()->user()->role !== 'vendor') abort(403);
