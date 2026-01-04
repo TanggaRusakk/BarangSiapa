@@ -637,8 +637,8 @@ Route::middleware('auth')->group(function () {
                 return $order->orderItems->pluck('item_id')->intersect($vendorItems)->isNotEmpty();
             });
 
-            // Total Orders (exclude cancelled)
-            $ordersCount = $vendorOrders->where('order_status', '!=', 'cancelled')->count();
+            // Total Orders: count only successful orders (paid or completed)
+            $ordersCount = $vendorOrders->whereIn('order_status', ['paid', 'completed'])->count();
             
             // Recent 3 completed orders (newest first)
             $recentOrders = $vendorOrders
@@ -646,10 +646,10 @@ Route::middleware('auth')->group(function () {
                 ->sortByDesc('created_at')
                 ->take(3);
 
-            // Total Sales: revenue from completed orders only
-            $completedOrders = $vendorOrders->where('order_status', 'completed');
+            // Total Sales: revenue from successful orders (paid or completed)
+            $successfulOrders = $vendorOrders->whereIn('order_status', ['paid', 'completed']);
             $revenue = 0;
-            foreach ($completedOrders as $order) {
+            foreach ($successfulOrders as $order) {
                 foreach ($order->orderItems as $item) {
                     if ($vendorItems->contains($item->item_id)) {
                         $revenue += ($item->order_item_price ?? 0) * ($item->order_item_quantity ?? 1);
@@ -659,10 +659,10 @@ Route::middleware('auth')->group(function () {
 
             $productsCount = $vendor->items()->count();
 
-            // Store Rating: average rating from all vendor's items
+            // Store Rating: average rating from all vendor's items (uses `rating` column on reviews)
             $storeRating = \App\Models\Review::whereHas('item', function ($q) use ($vendor) {
                 $q->where('vendor_id', $vendor->id ?? 0);
-            })->avg('review_rating') ?? 0;
+            })->avg('rating') ?? 0;
             $storeRating = round($storeRating, 1);
 
             // Mark any expired ads inactive so they won't appear
