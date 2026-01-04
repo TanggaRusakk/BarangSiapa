@@ -146,6 +146,11 @@ Route::get('/payment/success', [PaymentController::class, 'success'])->name('pay
 Route::get('/payment/pending', [PaymentController::class, 'pending'])->name('payment.pending');
 Route::get('/payment/error', [PaymentController::class, 'error'])->name('payment.error');
 
+// Simple test route to verify Railway can serve routes
+Route::get('/test-route-works', function() {
+    return 'Routes are working! Time: ' . now()->toDateTimeString();
+});
+
 // WHY: Webhook dipindah ke routes/api.php
 // Lihat: routes/api.php untuk endpoint /api/midtrans/webhook
 
