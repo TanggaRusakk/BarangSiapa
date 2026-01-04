@@ -716,7 +716,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/vendor/products/create', function () {
         if (auth()->user()->role !== 'vendor') abort(403);
-        return view('vendor.products-create');
+        $categories = \App\Models\Category::orderBy('category_name')->get();
+        return view('vendor.products-create', compact('categories'));
     })->name('vendor.products.create');
 
     Route::post('/vendor/products', function (Request $request) {
@@ -733,10 +734,17 @@ Route::middleware('auth')->group(function () {
             'rental_duration_unit' => 'nullable|string|in:day,week,month',
             'images' => 'nullable|array',
             'images.*' => 'image|max:4096',
+            'categories' => 'nullable|array',
+            'categories.*' => 'exists:categories,id',
         ]);
         $data['vendor_id'] = $vendor->id ?? null;
 
         $item = \App\Models\Item::create($data);
+
+        // Attach categories
+        if ($request->filled('categories')) {
+            $item->categories()->attach($request->categories);
+        }
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
@@ -1032,8 +1040,9 @@ Route::middleware('auth')->group(function () {
         if (auth()->user()->role !== 'vendor') abort(403);
         $vendor = auth()->user()->vendor;
         if (!$vendor || $item->vendor_id !== $vendor->id) abort(403);
-        $item->load('galleries'); // Load gallery images
-        return view('vendor.products-edit', compact('item'));
+        $item->load('galleries', 'categories'); // Load gallery images and categories
+        $categories = \App\Models\Category::orderBy('category_name')->get();
+        return view('vendor.products-edit', compact('item', 'categories'));
     })->name('vendor.products.edit');
 
     Route::patch('/vendor/products/{item}', function (Request $request, \App\Models\Item $item) {
@@ -1050,6 +1059,8 @@ Route::middleware('auth')->group(function () {
             'rental_duration_value' => 'nullable|integer|min:1',
             'rental_duration_unit' => 'nullable|string|in:day,week,month',
             'image' => 'nullable|image|max:2048',
+            'categories' => 'nullable|array',
+            'categories.*' => 'exists:categories,id',
         ]);
 
         // Handle image upload: store to public/images/products and create gallery record
@@ -1071,6 +1082,12 @@ Route::middleware('auth')->group(function () {
 
         // Update item fields
         $item->update(collect($data)->only(['item_name','item_description','item_price','item_type','item_status','item_stock','rental_duration_value','rental_duration_unit'])->toArray());
+        
+        // Sync categories
+        if ($request->has('categories')) {
+            $item->categories()->sync($request->categories ?? []);
+        }
+        
         return redirect()->route('vendor.products.list')->with('success', 'Product updated');
     })->name('vendor.products.update');
 

@@ -96,6 +96,27 @@
                 </div>
             </div>
 
+            <div>
+                <x-input-label for="categories" :value="__('Categories')" />
+                <div class="p-3 rounded" style="background: rgba(106, 56, 194, 0.05); border: 1px solid rgba(106, 56, 194, 0.2); max-height: 200px; overflow-y: auto;">
+                    @if(isset($categories) && $categories->count() > 0)
+                        @foreach($categories as $category)
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="categories[]" value="{{ $category->id }}" id="category_{{ $category->id }}"
+                                    {{ $item->categories->contains($category->id) ? 'checked' : '' }}>
+                                <label class="form-check-label text-white" for="category_{{ $category->id }}">
+                                    {{ $category->category_name }}
+                                </label>
+                            </div>
+                        @endforeach
+                    @else
+                        <p class="text-muted mb-0">No categories available</p>
+                    @endif
+                </div>
+                <small class="text-muted d-block mt-1">Select one or more categories for this product</small>
+                <x-input-error class="mt-2" :messages="$errors->get('categories')" />
+            </div>
+
             <div class="mb-8" style="margin-bottom:2.5rem;">
                 <x-input-label for="item_status" :value="__('Status')" />
                 <select id="item_status" name="item_status" class="w-full px-4 py-3 bg-midnight-black bg-opacity-60 border-2 border-royal-purple border-opacity-40 rounded-lg text-white focus:border-neon-pink focus:ring-0 transition appearance-none uniform-field">
