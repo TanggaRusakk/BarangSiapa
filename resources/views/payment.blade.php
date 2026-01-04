@@ -27,9 +27,9 @@
                             <div class="flex-grow-1">
                                 <h6 class="fw-bold mb-1">{{ $orderItem->item->item_name }}</h6>
                                 <p class="text-muted mb-0">Quantity: {{ $orderItem->order_item_quantity }} × Rp {{ number_format($orderItem->order_item_price, 0, ',', '.') }}</p>
-                                @if($order->order_type === 'sewa' && $order->rentalInfos->isNotEmpty())
+                                @if($order->order_type === 'sewa' && $order->rentalInfos)
                                     @php
-                                        $rental = $order->rentalInfos->first();
+                                        $rental = $order->rentalInfos; // hasOne relation
                                     @endphp
                                     <p class="text-muted small mb-0">
                                         <i class="bi bi-calendar-range"></i> 
