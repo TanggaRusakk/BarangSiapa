@@ -56,13 +56,22 @@ class PaymentController extends Controller
         // WHY: Determine rental flag
         $isRental = $order->order_type === 'sewa';
 
-        // WHY: If an existing Payment record exists (created at checkout), prefer its amount/type
+        // WHY: Determine payment type/amount. Prefer existing Payment record; otherwise
+        // check session (set at checkout) for user's chosen option; fallback to DP for rentals.
         $paymentType = $isRental ? 'dp' : 'full';
+        $paymentAmount = $isRental ? round($orderTotal * 0.30) : $orderTotal;
+
         if ($existingPayment) {
             $paymentAmount = (int) $existingPayment->payment_total_amount;
             $paymentType = $existingPayment->payment_type ?? $paymentType;
         } else {
-            $paymentAmount = $isRental ? round($orderTotal * 0.30) : $orderTotal;
+            // Read payment option chosen at checkout from session
+            $sessionKey = 'order_payment_option_' . $order->id;
+            $sessionOption = session($sessionKey, null);
+            if ($sessionOption) {
+                $paymentType = $sessionOption;
+                $paymentAmount = $sessionOption === 'dp' && $isRental ? round($orderTotal * 0.30) : $orderTotal;
+            }
         }
         
         $transactionDetails = [

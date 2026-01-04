@@ -128,28 +128,12 @@ class OrderController extends Controller
 
             DB::commit();
 
-            // Persist chosen payment option by creating a Payment record
+            // Persist chosen payment option in session so PaymentController will honor it
             $paymentOption = $request->input('payment_option');
             if (!$paymentOption) {
                 $paymentOption = $isRent ? 'dp' : 'full';
             }
-
-            $paymentAmount = $totalAmount;
-            if ($isRent && $paymentOption === 'dp') {
-                $paymentAmount = round($totalAmount * 0.3);
-            }
-
-            Payment::create([
-                'order_id' => $order->id,
-                'user_id' => Auth::id(),
-                // Use empty string placeholder to satisfy NOT NULL DB constraint;
-                // will be updated later when generating Midtrans order id in PaymentController
-                'midtrans_order_id' => '',
-                'payment_method' => 'midtrans',
-                'payment_type' => $paymentOption === 'dp' ? 'dp' : 'full',
-                'payment_total_amount' => $paymentAmount,
-                'payment_status' => 'pending',
-            ]);
+            session(['order_payment_option_' . $order->id => $paymentOption]);
 
             // Redirect to payment
             return redirect()->route('payment.create', $order->id);
