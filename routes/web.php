@@ -828,6 +828,17 @@ Route::middleware('auth')->group(function () {
             'payment_status' => 'pending',
         ]);
 
+        // Create the Ad record immediately with status 'pending' so webhook can activate it
+        $ad = \App\Models\Ad::create([
+            'item_id' => $validated['item_id'],
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'],
+            'price' => $totalPrice,
+            'ad_image' => $imageName,
+            'status' => 'pending',
+            'payment_id' => $payment->id,
+        ]);
+
         // Build Midtrans Snap payload
         $transactionDetails = [
             'order_id' => $midtransOrderId,
@@ -861,32 +872,19 @@ Route::middleware('auth')->group(function () {
         try {
             $snapToken = \Midtrans\Snap::getSnapToken($params);
 
-            // Store ad data in session for after payment
-            session([
-                'pending_ad' => [
-                    'item_id' => $validated['item_id'],
-                    'start_date' => $validated['start_date'],
-                    'end_date' => $validated['end_date'],
-                    'price' => $totalPrice,
-                    'ad_image' => $imageName,
-                    'payment_id' => $payment->id,
-                    'snap_token' => $snapToken,
-                ]
-            ]);
-
+            // Redirect to payment page for this ad (payment/midtrans handled there)
             return redirect()->route('vendor.ads.payment', $payment->id);
 
         } catch (\Exception $e) {
-            // Fallback: keep existing demo flow
-            session([
-                'pending_ad' => [
-                    'item_id' => $validated['item_id'],
-                    'start_date' => $validated['start_date'],
-                    'end_date' => $validated['end_date'],
-                    'price' => $totalPrice,
-                    'ad_image' => $imageName,
-                    'payment_id' => $payment->id,
-                ]
+            // Fallback: still create ad record and redirect to payment view (without snap token)
+            $ad = \App\Models\Ad::create([
+                'item_id' => $validated['item_id'],
+                'start_date' => $validated['start_date'],
+                'end_date' => $validated['end_date'],
+                'price' => $totalPrice,
+                'ad_image' => $imageName,
+                'status' => 'pending',
+                'payment_id' => $payment->id,
             ]);
 
             return redirect()->route('vendor.ads.payment', $payment->id)->with('error', 'Failed to initialize Midtrans payment: ' . $e->getMessage());
@@ -896,9 +894,10 @@ Route::middleware('auth')->group(function () {
     // Show payment page
     Route::get('/vendor/ads/payment/{payment}', function (\App\Models\Payment $payment) {
         if (auth()->user()->role !== 'vendor') abort(403);
-        $pendingAd = session('pending_ad');
-        if (!$pendingAd || $pendingAd['payment_id'] !== $payment->id) {
-            return redirect()->route('vendor.ads.index')->with('error', 'Invalid payment session');
+        // Load ad that references this payment
+        $ad = \App\Models\Ad::where('payment_id', $payment->id)->first();
+        if (!$ad) {
+            return redirect()->route('vendor.ads.index')->with('error', 'Ad not found for this payment');
         }
 
         // Build Midtrans parameters similar to item payment flow
@@ -910,10 +909,10 @@ Route::middleware('auth')->group(function () {
         ];
 
         $itemDetails = [[
-            'id' => 'AD-' . ($pendingAd['item_id'] ?? '0'),
+            'id' => 'AD-' . ($ad->item_id ?? '0'),
             'price' => (int) $payment->payment_total_amount,
             'quantity' => 1,
-            'name' => 'Advertisement for: ' . substr(\App\Models\Item::find($pendingAd['item_id'])->item_name ?? 'Item', 0, 50),
+            'name' => 'Advertisement for: ' . substr(\App\Models\Item::find($ad->item_id)->item_name ?? 'Item', 0, 50),
         ]];
 
         $customerDetails = [
@@ -942,10 +941,10 @@ Route::middleware('auth')->group(function () {
                 $payment->save();
             }
 
-            return view('vendor.ads-payment', compact('payment', 'pendingAd', 'snapToken'));
+            return view('vendor.ads-payment', compact('payment', 'ad', 'snapToken'));
         } catch (\Exception $e) {
             // Fallback to previous behavior (use session snap token if available)
-            return view('vendor.ads-payment', compact('payment', 'pendingAd'))
+            return view('vendor.ads-payment', compact('payment', 'ad'))
                 ->with('error', 'Failed to initialize Midtrans payment: ' . $e->getMessage());
         }
     })->name('vendor.ads.payment');

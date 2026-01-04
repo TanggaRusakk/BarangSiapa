@@ -17,7 +17,7 @@
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-400">Status:</span>
-                    <span class="px-2 py-1 rounded text-xs bg-yellow-900 bg-opacity-30 text-yellow-300">
+                    <span class="px-2 py-1 rounded text-xs {{ $payment->payment_status === 'settlement' ? 'bg-success text-white' : 'bg-yellow-900 bg-opacity-30 text-yellow-300' }}">
                         {{ ucfirst($payment->payment_status) }}
                     </span>
                 </div>
