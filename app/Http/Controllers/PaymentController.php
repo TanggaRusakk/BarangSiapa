@@ -177,6 +177,7 @@ class PaymentController extends Controller
     }
 
     // WHY: UI callbacks are READ-ONLY - webhook is single source of truth for DB updates
+    // WHY: Route is outside auth middleware because user might not have active session after Midtrans redirect
     public function success(Request $request)
     {
         Log::info('Payment success redirect hit', ['query' => $request->query()]);
@@ -187,6 +188,7 @@ class PaymentController extends Controller
             
             if ($payment) {
                 Log::info('Matched payment on success redirect', ['payment_id' => $payment->id, 'payment_type' => $payment->payment_type]);
+                
                 // If this is an ad payment, create Ad from session (webhook will activate later)
                 if ($payment->payment_type === 'ad') {
                     $pendingAd = session('pending_ad');
@@ -211,19 +213,38 @@ class PaymentController extends Controller
                         session()->forget('pending_ad');
                     }
                     
-                    return redirect()->route('vendor.ads.index')
-                        ->with('success', 'Pembayaran iklan diterima! Iklan akan aktif setelah verifikasi sistem.');
+                    // WHY: Check if user is authenticated before redirecting to vendor dashboard
+                    if (auth()->check()) {
+                        return redirect()->route('vendor.ads.index')
+                            ->with('success', 'Pembayaran iklan diterima! Iklan akan aktif setelah verifikasi sistem.');
+                    } else {
+                        return redirect()->route('login')
+                            ->with('success', 'Pembayaran berhasil! Silakan login untuk melihat status iklan Anda.');
+                    }
                 }
 
                 if ($payment->order_id) {
                     $order = Order::find($payment->order_id);
-                    // WHY: Verify user owns this order before showing success page
-                    if ($order && $order->user_id === auth()->id()) {
+                    
+                    // WHY: If user is authenticated and owns this order, show order detail
+                    if ($order && auth()->check() && $order->user_id === auth()->id()) {
                         return redirect()->route('orders.show', $order->id)
                             ->with('info', 'Pembayaran sedang diverifikasi. Status akan diupdate otomatis.');
                     }
+                    
+                    // WHY: If user not authenticated, ask them to login
+                    if ($order && !auth()->check()) {
+                        return redirect()->route('login')
+                            ->with('success', 'Pembayaran berhasil! Silakan login untuk melihat status pesanan Anda.');
+                    }
                 }
             }
+        }
+
+        // WHY: Fallback - direct to login if not authenticated
+        if (!auth()->check()) {
+            return redirect()->route('login')
+                ->with('info', 'Pembayaran sedang diverifikasi. Silakan login untuk melihat status pembayaran.');
         }
 
         return redirect()->route('orders.my-orders')
@@ -236,9 +257,19 @@ class PaymentController extends Controller
         if ($midtransOrderId) {
             $payment = Payment::where('midtrans_order_id', $midtransOrderId)->first();
             if ($payment && $payment->payment_type === 'ad') {
-                return redirect()->route('vendor.ads.index')
-                    ->with('info', 'Pembayaran iklan tertunda. Mohon selesaikan pembayaran Anda.');
+                if (auth()->check()) {
+                    return redirect()->route('vendor.ads.index')
+                        ->with('info', 'Pembayaran iklan tertunda. Mohon selesaikan pembayaran Anda.');
+                } else {
+                    return redirect()->route('login')
+                        ->with('info', 'Pembayaran tertunda. Silakan login untuk melanjutkan.');
+                }
             }
+        }
+
+        if (!auth()->check()) {
+            return redirect()->route('login')
+                ->with('info', 'Pembayaran tertunda. Silakan login untuk melihat status pembayaran.');
         }
 
         return redirect()->route('orders.my-orders')
@@ -251,9 +282,19 @@ class PaymentController extends Controller
         if ($midtransOrderId) {
             $payment = Payment::where('midtrans_order_id', $midtransOrderId)->first();
             if ($payment && $payment->payment_type === 'ad') {
-                return redirect()->route('vendor.ads.index')
-                    ->with('error', 'Pembayaran iklan gagal atau dibatalkan. Silakan coba lagi.');
+                if (auth()->check()) {
+                    return redirect()->route('vendor.ads.index')
+                        ->with('error', 'Pembayaran iklan gagal atau dibatalkan. Silakan coba lagi.');
+                } else {
+                    return redirect()->route('login')
+                        ->with('error', 'Pembayaran gagal. Silakan login dan coba lagi.');
+                }
             }
+        }
+
+        if (!auth()->check()) {
+            return redirect()->route('login')
+                ->with('error', 'Pembayaran gagal. Silakan login untuk mencoba lagi.');
         }
 
         return redirect()->route('orders.my-orders')

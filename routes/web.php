@@ -136,12 +136,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('orders.my-orders');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
-    // Payment routes - UI callbacks only (authenticated)
+    // Payment create route - needs auth to create payment
     Route::get('/payment/{order}', [PaymentController::class, 'create'])->name('payment.create');
-    Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
-    Route::get('/payment/pending', [PaymentController::class, 'pending'])->name('payment.pending');
-    Route::get('/payment/error', [PaymentController::class, 'error'])->name('payment.error');
 });
+
+// WHY: Payment callback routes MUST be outside auth middleware
+// Midtrans redirects to these URLs after payment, user might not have active session
+Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
+Route::get('/payment/pending', [PaymentController::class, 'pending'])->name('payment.pending');
+Route::get('/payment/error', [PaymentController::class, 'error'])->name('payment.error');
 
 // WHY: Webhook dipindah ke routes/api.php
 // Lihat: routes/api.php untuk endpoint /api/midtrans/webhook
