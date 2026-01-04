@@ -33,7 +33,7 @@ class PaymentController extends Controller
 
     public function create($orderId)
     {
-        $order = Order::with(['orderItems.item', 'user'])->findOrFail($orderId);
+        $order = Order::with(['orderItems.item', 'user', 'rentalInfos'])->findOrFail($orderId);
 
         // WHY: Prevent unauthorized access to other user's orders
         if ($order->user_id !== auth()->id()) {

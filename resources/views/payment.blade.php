@@ -26,20 +26,32 @@
                             <img src="{{ $orderItem->item->first_image_url }}" alt="{{ $orderItem->item->item_name }}" class="rounded" style="width: 80px; height: 80px; object-fit: cover;">
                             <div class="flex-grow-1">
                                 <h6 class="fw-bold mb-1">{{ $orderItem->item->item_name }}</h6>
-                                <p class="text-muted mb-0">Quantity: {{ $orderItem->quantity }} × Rp {{ number_format($orderItem->price, 0, ',', '.') }}</p>
+                                <p class="text-muted mb-0">Quantity: {{ $orderItem->order_item_quantity }} × Rp {{ number_format($orderItem->order_item_price, 0, ',', '.') }}</p>
+                                @if($order->order_type === 'sewa' && $order->rentalInfos->isNotEmpty())
+                                    @php
+                                        $rental = $order->rentalInfos->first();
+                                    @endphp
+                                    <p class="text-muted small mb-0">
+                                        <i class="bi bi-calendar-range"></i> 
+                                        {{ \Carbon\Carbon::parse($rental->start_date)->format('d M Y') }} - 
+                                        {{ \Carbon\Carbon::parse($rental->end_date)->format('d M Y') }}
+                                        ({{ $rental->duration_days }} days)
+                                    </p>
+                                @endif
                             </div>
                             <div class="text-end">
-                                <p class="fw-bold mb-0" style="color: #6A38C2;">Rp {{ number_format($orderItem->price * $orderItem->quantity, 0, ',', '.') }}</p>
+                                <p class="fw-bold mb-0" style="color: #6A38C2;">Rp {{ number_format($orderItem->order_item_subtotal, 0, ',', '.') }}</p>
                             </div>
                         </div>
                     @endforeach
 
                     <!-- Total -->
                     @php
-                        $subtotal = $order->orderItems->sum(function($item) {
-                            return $item->price * $item->quantity;
-                        });
-                        $serviceFee = $order->order_total_amount - $subtotal;
+                        $subtotal = $order->orderItems->sum('order_item_subtotal');
+                        $serviceFee = $order->total_amount - $subtotal;
+                        $isRental = $order->order_type === 'sewa';
+                        $dpAmount = $isRental ? round($order->total_amount * 0.30) : $order->total_amount;
+                        $remainingAmount = $order->total_amount - $dpAmount;
                     @endphp
 
                     <div class="border-top pt-3 mt-3">
@@ -48,15 +60,30 @@
                             <span>Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2 text-muted">
-                            <span>Service Fee</span>
+                            <span>Service Fee (5%)</span>
                             <span>Rp {{ number_format($serviceFee, 0, ',', '.') }}</span>
                         </div>
                         <div class="border-top pt-2 mt-2">
                             <div class="d-flex justify-content-between">
-                                <span class="fw-bold fs-4">Total Amount</span>
-                                <span class="fw-bold fs-4" style="color: #6A38C2;">Rp {{ number_format($order->order_total_amount, 0, ',', '.') }}</span>
+                                <span class="fw-bold fs-5">Total Amount</span>
+                                <span class="fw-bold fs-5" style="color: #6A38C2;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
                             </div>
                         </div>
+                        @if($isRental)
+                        <div class="border-top pt-2 mt-2">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="fw-bold" style="color: #FF3CAC;">DP to Pay (30%)</span>
+                                <span class="fw-bold" style="color: #FF3CAC;">Rp {{ number_format($dpAmount, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted">
+                                <span class="small">Remaining (pay on pickup)</span>
+                                <span class="small">Rp {{ number_format($remainingAmount, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                        <div class="alert alert-info mt-3 mb-0">
+                            <small><i class="bi bi-info-circle"></i> Rental items require 30% DP payment now. Remaining 70% will be paid during item pickup.</small>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -88,7 +115,7 @@
                         <svg class="me-2" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                         </svg>
-                        Pay Now - Rp {{ number_format($order->order_total_amount, 0, ',', '.') }}
+                        Pay {{ $isRental ? 'DP' : 'Now' }} - Rp {{ number_format($isRental ? $dpAmount : $order->total_amount, 0, ',', '.') }}
                     </button>
 
                     <div class="text-center mt-3">
@@ -147,7 +174,11 @@
                 // Re-enable button
                 const btn = document.getElementById('pay-button');
                 btn.disabled = false;
-                btn.innerHTML = '<svg class="me-2" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>Pay Now - Rp {{ number_format($order->order_total_amount, 0, ",", ".") }}';
+                @if($isRental)
+                btn.innerHTML = '<svg class="me-2" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>Pay DP - Rp {{ number_format($dpAmount, 0, ",", ".") }}';
+                @else
+                btn.innerHTML = '<svg class="me-2" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>Pay Now - Rp {{ number_format($order->total_amount, 0, ",", ".") }}';
+                @endif
             }
         });
     };

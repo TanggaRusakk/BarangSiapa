@@ -97,10 +97,6 @@ class OrderController extends Controller
             $itemTotal = $itemPricePerUnit * $request->quantity;
             $serviceFee = $itemTotal * 0.05; // 5% service fee
             $totalAmount = $itemTotal + $serviceFee;
-            
-            // Calculate DP (30% of total) for rental items
-            $dpAmount = $isRent ? round($totalAmount * 0.30) : $totalAmount;
-            $remainingAmount = $totalAmount - $dpAmount;
 
             // Create order
             $order = Order::create([

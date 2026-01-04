@@ -122,16 +122,16 @@
                             @if(in_array($item->item_type, ['sewa', 'rent']))
                             <div class="border-top pt-2 mt-2">
                                 <div class="d-flex justify-content-between mb-2">
-                                    <span class="fw-bold" style="color: #FF3CAC;">DP (30%)</span>
+                                    <span class="fw-bold" style="color: #FF3CAC;">DP to Pay (30%)</span>
                                     <span id="dpAmount" class="fw-bold" style="color: #FF3CAC;">Rp {{ number_format($item->item_price * 1.05 * 0.30, 0, ',', '.') }}</span>
                                 </div>
                                 <div class="d-flex justify-content-between text-muted">
-                                    <span class="small">Remaining</span>
+                                    <span class="small">Remaining (pay on pickup)</span>
                                     <span id="remainingAmount" class="small">Rp {{ number_format($item->item_price * 1.05 * 0.70, 0, ',', '.') }}</span>
                                 </div>
                             </div>
                             <div class="alert alert-info mt-3 mb-0">
-                                <small><i class="bi bi-info-circle"></i> Untuk item sewa, Anda cukup bayar DP 30% terlebih dahulu. Sisanya dibayar saat pengambilan barang.</small>
+                                <small><i class="bi bi-info-circle"></i> Untuk item sewa, Anda bayar DP 30% sekarang. Sisanya dibayar saat pengambilan barang.</small>
                             </div>
                             @endif
                         </div>
