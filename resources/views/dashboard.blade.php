@@ -249,7 +249,7 @@
         </div>
 
         <!-- Quick Actions: 4-column boxes -->
-        <div class="row g-5 mb-4">
+        <div class="row g-5 mb-4" style="margin-top:24px;">
             <div class="col-12 col-md-3">
                 <a href="/vendor/products/create" class="text-decoration-none">
                     <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
