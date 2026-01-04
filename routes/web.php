@@ -768,6 +768,16 @@ Route::middleware('auth')->group(function () {
         return view('vendor.ads-create', compact('items'));
     })->name('vendor.ads.create');
 
+    // Debug: show pending_ad session for current vendor (auth only)
+    Route::get('/debug/pending-ad', function () {
+        if (!auth()->check()) abort(403);
+        $pending = session('pending_ad');
+        return response()->json([
+            'user_id' => auth()->id(),
+            'pending_ad' => $pending,
+        ]);
+    })->middleware('auth')->name('debug.pending-ad');
+
     // Vendor pays for ad (before creating) - compute price automatically and create Midtrans Snap
     Route::post('/vendor/ads/pay', function (Request $request) {
         if (auth()->user()->role !== 'vendor') abort(403);

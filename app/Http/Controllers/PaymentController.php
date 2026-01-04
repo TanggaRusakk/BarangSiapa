@@ -116,15 +116,18 @@ class PaymentController extends Controller
     // WHY: UI callbacks are READ-ONLY - webhook is single source of truth for DB updates
     public function success(Request $request)
     {
+        Log::info('Payment success redirect hit', ['query' => $request->query()]);
         $midtransOrderId = $request->query('order_id');
         
         if ($midtransOrderId) {
             $payment = Payment::where('midtrans_order_id', $midtransOrderId)->first();
             
             if ($payment) {
+                Log::info('Matched payment on success redirect', ['payment_id' => $payment->id, 'payment_type' => $payment->payment_type]);
                 // If this is an ad payment, create Ad from session (webhook will activate later)
                 if ($payment->payment_type === 'ad') {
                     $pendingAd = session('pending_ad');
+                    Log::info('Pending ad from session', ['pending_ad_exists' => $pendingAd ? true : false]);
                     
                     if ($pendingAd && $pendingAd['payment_id'] === $payment->id) {
                         // Check if Ad already exists (prevent duplicate)
