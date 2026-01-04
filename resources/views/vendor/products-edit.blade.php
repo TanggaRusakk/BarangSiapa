@@ -63,14 +63,14 @@
                 <div>
                     <x-input-label for="item_type" :value="__('Type')" />
                     <select id="item_type" name="item_type" class="w-full px-4 py-3 bg-midnight-black bg-opacity-60 border-2 border-royal-purple border-opacity-40 rounded-lg text-white focus:border-neon-pink focus:ring-0 transition appearance-none uniform-field" required>
-                        <option value="jual" {{ old('item_type', $item->item_type) === 'jual' ? 'selected' : '' }}>Jual</option>
-                        <option value="sewa" {{ old('item_type', $item->item_type) === 'sewa' ? 'selected' : '' }}>Sewa</option>
+                        <option value="buy" {{ old('item_type', $item->item_type) === 'buy' ? 'selected' : '' }}>Buy</option>
+                        <option value="rent" {{ old('item_type', $item->item_type) === 'rent' ? 'selected' : '' }}>Rent</option>
                     </select>
                     <x-input-error class="mt-2" :messages="$errors->get('item_type')" />
                 </div>
             </div>
 
-            <!-- Rental Duration Fields (shown when type is Sewa) -->
+            <!-- Rental Duration Fields (shown when type is Rent) -->
             <div id="rentalFields" style="display: none;">
                 <div class="p-4 rounded" style="background: rgba(106, 56, 194, 0.1); border: 1px solid rgba(106, 56, 194, 0.3);">
                     <h6 class="fw-bold mb-3" style="color: #C8A2C8;">⏱️ Rental Duration Settings</h6>
@@ -121,7 +121,7 @@
 
             if (itemTypeSelect && rentalFields) {
                 function toggleRentalFields() {
-                    if (itemTypeSelect.value === 'sewa') {
+                    if (itemTypeSelect.value === 'rent') {
                         rentalFields.style.display = 'block';
                     } else {
                         rentalFields.style.display = 'none';

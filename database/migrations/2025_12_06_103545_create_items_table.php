@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('vendor_id')->constrained('vendors')->onDelete('cascade');
             $table->string('item_name');
             $table->text('item_description')->nullable();
-            $table->enum('item_type', ['jual', 'sewa']);
+            $table->enum('item_type', ['buy', 'rent']);
             $table->integer('item_price');
             $table->enum('item_status', ['available', 'unavailable']);
             $table->integer('rental_duration_unit')->nullable();

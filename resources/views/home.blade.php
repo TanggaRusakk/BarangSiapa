@@ -72,7 +72,7 @@
             <div class="row g-4" id="productGrid">
                 @foreach($items->take(3) as $item)
                     @php
-                        $isRent = ($item->item_type === 'sewa' || $item->item_type === 'rent');
+                        $isRent = ($item->item_type === 'rent');
                     @endphp
                     <div class="col-md-4" data-category="all">
                         <div class="card h-100 shadow-sm">

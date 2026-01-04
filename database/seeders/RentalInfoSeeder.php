@@ -12,7 +12,7 @@ class RentalInfoSeeder extends Seeder
      */
     public function run(): void
     {
-        $order = \App\Models\Order::where('order_type','sewa')->first();
+        $order = \App\Models\Order::where('order_type','rent')->first();
         if (! $order) return;
 
         $start = now();

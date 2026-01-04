@@ -41,15 +41,15 @@
             <!-- Filter -->
             <div class="d-flex gap-2">
                 <a href="{{ route('vendors.show', $vendor->id) }}" class="btn {{ !request('type') ? 'btn-primary' : 'btn-outline-secondary' }}" style="{{ !request('type') ? 'background: #6A38C2; border-color: #6A38C2;' : '' }}">All</a>
-                <a href="{{ route('vendors.show', ['vendor' => $vendor->id, 'type' => 'jual']) }}" class="btn {{ request('type') === 'jual' ? 'btn-primary' : 'btn-outline-secondary' }}" style="{{ request('type') === 'jual' ? 'background: #6A38C2; border-color: #6A38C2;' : '' }}">For Sale</a>
-                <a href="{{ route('vendors.show', ['vendor' => $vendor->id, 'type' => 'sewa']) }}" class="btn {{ request('type') === 'sewa' ? 'btn-primary' : 'btn-outline-secondary' }}" style="{{ request('type') === 'sewa' ? 'background: #4ADFFF; border-color: #4ADFFF; color: #000;' : '' }}">For Rent</a>
+                <a href="{{ route('vendors.show', ['vendor' => $vendor->id, 'type' => 'buy']) }}" class="btn {{ request('type') === 'buy' ? 'btn-primary' : 'btn-outline-secondary' }}" style="{{ request('type') === 'buy' ? 'background: #6A38C2; border-color: #6A38C2;' : '' }}">For Sale</a>
+                <a href="{{ route('vendors.show', ['vendor' => $vendor->id, 'type' => 'rent']) }}" class="btn {{ request('type') === 'rent' ? 'btn-primary' : 'btn-outline-secondary' }}" style="{{ request('type') === 'rent' ? 'background: #4ADFFF; border-color: #4ADFFF; color: #000;' : '' }}">For Rent</a>
             </div>
         </div>
 
         @if($items->count() > 0)
             <div class="row g-4">
                 @foreach($items as $item)
-                    @php $isRent = ($item->item_type === 'sewa' || $item->item_type === 'rent'); @endphp
+                    @php $isRent = ($item->item_type === 'rent'); @endphp
                     <div class="col-12 col-sm-6 col-lg-4">
                         <div class="card h-100 shadow-sm">
                             <div class="position-relative">

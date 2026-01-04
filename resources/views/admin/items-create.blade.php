@@ -28,8 +28,8 @@
             <div class="mb-4">
                 <label class="block mb-2 font-bold">Type</label>
                 <select name="item_type" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac" required>
-                    <option value="jual">Jual</option>
-                    <option value="sewa">Sewa</option>
+                    <option value="buy">Buy</option>
+                    <option value="rent">Rent</option>
                 </select>
             </div>
 

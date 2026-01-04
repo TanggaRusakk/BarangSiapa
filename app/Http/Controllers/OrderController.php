@@ -62,9 +62,9 @@ class OrderController extends Controller
         }
 
         // Check if item type is rent and dates are provided
-        $isRent = in_array($item->item_type, ['sewa', 'rent']);
+        $isRent = $item->item_type === 'rent';
         if ($isRent && (!$request->rental_start_date || !$request->rental_end_date)) {
-            return back()->with('error', 'Tanggal rental harus diisi untuk item sewa!');
+            return back()->with('error', 'Tanggal rental harus diisi untuk item rent!');
         }
 
         DB::beginTransaction();
@@ -103,7 +103,7 @@ class OrderController extends Controller
             $order = Order::create([
                 'user_id' => Auth::id(),
                 'total_amount' => $totalAmount,
-                'order_type' => $isRent ? 'sewa' : 'jual',
+                'order_type' => $isRent ? 'rent' : 'buy',
                 'order_status' => 'pending',
             ]);
 

@@ -87,7 +87,7 @@
             <div class="product-grid" id="productGrid">
                 @foreach($items as $item)
                     @php
-                        $isRent = ($item->item_type === 'sewa' || $item->item_type === 'rent');
+                        $isRent = ($item->item_type === 'rent');
                     @endphp
                     <div class="product-card" data-category="all">
                         <div class="product-badge {{ $isRent ? 'badge-rent' : 'badge-buy' }}">{{ $isRent ? 'For Rent' : 'Buy Now' }}</div>

@@ -21,7 +21,7 @@
                 <div>
                     <h5 class="mb-1 fw-bold">{{ $lastViewed->item_name }}</h5>
                     <p class="mb-0 text-soft-lilac">
-                        @if($lastViewed->item_type === 'sewa' || $lastViewed->item_type === 'rent') 
+                        @if($lastViewed->item_type === 'rent') 
                             Rp{{ number_format($lastViewed->item_price) }} / {{ $lastViewed->rental_duration_unit ?? 'day' }} 
                         @else 
                             Rp{{ number_format($lastViewed->item_price) }} 
@@ -318,7 +318,7 @@
                                         <img src="{{ $prod->first_image_url }}" alt="{{ $prod->item_name }}" class="rounded" style="width:80px;height:80px;object-fit:cover;">
                                         <div class="flex-grow-1">
                                             <h6 class="mb-1 fw-bold">{{ $prod->item_name }}</h6>
-                                            <p class="mb-1 text-secondary small">Rp{{ number_format($prod->item_price) }} @if($prod->item_type === 'sewa' || $prod->item_type === 'rent') • Rent @endif</p>
+                                            <p class="mb-1 text-secondary small">Rp{{ number_format($prod->item_price) }} @if($prod->item_type === 'rent') • Rent @endif</p>
                                             <span class="badge bg-success small">Active</span>
                                         </div>
                                     </div>

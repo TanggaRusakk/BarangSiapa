@@ -25,22 +25,22 @@
         <div class="w-full lg:w-7/12 px-2">
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
-                    <h5 class="card-title fw-bold mb-3" style="color: #6A38C2;">Detail Item</h5>
+                    <h5 class="card-title fw-bold mb-3" style="color: #8351d9;">Detail Item</h5>
                     <div class="row">
                         <div class="col-md-4">
                             <img src="{{ $item->first_image_url }}" alt="{{ $item->item_name }}" class="img-fluid rounded">
                         </div>
                         <div class="col-md-8">
-                            <h6 class="fw-bold">{{ $item->item_name }}</h6>
+                            <h6 class="fw-bold" style = "color:aliceblue;">{{ $item->item_name }}</h6>
                             <p class="text-secondary mb-2">{{ \Illuminate\Support\Str::limit($item->item_description ?? '', 100) }}</p>
                             <div class="mb-2">
-                                <span class="badge" style="background: {{ in_array($item->item_type, ['sewa', 'rent']) ? '#4ADFFF' : '#6A38C2' }};">
+                                <span class="badge" style="background: {{ in_array($item->item_type, ['rent']) ? '#4ADFFF' : '#6A38C2' }};">
                                     {{ ucfirst($item->item_type ?? 'sale') }}
                                 </span>
                             </div>
                             <div class="fs-3 fw-bold" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                 Rp {{ number_format($item->item_price, 0, ',', '.') }}
-                                @if(in_array($item->item_type, ['sewa', 'rent']))
+                                @if(in_array($item->item_type, ['rent']))
                                     <small class="text-muted">/ {{ $item->rental_duration_unit ?? 'day' }}</small>
                                 @endif
                             </div>
@@ -69,7 +69,7 @@
                         </div>
 
                         <!-- Rental Dates (if item is for rent) -->
-                        @if(in_array($item->item_type, ['sewa', 'rent']))
+                                @if(in_array($item->item_type, ['rent']))
                             <div class="mb-3">
                                 <label for="rental_start_date" class="form-label fw-bold">Start Date</label>
                                 <input type="date" class="form-control" id="rental_start_date" name="rental_start_date" min="{{ date('Y-m-d') }}" required>
@@ -114,7 +114,7 @@
                                 <span>Quantity</span>
                                 <span id="qtyDisplay">1</span>
                             </div>
-                            @if(in_array($item->item_type, ['sewa', 'rent']))
+                            @if(in_array($item->item_type, ['rent']))
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Rental Duration</span>
                                 <span id="rentalUnitsDisplay">-</span>
@@ -134,7 +134,7 @@
                                     <span id="total" class="fw-bold fs-5" style="color: #6A38C2;">Rp {{ number_format($item->item_price * 1.05, 0, ',', '.') }}</span>
                                 </div>
                             </div>
-                            @if(in_array($item->item_type, ['sewa', 'rent']))
+                            @if(in_array($item->item_type, ['rent']))
                             <div class="border-top pt-2 mt-2">
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="fw-bold" style="color: #FF3CAC;">DP to Pay (30%)</span>
@@ -146,7 +146,7 @@
                                 </div>
                             </div>
                             <div class="alert alert-info mt-3 mb-0">
-                                <small><i class="bi bi-info-circle"></i> Untuk item sewa, Anda bayar DP 30% sekarang. Sisanya dibayar saat pengambilan barang.</small>
+                                <small><i class="bi bi-info-circle"></i> Untuk item rent, Anda bayar DP 30% sekarang. Sisanya dibayar saat pengambilan barang.</small>
                             </div>
                             @endif
                         </div>
@@ -165,7 +165,7 @@
 @push('scripts')
 <script>
     const itemPrice = {{ $item->item_price }};
-    const isRental = {{ in_array($item->item_type, ['sewa', 'rent']) ? 'true' : 'false' }};
+    const isRental = {{ in_array($item->item_type, ['rent']) ? 'true' : 'false' }};
     const rentalDurationValue = {{ $item->rental_duration_value ?? 1 }};
     const rentalDurationUnit = '{{ $item->rental_duration_unit ?? 'day' }}';
     

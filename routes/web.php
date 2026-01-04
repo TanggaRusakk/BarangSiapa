@@ -80,7 +80,7 @@ Route::get('/dashboard', function (Request $request) {
     $userRentals = \App\Models\Order::with(['orderItems.item'])
         ->where('user_id', $user->id)
         ->whereHas('orderItems.item', function($q) {
-            $q->whereIn('item_type', ['rent', 'sewa']);
+            $q->whereIn('item_type', ['rent']);
         })
         ->orderBy('created_at', 'desc')
         ->take(3)
@@ -94,7 +94,7 @@ Route::get('/dashboard', function (Request $request) {
     $activeRentalsCount = \App\Models\Order::where('user_id', $user->id)
         ->whereIn('order_status', ['pending', 'processing', 'paid'])
         ->whereHas('orderItems.item', function($q) {
-            $q->whereIn('item_type', ['rent', 'sewa']);
+            $q->whereIn('item_type', ['rent']);
         })
         ->count();
     
@@ -229,7 +229,7 @@ Route::middleware('auth')->group(function () {
             'item_name' => 'required|string|max:255',
             'item_description' => 'nullable|string',
             'item_price' => 'required|numeric',
-            'item_type' => 'required|in:jual,sewa',
+            'item_type' => 'required|in:buy,rent',
             'item_status' => 'nullable|in:available,unavailable',
             'item_stock' => 'required|integer|min:0',
             'images' => 'nullable|array',
@@ -267,7 +267,7 @@ Route::middleware('auth')->group(function () {
             'item_name' => 'required|string|max:255',
             'item_description' => 'nullable|string',
             'item_price' => 'required|numeric',
-            'item_type' => 'required|in:jual,sewa',
+            'item_type' => 'required|in:buy,rent',
             'item_status' => 'nullable|in:available,unavailable',
             'item_stock' => 'nullable|integer|min:0',
             'images' => 'nullable|array',
@@ -1044,7 +1044,7 @@ Route::middleware('auth')->group(function () {
             'item_name' => 'required|string|max:255',
             'item_description' => 'nullable|string',
             'item_price' => 'required|numeric',
-            'item_type' => 'required|in:jual,sewa',
+            'item_type' => 'required|in:buy,rent',
             'item_status' => 'nullable|in:available,unavailable',
             'item_stock' => 'nullable|integer|min:0',
             'rental_duration_value' => 'nullable|integer|min:1',

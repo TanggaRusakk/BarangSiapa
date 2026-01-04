@@ -27,7 +27,7 @@
                             <div class="flex-grow-1">
                                 <h6 class="fw-bold mb-1">{{ $orderItem->item->item_name }}</h6>
                                 <p class="text-muted mb-0">Quantity: {{ $orderItem->order_item_quantity }} × Rp {{ number_format($orderItem->order_item_price, 0, ',', '.') }}</p>
-                                @if($order->order_type === 'sewa' && $order->rentalInfos)
+                                @if($order->order_type === 'rent' && $order->rentalInfos)
                                     @php
                                         $rental = $order->rentalInfos; // hasOne relation
                                     @endphp
@@ -49,7 +49,7 @@
                     @php
                         $subtotal = $order->orderItems->sum('order_item_subtotal');
                         $serviceFee = $order->total_amount - $subtotal;
-                        $isRental = $order->order_type === 'sewa';
+                        $isRental = $order->order_type === 'rent';
 
                         // Prefer payment record values so the UI matches what will be charged
                         $paymentType = $payment->payment_type ?? ($isRental ? 'dp' : 'full');

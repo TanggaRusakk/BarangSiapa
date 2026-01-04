@@ -34,7 +34,7 @@
         </div>
 
         @php
-            $isRent = ($item->item_type === 'sewa' || $item->item_type === 'rent');
+            $isRent = ($item->item_type === 'rent');
         @endphp
 
         <!-- Main Card with Purple Glow -->
@@ -65,7 +65,7 @@
                 <div class="p-4 rounded mb-4" style="background: linear-gradient(135deg, rgba(106, 56, 194, 0.1) 0%, rgba(255, 60, 172, 0.05) 100%);">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <span class="badge" style="background: {{ $isRent ? '#FF3CAC' : '#6A38C2' }}; color: #fff; font-size: 14px;">
-                            {{ $isRent ? 'SEWA' : 'JUAL' }}
+                            {{ $isRent ? 'RENT' : 'BUY' }}
                         </span>
                         <span class="badge" style="background: {{ $item->item_status === 'available' ? '#6A38C2' : '#666' }}; color: #fff;">
                             {{ ucfirst($item->item_status ?? 'available') }}

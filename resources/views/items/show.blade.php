@@ -39,7 +39,7 @@
         <!-- Right: Details -->
         <div class="col-md-6">
             @php
-                $isRent = ($item->item_type === 'sewa' || $item->item_type === 'rent');
+                $isRent = ($item->item_type === 'rent');
             @endphp
             
             <span class="badge mb-2" style="background: {{ $isRent ? '#4ADFFF' : '#6A38C2' }}; font-size: 14px;">

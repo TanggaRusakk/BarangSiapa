@@ -54,7 +54,7 @@ class PaymentController extends Controller
         $orderTotal = $order->total_amount ?? $order->order_total_amount ?? $order->calculated_total;
 
         // WHY: Determine rental flag
-        $isRental = $order->order_type === 'sewa';
+        $isRental = $order->order_type === 'rent';
 
         // WHY: Determine payment type/amount. Preference order:
         // 1) session choice (user just selected at checkout), 2) existing Payment record, 3) default (dp for rentals).

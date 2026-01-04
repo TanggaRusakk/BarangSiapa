@@ -40,13 +40,13 @@
     <div class="row g-4" id="itemsGrid">
         @forelse($items as $item)
             @php
-                $isRent = ($item->item_type === 'sewa' || $item->item_type === 'rent');
+                $isRent = ($item->item_type === 'rent');
                 $itemTypeClass = $isRent ? 'rent' : 'buy';
             @endphp
             <div class="col-12 col-sm-6 col-lg-4 item-card" data-type="{{ $itemTypeClass }}">
                 <div class="card h-100 shadow-sm">
                     <div class="position-relative">
-                        <span class="badge position-absolute top-0 start-0 m-2" style="background: {{ $isRent ? '#4ADFFF' : '#6A38C2' }}; color: {{ $isRent ? '#000' : '#fff' }};">{{ $isRent ? 'SEWA' : 'JUAL' }}</span>
+                        <span class="badge position-absolute top-0 start-0 m-2" style="background: {{ $isRent ? '#4ADFFF' : '#6A38C2' }}; color: {{ $isRent ? '#000' : '#fff' }};">{{ $isRent ? 'RENT' : 'BUY' }}</span>
                         <img src="{{ $item->first_image_url }}" class="card-img-top" alt="{{ $item->item_name }}" style="height: 200px; object-fit: cover;">
                     </div>
                     <div class="card-body d-flex flex-column">
@@ -62,7 +62,7 @@
                                         <small class="text-secondary">/item</small>
                                     @endif
                                 </div>
-                                <span class="badge" style="background: {{ $isRent ? '#4ADFFF' : '#6A38C2' }}; color: {{ $isRent ? '#000' : '#fff' }};">{{ $isRent ? 'SEWA' : 'JUAL' }}</span>
+                                <span class="badge" style="background: {{ $isRent ? '#4ADFFF' : '#6A38C2' }}; color: {{ $isRent ? '#000' : '#fff' }};">{{ $isRent ? 'RENT' : 'BUY' }}</span>
                             </div>
                             
                             <!-- Vendor Info -->

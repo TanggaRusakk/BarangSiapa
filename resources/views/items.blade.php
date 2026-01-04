@@ -34,7 +34,7 @@
         <div class="row g-4">
             @foreach($items as $item)
                 @php
-                    $isRent = ($item->item_type === 'sewa' || $item->item_type === 'rent');
+                    $isRent = ($item->item_type === 'rent');
                     $vendor = $item->vendor ?? null;
                 @endphp
                 <div class="col-6 col-md-4 col-lg-3">
@@ -48,7 +48,7 @@
                                 {{ ucfirst($item->item_status ?? 'available') }}
                             </span>
                             <span class="badge position-absolute top-0 start-0 m-2" style="background: {{ $isRent ? '#4ADFFF' : '#6A38C2' }}; color: {{ $isRent ? '#000' : '#fff' }};">
-                                {{ $isRent ? 'SEWA' : 'JUAL' }}
+                                {{ $isRent ? 'RENT' : 'BUY' }}
                             </span>
                         </div>
 

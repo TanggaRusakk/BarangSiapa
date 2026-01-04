@@ -30,8 +30,8 @@
             <div class="mb-4">
                 <label class="block mb-2 font-bold">Type</label>
                 <select name="item_type" class="w-full p-2 rounded bg-purple-900 bg-opacity-20 border border-soft-lilac" required>
-                    <option value="jual" {{ $item->item_type == 'jual' ? 'selected' : '' }}>Jual</option>
-                    <option value="sewa" {{ $item->item_type == 'sewa' ? 'selected' : '' }}>Sewa</option>
+                    <option value="buy" {{ $item->item_type == 'buy' ? 'selected' : '' }}>Buy</option>
+                    <option value="rent" {{ $item->item_type == 'rent' ? 'selected' : '' }}>Rent</option>
                 </select>
             </div>
 
