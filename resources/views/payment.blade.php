@@ -50,7 +50,11 @@
                         $subtotal = $order->orderItems->sum('order_item_subtotal');
                         $serviceFee = $order->total_amount - $subtotal;
                         $isRental = $order->order_type === 'sewa';
-                        $dpAmount = $isRental ? round($order->total_amount * 0.30) : $order->total_amount;
+
+                        // Prefer payment record values so the UI matches what will be charged
+                        $paymentType = $payment->payment_type ?? ($isRental ? 'dp' : 'full');
+                        $paymentAmount = $payment->payment_total_amount ?? ($paymentType === 'dp' && $isRental ? round($order->total_amount * 0.30) : $order->total_amount);
+                        $dpAmount = $paymentType === 'dp' ? $paymentAmount : 0;
                         $remainingAmount = $order->total_amount - $dpAmount;
                     @endphp
 
@@ -69,7 +73,7 @@
                                 <span class="fw-bold fs-5" style="color: #6A38C2;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
                             </div>
                         </div>
-                        @if($isRental)
+                        @if($isRental && $paymentType === 'dp')
                         <div class="border-top pt-2 mt-2">
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="fw-bold" style="color: #FF3CAC;">DP to Pay (30%)</span>
@@ -115,7 +119,11 @@
                         <svg class="me-2" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                         </svg>
-                        Pay {{ $isRental ? 'DP' : 'Now' }} - Rp {{ number_format($isRental ? $dpAmount : $order->total_amount, 0, ',', '.') }}
+                        @php
+                            $buttonLabel = ($isRental && ($payment->payment_type ?? $paymentType) === 'dp') ? 'Pay DP' : 'Pay Now';
+                            $buttonAmount = ($isRental && ($payment->payment_type ?? $paymentType) === 'dp') ? $dpAmount : $order->total_amount;
+                        @endphp
+                        {{ $buttonLabel }} - Rp {{ number_format($buttonAmount, 0, ',', '.') }}
                     </button>
 
                     <div class="text-center mt-3">
@@ -150,7 +158,7 @@
 
 @push('scripts')
 <script type="text/javascript">
-    document.getElementById('pay-button').onclick = function(){
+            document.getElementById('pay-button').onclick = function(){
         // Show loading state
         this.disabled = true;
         this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
@@ -174,11 +182,10 @@
                 // Re-enable button
                 const btn = document.getElementById('pay-button');
                 btn.disabled = false;
-                @if($isRental)
-                btn.innerHTML = '<svg class="me-2" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>Pay DP - Rp {{ number_format($dpAmount, 0, ",", ".") }}';
-                @else
-                btn.innerHTML = '<svg class="me-2" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>Pay Now - Rp {{ number_format($order->total_amount, 0, ",", ".") }}';
-                @endif
+                @php
+                    $btnLabel = ($isRental && ($payment->payment_type ?? $paymentType) === 'dp') ? 'Pay DP - Rp ' . number_format($dpAmount, 0, ',', '.') : 'Pay Now - Rp ' . number_format($order->total_amount, 0, ',', '.');
+                @endphp
+                btn.innerHTML = '<svg class="me-2" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>' + '{{ $btnLabel }}';
             }
         });
     };

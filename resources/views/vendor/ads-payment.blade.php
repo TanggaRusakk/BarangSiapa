@@ -45,7 +45,11 @@
             </p>
         </div>
 
-        @if(session('pending_ad.snap_token') || ($pendingAd['snap_token'] ?? null))
+        @php
+            $snapTokenAvailable = $snapToken ?? session('pending_ad.snap_token') ?? ($pendingAd['snap_token'] ?? null);
+        @endphp
+
+        @if($snapTokenAvailable)
             <div class="mb-4">
                 <button id="launch-snap" class="btn btn-primary">Pay with Midtrans</button>
                 <a href="{{ route('vendor.ads.index') }}" class="btn btn-secondary">Cancel</a>
@@ -54,18 +58,18 @@
             <script>
                 document.getElementById('launch-snap').addEventListener('click', function (e) {
                     e.preventDefault();
-                    var snapToken = '{{ session('pending_ad.snap_token') ?? ($pendingAd['snap_token'] ?? '') }}';
+                    var snapToken = '{{ $snapTokenAvailable }}';
                     if (!snapToken) {
                         alert('Missing snap token');
                         return;
                     }
                     window.snap.pay(snapToken, {
                         onSuccess: function(result){
-                            // After success, call confirm route to finish demo flow (webhook will also update)
-                            window.location = '{{ route('vendor.ads.payment.confirm', $payment->id) }}';
+                            // Let webhook and success handler manage activation; redirect to success route
+                            window.location = '{{ route('payment.success') }}?order_id=' + result.order_id;
                         },
                         onPending: function(result){
-                            window.location = '{{ route('vendor.ads.payment.confirm', $payment->id) }}';
+                            window.location = '{{ route('payment.pending') }}?order_id=' + result.order_id;
                         },
                         onError: function(result){
                             alert('Payment failed or cancelled');

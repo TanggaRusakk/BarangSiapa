@@ -56,21 +56,49 @@ class PaymentController extends Controller
         // WHY: Determine rental flag
         $isRental = $order->order_type === 'sewa';
 
-        // WHY: Determine payment type/amount. Prefer existing Payment record; otherwise
-        // check session (set at checkout) for user's chosen option; fallback to DP for rentals.
+        // WHY: Determine payment type/amount. Preference order:
+        // 1) session choice (user just selected at checkout), 2) existing Payment record, 3) default (dp for rentals).
         $paymentType = $isRental ? 'dp' : 'full';
         $paymentAmount = $isRental ? round($orderTotal * 0.30) : $orderTotal;
 
+        $sessionKey = 'order_payment_option_' . $order->id;
+        $sessionOption = session($sessionKey, null);
+
+        // Debug logging to diagnose mismatched DP/full behavior
+        Log::info('PaymentController.create: sessionOption check', [
+            'order_id' => $order->id,
+            'session_key' => $sessionKey,
+            'session_option' => $sessionOption,
+            'existing_payment_id' => $existingPayment->id ?? null,
+            'existing_payment_type' => $existingPayment->payment_type ?? null,
+            'existing_payment_amount' => $existingPayment->payment_total_amount ?? null,
+        ]);
+
         if ($existingPayment) {
-            $paymentAmount = (int) $existingPayment->payment_total_amount;
-            $paymentType = $existingPayment->payment_type ?? $paymentType;
+            if ($sessionOption) {
+                // User chose an option at checkout; override existing payment and update it
+                $paymentType = $sessionOption;
+                $paymentAmount = ($paymentType === 'dp' && $isRental) ? round($orderTotal * 0.30) : $orderTotal;
+
+                try {
+                    $existingPayment->update([
+                        'payment_type' => $paymentType,
+                        'payment_total_amount' => $paymentAmount,
+                        'payment_status' => 'pending',
+                    ]);
+                } catch (\Exception $e) {
+                    Log::warning('Unable to update existing payment with session option', ['payment_id' => $existingPayment->id, 'error' => $e->getMessage()]);
+                }
+            } else {
+                // No session override; use existing payment data
+                $paymentAmount = (int) $existingPayment->payment_total_amount;
+                $paymentType = $existingPayment->payment_type ?? $paymentType;
+            }
         } else {
-            // Read payment option chosen at checkout from session
-            $sessionKey = 'order_payment_option_' . $order->id;
-            $sessionOption = session($sessionKey, null);
+            // No existing payment; use session option if present
             if ($sessionOption) {
                 $paymentType = $sessionOption;
-                $paymentAmount = $sessionOption === 'dp' && $isRental ? round($orderTotal * 0.30) : $orderTotal;
+                $paymentAmount = ($paymentType === 'dp' && $isRental) ? round($orderTotal * 0.30) : $orderTotal;
             }
         }
         

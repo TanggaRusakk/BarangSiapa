@@ -900,7 +900,54 @@ Route::middleware('auth')->group(function () {
         if (!$pendingAd || $pendingAd['payment_id'] !== $payment->id) {
             return redirect()->route('vendor.ads.index')->with('error', 'Invalid payment session');
         }
-        return view('vendor.ads-payment', compact('payment', 'pendingAd'));
+
+        // Build Midtrans parameters similar to item payment flow
+        $midtransOrderId = $payment->midtrans_order_id ?? ('AD-' . $payment->id . '-' . time());
+
+        $transactionDetails = [
+            'order_id' => $midtransOrderId,
+            'gross_amount' => (int) $payment->payment_total_amount,
+        ];
+
+        $itemDetails = [[
+            'id' => 'AD-' . ($pendingAd['item_id'] ?? '0'),
+            'price' => (int) $payment->payment_total_amount,
+            'quantity' => 1,
+            'name' => 'Advertisement for: ' . substr(\App\Models\Item::find($pendingAd['item_id'])->item_name ?? 'Item', 0, 50),
+        ]];
+
+        $customerDetails = [
+            'first_name' => auth()->user()->name ?? 'Vendor',
+            'email' => auth()->user()->email ?? 'vendor@example.com',
+            'phone' => auth()->user()->phone ?? '081234567890',
+        ];
+
+        $params = [
+            'transaction_details' => $transactionDetails,
+            'item_details' => $itemDetails,
+            'customer_details' => $customerDetails,
+            'callbacks' => [
+                'finish' => route('payment.success'),
+                'unfinish' => route('payment.pending'),
+                'error' => route('payment.error'),
+            ],
+        ];
+
+        try {
+            $snapToken = \Midtrans\Snap::getSnapToken($params);
+
+            // Ensure payment record has midtrans_order_id so webhook can match
+            if (!$payment->midtrans_order_id) {
+                $payment->midtrans_order_id = $midtransOrderId;
+                $payment->save();
+            }
+
+            return view('vendor.ads-payment', compact('payment', 'pendingAd', 'snapToken'));
+        } catch (\Exception $e) {
+            // Fallback to previous behavior (use session snap token if available)
+            return view('vendor.ads-payment', compact('payment', 'pendingAd'))
+                ->with('error', 'Failed to initialize Midtrans payment: ' . $e->getMessage());
+        }
     })->name('vendor.ads.payment');
 
     // Confirm payment (simulate payment success)

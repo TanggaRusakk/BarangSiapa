@@ -17,9 +17,23 @@
                                 </div>
                             </div>
                             <div class="d-flex align-items-center gap-3">
-                                <div class="text-end">
+                                    <div class="text-end">
                                     <div class="fw-bold text-dark">Rp{{ number_format($o->total_amount ?? $o->order_total_amount ?? 0, 0) }}</div>
-                                    <span class="badge {{ $o->order_status === 'completed' ? 'bg-success' : ($o->order_status === 'pending' ? 'bg-warning text-dark' : 'bg-secondary') }}">{{ ucfirst($o->order_status ?? '—') }}</span>
+                                    <div>
+                                        <form method="POST" action="{{ route('vendor.orders.updateStatus', $o) }}" class="d-inline-block" style="min-width:150px;">
+                                            @csrf
+                                            @method('PATCH')
+                                            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                                @php
+                                                    $statuses = ['pending' => 'Pending', 'processing' => 'Processing', 'completed' => 'Completed', 'cancelled' => 'Cancelled'];
+                                                    $current = $o->order_status ?? 'pending';
+                                                @endphp
+                                                @foreach($statuses as $key => $label)
+                                                    <option value="{{ $key }}" {{ $current === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                @endforeach
+                                            </select>
+                                        </form>
+                                    </div>
                                 </div>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-secondary" :class="expanded ? 'rotate-180' : ''" style="transition: transform 0.2s;">
                                     <polyline points="6 9 12 15 18 9"></polyline>
@@ -63,7 +77,19 @@
                                     <div class="mt-3">
                                         <label class="small text-secondary mb-1">Status:</label>
                                         <div>
-                                            <span class="badge {{ $o->order_status === 'completed' ? 'bg-success' : ($o->order_status === 'pending' ? 'bg-warning text-dark' : 'bg-secondary') }}">{{ ucfirst($o->order_status ?? '—') }}</span>
+                                            <form method="POST" action="{{ route('vendor.orders.updateStatus', $o) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                                    @php
+                                                        $statuses = ['pending' => 'Pending', 'processing' => 'Processing', 'completed' => 'Completed', 'cancelled' => 'Cancelled'];
+                                                        $current = $o->order_status ?? 'pending';
+                                                    @endphp
+                                                    @foreach($statuses as $key => $label)
+                                                        <option value="{{ $key }}" {{ $current === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
