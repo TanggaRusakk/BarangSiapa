@@ -7,11 +7,18 @@ use App\Models\Payment;
 use App\Models\Order;
 use Midtrans\Config;
 use Midtrans\Snap;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
+    // Status yang dianggap final dan tidak boleh diubah lagi
+    private const FINAL_PAYMENT_STATUSES = ['settlement', 'capture', 'success'];
+    private const SUCCESSFUL_STATUSES = ['capture', 'settlement'];
+    private const FAILED_STATUSES = ['deny', 'expire', 'cancel'];
+
     public function __construct()
     {
+        // WHY: Inisialisasi Midtrans config sekali di constructor untuk semua method
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = config('midtrans.is_sanitized');
@@ -24,26 +31,26 @@ class PaymentController extends Controller
         return response()->json($payments);
     }
 
-    // Create payment from order
     public function create($orderId)
     {
         $order = Order::with(['orderItems.item', 'user'])->findOrFail($orderId);
 
-        // Check if user owns this order
+        // WHY: Prevent unauthorized access to other user's orders
         if ($order->user_id !== auth()->id()) {
             abort(403, 'Unauthorized');
         }
 
-        // Check if payment already exists
+        // WHY: Prevent duplicate payment for already paid orders (idempotency check)
         $existingPayment = Payment::where('order_id', $order->id)->first();
-        if ($existingPayment && in_array($existingPayment->payment_status, ['settlement', 'capture', 'success'])) {
-            return redirect()->route('orders.show', $order->id)->with('error', 'Order ini sudah dibayar!');
+        if ($existingPayment && in_array($existingPayment->payment_status, self::FINAL_PAYMENT_STATUSES)) {
+            return redirect()->route('orders.show', $order->id)
+                ->with('error', 'Order ini sudah dibayar!');
         }
 
-        // Generate unique order id for Midtrans
+        // WHY: Generate unique order_id to prevent collision with Midtrans
         $midtransOrderId = 'ORDER-' . $order->id . '-' . time();
 
-        // Prepare transaction details
+        // WHY: Get order total with fallback values for data consistency
         $orderTotal = $order->total_amount ?? $order->order_total_amount ?? $order->calculated_total;
         
         $transactionDetails = [
@@ -51,24 +58,11 @@ class PaymentController extends Controller
             'gross_amount' => (int) $orderTotal,
         ];
 
-        // Prepare item details
-        $itemDetails = [];
-        foreach ($order->orderItems as $orderItem) {
-            $price = (int) ($orderItem->order_item_price ?? $orderItem->price ?? 0);
-            $quantity = (int) ($orderItem->order_item_quantity ?? $orderItem->quantity ?? 1);
-            
-            $itemDetails[] = [
-                'id' => $orderItem->item->id ?? 'ITEM-' . $orderItem->id,
-                'price' => $price,
-                'quantity' => $quantity,
-                'name' => substr($orderItem->item->item_name ?? 'Item', 0, 50),
-            ];
-        }
-
-        // Add service fee if any
-        $itemTotal = collect($itemDetails)->sum(function($item) {
-            return $item['price'] * $item['quantity'];
-        });
+        // Build item details for Midtrans itemization
+        $itemDetails = $this->buildItemDetails($order->orderItems);
+        
+        // WHY: Add service fee if subtotal doesn't match order total (tax, admin fee, etc)
+        $itemTotal = collect($itemDetails)->sum(fn($item) => $item['price'] * $item['quantity']);
         if ($itemTotal < $orderTotal) {
             $itemDetails[] = [
                 'id' => 'SERVICE_FEE',
@@ -78,14 +72,12 @@ class PaymentController extends Controller
             ];
         }
 
-        // Customer details
         $customerDetails = [
             'first_name' => $order->user->name ?? 'Customer',
             'email' => $order->user->email ?? 'customer@example.com',
             'phone' => $order->user->phone ?? '081234567890',
         ];
 
-        // Build params
         $params = [
             'transaction_details' => $transactionDetails,
             'item_details' => $itemDetails,
@@ -93,10 +85,9 @@ class PaymentController extends Controller
         ];
 
         try {
-            // Get Snap Token from Midtrans
             $snapToken = Snap::getSnapToken($params);
 
-            // Create or update payment record
+            // WHY: Use updateOrCreate to handle both new and retry payment scenarios
             $payment = Payment::updateOrCreate(
                 ['order_id' => $order->id],
                 [
@@ -112,51 +103,248 @@ class PaymentController extends Controller
             return view('payment', compact('snapToken', 'order', 'payment'));
 
         } catch (\Exception $e) {
-            return redirect()->route('orders.my-orders')->with('error', 'Gagal membuat pembayaran: ' . $e->getMessage());
+            Log::error('Failed to create Midtrans payment', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return redirect()->route('orders.my-orders')
+                ->with('error', 'Gagal membuat pembayaran: ' . $e->getMessage());
         }
     }
 
-    // Handle payment success callback
+    // WHY: UI callbacks are READ-ONLY - webhook is single source of truth for DB updates
     public function success(Request $request)
     {
         $midtransOrderId = $request->query('order_id');
         
         if ($midtransOrderId) {
-            // Find payment by midtrans_order_id
             $payment = Payment::where('midtrans_order_id', $midtransOrderId)->first();
             
             if ($payment && $payment->order_id) {
                 $order = Order::find($payment->order_id);
                 
+                // WHY: Verify user owns this order before showing success page
                 if ($order && $order->user_id === auth()->id()) {
-                    // Update payment status to settlement if still pending
-                    if ($payment->payment_status === 'pending') {
-                        $payment->update([
-                            'payment_status' => 'settlement',
-                            'paid_at' => now(),
-                        ]);
-                        
-                        // Update order status
-                        $order->update(['order_status' => 'processing']);
-                    }
-                    
-                    return redirect()->route('orders.show', $order->id)->with('success', 'Pembayaran berhasil!');
+                    return redirect()->route('orders.show', $order->id)
+                        ->with('info', 'Pembayaran sedang diverifikasi. Status akan diupdate otomatis.');
                 }
             }
         }
 
-        return redirect()->route('orders.my-orders')->with('success', 'Pembayaran sedang diproses!');
+        return redirect()->route('orders.my-orders')
+            ->with('info', 'Pembayaran sedang diverifikasi oleh sistem.');
     }
 
-    // Handle payment pending callback
     public function pending(Request $request)
     {
-        return redirect()->route('orders.my-orders')->with('info', 'Pembayaran tertunda. Mohon selesaikan pembayaran Anda.');
+        return redirect()->route('orders.my-orders')
+            ->with('info', 'Pembayaran tertunda. Mohon selesaikan pembayaran Anda.');
     }
 
-    // Handle payment error callback
     public function error(Request $request)
     {
-        return redirect()->route('orders.my-orders')->with('error', 'Pembayaran gagal! Silakan coba lagi.');
+        return redirect()->route('orders.my-orders')
+            ->with('error', 'Pembayaran gagal! Silakan coba lagi.');
+    }
+
+    /**
+     * Webhook Handler - SINGLE SOURCE OF TRUTH untuk update payment & order status
+     * 
+     * WHY: Webhook dipanggil oleh Midtrans server, bukan user, sehingga lebih aman
+     * WHY: Signature verification otomatis via Midtrans\Notification mencegah fake requests
+     */
+    public function webhook(Request $request)
+    {
+        try {
+            // WHY: Midtrans\Notification automatically verifies signature_key
+            // Akan throw exception jika signature invalid (protection dari fake webhook)
+            $notification = new \Midtrans\Notification();
+            
+            $orderId = $notification->order_id;
+            $transactionStatus = $notification->transaction_status;
+            $fraudStatus = $notification->fraud_status ?? null;
+            $paymentType = $notification->payment_type;
+            $grossAmount = $notification->gross_amount;
+            
+            Log::info('Midtrans webhook received', [
+                'order_id' => $orderId,
+                'status' => $transactionStatus,
+            ]);
+
+            // WHY: Defensive - pastikan payment dan order benar-benar ada
+            $payment = Payment::where('midtrans_order_id', $orderId)->first();
+            if (!$payment) {
+                Log::error('Payment not found in webhook', ['order_id' => $orderId]);
+                return response()->json(['message' => 'Payment not found'], 404);
+            }
+
+            $order = Order::find($payment->order_id);
+            if (!$order) {
+                Log::error('Order not found in webhook', ['payment_id' => $payment->id]);
+                return response()->json(['message' => 'Order not found'], 404);
+            }
+
+            // WHY: Validate amount untuk prevent manipulation attack
+            if ((int)$grossAmount !== (int)$payment->payment_total_amount) {
+                Log::error('Amount mismatch in webhook', [
+                    'expected' => $payment->payment_total_amount,
+                    'received' => $grossAmount,
+                    'order_id' => $orderId,
+                ]);
+                return response()->json(['message' => 'Amount mismatch'], 400);
+            }
+
+            // WHY: IDEMPOTENCY - prevent double processing jika webhook dipanggil > 1x
+            if (in_array($payment->payment_status, self::FINAL_PAYMENT_STATUSES)) {
+                Log::info('Webhook ignored - payment already final', [
+                    'order_id' => $orderId,
+                    'current_status' => $payment->payment_status,
+                ]);
+                return response()->json(['message' => 'Payment already processed'], 200);
+            }
+
+            // Process transaction status - extracted ke method terpisah untuk clean code
+            $this->processTransactionStatus(
+                $payment,
+                $order,
+                $transactionStatus,
+                $fraudStatus,
+                $paymentType,
+                $orderId
+            );
+
+            return response()->json(['message' => 'OK'], 200);
+
+        } catch (\Exception $e) {
+            // WHY: Log error tapi tetap return 200 agar Midtrans tidak retry terus-menerus
+            Log::error('Midtrans webhook processing error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return response()->json(['message' => 'Error processed'], 200);
+        }
+    }
+
+    /**
+     * Process transaction status dari Midtrans webhook
+     * 
+     * WHY: Extracted method untuk reduce complexity dan improve testability
+     */
+    private function processTransactionStatus(
+        Payment $payment,
+        Order $order,
+        string $transactionStatus,
+        ?string $fraudStatus,
+        string $paymentType,
+        string $orderId
+    ): void {
+        switch ($transactionStatus) {
+            case 'capture':
+                // WHY: Credit card perlu fraud check sebelum approve
+                if ($fraudStatus === 'accept') {
+                    $this->markPaymentAsSettled($payment, $order, $paymentType, $orderId);
+                } elseif ($fraudStatus === 'challenge') {
+                    $payment->update(['payment_status' => 'challenge']);
+                    Log::warning('Payment challenged by fraud detection', ['order_id' => $orderId]);
+                }
+                break;
+
+            case 'settlement':
+                // WHY: Bank transfer, e-wallet langsung settlement tanpa fraud check
+                $this->markPaymentAsSettled($payment, $order, $paymentType, $orderId);
+                break;
+
+            case 'pending':
+                // WHY: Update payment method tapi jangan ubah order status
+                $payment->update([
+                    'payment_status' => 'pending',
+                    'payment_method' => $paymentType,
+                ]);
+                break;
+
+            case 'deny':
+            case 'expire':
+            case 'cancel':
+                // WHY: Failed payment - cancel order untuk free up stock
+                $this->markPaymentAsFailed($payment, $order, $transactionStatus, $orderId);
+                break;
+
+            default:
+                Log::warning('Unhandled transaction status', [
+                    'status' => $transactionStatus,
+                    'order_id' => $orderId,
+                ]);
+        }
+    }
+
+    /**
+     * Mark payment as settled (paid) and update order status
+     * 
+     * WHY: DRY principle - logic settlement dipakai di capture dan settlement
+     */
+    private function markPaymentAsSettled(
+        Payment $payment,
+        Order $order,
+        string $paymentType,
+        string $orderId
+    ): void {
+        $payment->update([
+            'payment_status' => 'settlement',
+            'payment_method' => $paymentType,
+            'paid_at' => now(),
+        ]);
+        
+        $order->update(['order_status' => 'paid']);
+        
+        Log::info('Payment successfully settled', [
+            'order_id' => $orderId,
+            'payment_method' => $paymentType,
+        ]);
+    }
+
+    /**
+     * Mark payment as failed and cancel order
+     * 
+     * WHY: DRY principle - logic cancellation sama untuk deny, expire, cancel
+     */
+    private function markPaymentAsFailed(
+        Payment $payment,
+        Order $order,
+        string $status,
+        string $orderId
+    ): void {
+        $payment->update(['payment_status' => $status]);
+        $order->update(['order_status' => 'cancelled']);
+        
+        Log::info('Payment failed and order cancelled', [
+            'order_id' => $orderId,
+            'reason' => $status,
+        ]);
+    }
+
+    /**
+     * Build item details array untuk Midtrans
+     * 
+     * WHY: Extracted method untuk reduce complexity di create() dan improve reusability
+     */
+    private function buildItemDetails($orderItems): array
+    {
+        $itemDetails = [];
+        
+        foreach ($orderItems as $orderItem) {
+            $price = (int) ($orderItem->order_item_price ?? $orderItem->price ?? 0);
+            $quantity = (int) ($orderItem->order_item_quantity ?? $orderItem->quantity ?? 1);
+            
+            $itemDetails[] = [
+                'id' => $orderItem->item->id ?? 'ITEM-' . $orderItem->id,
+                'price' => $price,
+                'quantity' => $quantity,
+                'name' => substr($orderItem->item->item_name ?? 'Item', 0, 50),
+            ];
+        }
+        
+        return $itemDetails;
     }
 }

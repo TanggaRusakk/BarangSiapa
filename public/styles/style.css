@@ -1928,3 +1928,136 @@ input#image.uniform-field:hover {
         grid-template-columns: 1fr;
     }
 }
+
+/* ===== NAVIGATION FIXES ===== */
+/* Desktop dropdown hover effect - make text black on hover */
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: rgb(255, 255, 255) !important;
+    color: #000000 !important;
+}
+
+.dropdown-item:hover svg,
+.dropdown-item:focus svg {
+    stroke: #000000 !important;
+}
+
+/* Mobile menu - hidden by default, Alpine x-show controls visibility */
+@media (max-width: 767.98px) {
+    /* Make mobile menu links have hover effect */
+    .d-md-none a.d-block:hover,
+    .d-md-none button.d-block:hover {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        padding-left: 1rem !important;
+        transition: all 0.2s ease;
+    }
+}
+
+/* Fallback CSS: toggle .visible on the mobile menu to force show/hide when Alpine isn't controlling x-show */
+[data-mobile-menu] {
+    display: none !important;
+}
+
+[data-mobile-menu].visible {
+    display: block !important;
+}
+
+/* ===== ITEM DETAIL TEXT COLOR FIXES ===== */
+/* Scoped to the main card used on item detail (uses .card.shadow-lg) */
+.container .card.shadow-lg .card-body {
+    color: #E5E5E8 !important;
+}
+
+.container .card.shadow-lg .card-body h1,
+.container .card.shadow-lg .card-body h2,
+.container .card.shadow-lg .card-body h3,
+.container .card.shadow-lg .card-body h4,
+.container .card.shadow-lg .card-body h5,
+.container .card.shadow-lg .card-body h6 {
+    color: #E5E5E8 !important;
+}
+
+.container .card.shadow-lg .card-body p,
+.container .card.shadow-lg .card-body small,
+.container .card.shadow-lg .card-body .text-secondary {
+    color: #9CA3AF !important;
+}
+
+.container .card.shadow-lg .card-body .badge {
+    color: #ffffff !important;
+}
+
+/* Ensure vendor info text is readable */
+.container .card.shadow-lg .card-body .vendor-info,
+.container .card.shadow-lg .card-body .vendor-info * {
+    color: inherit !important;
+}
+
+/* ===== ITEM REVIEWS LAYOUT ===== */
+.item-reviews {
+    width: 100%;
+}
+
+.item-reviews > .d-flex.align-items-center { /* summary block */
+    align-items: center;
+    gap: 2rem;
+    padding: 1.25rem 1.5rem !important;
+    border-radius: 10px !important;
+    min-height: 96px;
+}
+
+.item-reviews > .d-flex.align-items-center .h2 {
+    font-size: 2.5rem;
+    margin-bottom: 0.25rem;
+    color: #A78BFA !important;
+}
+
+.item-reviews > .d-flex.align-items-center .text-secondary {
+    color: #B0B6C2 !important;
+    font-size: 1rem;
+}
+
+.item-reviews .alert {
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
+    color: #073642 !important; /* dark text for light alert */
+    background-color: #D9FAFF !important; /* softer cyan */
+    border: none !important;
+}
+
+.item-reviews .rounded-circle[style] {
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 1.25rem !important;
+}
+
+.item-reviews .d-flex.flex-column .pb-4 {
+    padding-bottom: 1.25rem;
+}
+
+.item-reviews .d-flex .flex-grow-1 h6.fw-bold {
+    color: #E5E5E8 !important;
+}
+
+.item-reviews .d-flex .flex-grow-1 p.text-secondary {
+    color: #A0A0B0 !important;
+    margin-top: 0.5rem;
+}
+
+.item-reviews .d-flex .text-secondary.small {
+    color: #9CA3AF !important;
+}
+
+.item-reviews .border-bottom {
+    border-color: rgba(255,255,255,0.03) !important;
+}
+
+@media (max-width: 768px) {
+    .item-reviews > .d-flex.align-items-center {
+        flex-direction: row;
+        gap: 1rem;
+        min-height: 80px;
+    }
+    .item-reviews > .d-flex.align-items-center .h2 { font-size: 2rem; }
+}

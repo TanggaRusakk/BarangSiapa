@@ -99,11 +99,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('orders.my-orders');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
-    // Payment routes
+    // Payment routes - UI callbacks only (authenticated)
     Route::get('/payment/{order}', [PaymentController::class, 'create'])->name('payment.create');
     Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
     Route::get('/payment/pending', [PaymentController::class, 'pending'])->name('payment.pending');
     Route::get('/payment/error', [PaymentController::class, 'error'])->name('payment.error');
+});
+
+// WHY: Webhook dipindah ke routes/api.php
+// Lihat: routes/api.php untuk endpoint /api/midtrans/webhook
+
+Route::middleware('auth')->group(function () {
 
     // Admin: Users management
     Route::get('/admin/users', function () {

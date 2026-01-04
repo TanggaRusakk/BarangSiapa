@@ -4,6 +4,7 @@
     $reviewCount = $reviews->count();
 @endphp
 
+<div class="item-reviews">
 <!-- Review Summary -->
 @if($reviewCount > 0)
     <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded" style="background: rgba(106,56,194,0.05);">
@@ -203,6 +204,8 @@
         <p class="text-secondary mb-0">No reviews yet. Be the first to share your experience!</p>
     </div>
 @endif
+
+</div>
 
 @push('scripts')
 <script>

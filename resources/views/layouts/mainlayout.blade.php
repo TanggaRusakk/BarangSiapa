@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'BarangSiapa') }}</title>
-    <!-- Include Bootstrap CSS from CDN, then Tailwind (Tailwind set to important) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script>tailwind = window.tailwind || {}; tailwind.config = tailwind.config || {}; tailwind.config.important = true;</script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -24,7 +23,6 @@
 
     @include('layouts.footer')
 
-    <!-- CDN scripts: Axios, Alpine, Bootstrap bundle (includes Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

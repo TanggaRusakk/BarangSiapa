@@ -117,7 +117,7 @@
                 @endauth
 
                 <!-- Mobile Menu Toggle -->
-                <button @click="open = !open" type="button" class="btn btn-link text-white d-md-none p-2"> 
+                <button @click="open = !open" data-mobile-toggle type="button" class="btn btn-link text-white d-md-none p-2"> 
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
@@ -127,8 +127,10 @@
 
         <!-- Mobile Menu -->
         <div x-show="open" 
+             x-cloak
              x-transition
              @click.outside="open=false"
+             data-mobile-menu
              class="d-md-none border-top border-white border-opacity-25 py-3">
             <a href="{{ url('/') }}" class="d-block py-2 text-white text-decoration-none fw-medium {{ request()->is('/') ? 'fw-bold' : '' }}">Home</a>
             <a href="{{ route('items.index') }}" class="d-block py-2 text-white text-decoration-none fw-medium {{ request()->is('items*') ? 'fw-bold' : '' }}">Items</a>
@@ -154,3 +156,20 @@
         </div>
     </div>
 </nav>
+
+<script>
+    // Fallback toggle for mobile menu if Alpine isn't available/initialized
+    (function(){
+        document.addEventListener('DOMContentLoaded', function(){
+            var toggle = document.querySelector('[data-mobile-toggle]');
+            var menu = document.querySelector('[data-mobile-menu]');
+            if (!toggle || !menu) return;
+
+            // If Alpine is present it will handle x-show; still wire fallback to support toggling class
+            toggle.addEventListener('click', function(e){
+                // toggle visible class to force show/hide when Alpine isn't controlling it
+                menu.classList.toggle('visible');
+            });
+        });
+    })();
+</script>
