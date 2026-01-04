@@ -145,12 +145,18 @@ class OrderController extends Controller
     }
 
     // Show my orders
-    public function myOrders()
+    public function myOrders(Request $request)
     {
-        $orders = Order::with(['orderItems.item.galleries', 'payments'])
+        $query = Order::with(['orderItems.item.galleries', 'payments'])
             ->where('user_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->orderBy('created_at', 'desc');
+
+        $status = $request->query('status');
+        if ($status) {
+            $query->where('order_status', $status);
+        }
+
+        $orders = $query->paginate(10)->appends($request->only('status'));
 
         return view('orders.my-orders', compact('orders'));
     }
