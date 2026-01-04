@@ -146,19 +146,15 @@ Route::get('/payment/success', [PaymentController::class, 'success'])->name('pay
 Route::get('/payment/pending', [PaymentController::class, 'pending'])->name('payment.pending');
 Route::get('/payment/error', [PaymentController::class, 'error'])->name('payment.error');
 
-// Test if PaymentController can be loaded
-Route::get('/test-payment-controller', function() {
+// Direct test of payment success method
+Route::get('/test-payment-success-direct', function(\Illuminate\Http\Request $request) {
     try {
         $controller = new \App\Http\Controllers\PaymentController();
-        return response()->json([
-            'status' => 'ok',
-            'message' => 'PaymentController loaded successfully',
-            'methods' => get_class_methods($controller),
-        ]);
+        $response = $controller->success($request);
+        return $response;
     } catch (\Exception $e) {
         return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage(),
+            'error' => $e->getMessage(),
             'trace' => $e->getTraceAsString(),
         ], 500);
     }
