@@ -146,6 +146,21 @@ Route::get('/payment/success', [PaymentController::class, 'success'])->name('pay
 Route::get('/payment/pending', [PaymentController::class, 'pending'])->name('payment.pending');
 Route::get('/payment/error', [PaymentController::class, 'error'])->name('payment.error');
 
+// Debug endpoint to test if routes are working in production
+Route::get('/payment/test', function() {
+    return response()->json([
+        'status' => 'ok',
+        'message' => 'Payment routes are working!',
+        'app_url' => config('app.url'),
+        'routes' => [
+            'success' => route('payment.success'),
+            'pending' => route('payment.pending'),
+            'error' => route('payment.error'),
+        ],
+        'timestamp' => now()->toDateTimeString(),
+    ]);
+})->name('payment.test');
+
 // WHY: Webhook dipindah ke routes/api.php
 // Lihat: routes/api.php untuk endpoint /api/midtrans/webhook
 
