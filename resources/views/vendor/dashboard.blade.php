@@ -7,7 +7,7 @@
     </div>
 
     <!-- Stats Grid -->
-    <div class="row g-4 mb-6">
+    <div class="row g-5 mb-6">
         <div class="col-12 col-md-4">
             <div class="card subtle-hover p-6">
                 <div class="stat-label">My Products</div>
@@ -34,7 +34,7 @@
     </div>
 
     <!-- Store Rating Card -->
-    <div class="row g-4 mb-6">
+    <div class="row g-5 mb-6">
         <div class="col-12">
             <div class="card subtle-hover p-6 text-center">
                 <div class="stat-label">Store Rating</div>
@@ -48,9 +48,9 @@
     </div>
 
     <!-- Quick Actions: clear 3-column boxes -->
-    <div class="row g-4 mb-4">
+    <div class="row g-5 mb-4">
         <div class="col-12 col-md-3">
-            <a href="{{ route('vendor.products.create') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+            <a href="{{ route('vendor.products.create') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center mb-3" style="min-height: 140px;">
                 <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
@@ -60,7 +60,7 @@
         </div>
 
         <div class="col-12 col-md-3">
-            <a href="{{ route('vendor.products.list') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+            <a href="{{ route('vendor.products.list') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center mb-3" style="min-height: 140px;">
                 <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                     <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
@@ -71,7 +71,7 @@
         </div>
 
         <div class="col-12 col-md-3">
-            <a href="{{ route('vendor.orders.list') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+            <a href="{{ route('vendor.orders.list') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center mb-3" style="min-height: 140px;">
                 <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
                     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
@@ -82,7 +82,7 @@
         </div>
 
         <div class="col-12 col-md-3">
-            <a href="{{ route('vendor.ads.index') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+            <a href="{{ route('vendor.ads.index') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center mb-3" style="min-height: 140px;">
                 <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
                     <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
