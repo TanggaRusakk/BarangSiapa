@@ -53,22 +53,35 @@ class PaymentController extends Controller
         // WHY: Get order total with fallback values for data consistency
         $orderTotal = $order->total_amount ?? $order->order_total_amount ?? $order->calculated_total;
         
+        // WHY: For rental orders, only charge 30% DP
+        $isRental = $order->order_type === 'sewa';
+        $paymentAmount = $isRental ? round($orderTotal * 0.30) : $orderTotal;
+        
         $transactionDetails = [
             'order_id' => $midtransOrderId,
-            'gross_amount' => (int) $orderTotal,
+            'gross_amount' => (int) $paymentAmount,
         ];
 
         // Build item details for Midtrans itemization
         $itemDetails = $this->buildItemDetails($order->orderItems);
         
-        // WHY: Add service fee if subtotal doesn't match order total (tax, admin fee, etc)
+        // WHY: For rental, adjust item details to reflect DP amount
+        if ($isRental) {
+            $itemDetails = array_map(function($item) {
+                $item['price'] = round($item['price'] * 0.30);
+                $item['name'] = 'DP ' . $item['name'];
+                return $item;
+            }, $itemDetails);
+        }
+        
+        // WHY: Add service fee if subtotal doesn't match payment amount (tax, admin fee, etc)
         $itemTotal = collect($itemDetails)->sum(fn($item) => $item['price'] * $item['quantity']);
-        if ($itemTotal < $orderTotal) {
+        if ($itemTotal < $paymentAmount) {
             $itemDetails[] = [
                 'id' => 'SERVICE_FEE',
-                'price' => (int) ($orderTotal - $itemTotal),
+                'price' => (int) ($paymentAmount - $itemTotal),
                 'quantity' => 1,
-                'name' => 'Service Fee',
+                'name' => $isRental ? 'DP Service Fee' : 'Service Fee',
             ];
         }
 
@@ -94,8 +107,8 @@ class PaymentController extends Controller
                     'user_id' => $order->user_id,
                     'midtrans_order_id' => $midtransOrderId,
                     'payment_method' => 'midtrans',
-                    'payment_type' => 'full',
-                    'payment_total_amount' => $orderTotal,
+                    'payment_type' => $isRental ? 'dp' : 'full',
+                    'payment_total_amount' => $paymentAmount,
                     'payment_status' => 'pending',
                 ]
             );

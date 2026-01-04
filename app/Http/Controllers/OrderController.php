@@ -68,10 +68,39 @@ class OrderController extends Controller
 
         DB::beginTransaction();
         try {
+            // Calculate rental units if applicable
+            $rentalUnits = 1;
+            $durationDays = 0;
+            
+            if ($isRent) {
+                $startDate = new \DateTime($request->rental_start_date);
+                $endDate = new \DateTime($request->rental_end_date);
+                $durationDays = max(1, $startDate->diff($endDate)->days); // At least 1 day
+                
+                // Calculate how many rental periods are needed
+                $rentalDurationValue = $item->rental_duration_value ?? 1;
+                $rentalDurationUnit = $item->rental_duration_unit ?? 'day';
+                
+                if ($rentalDurationUnit === 'day') {
+                    $rentalUnits = ceil($durationDays / $rentalDurationValue);
+                } elseif ($rentalDurationUnit === 'week') {
+                    $rentalUnits = ceil($durationDays / ($rentalDurationValue * 7));
+                } elseif ($rentalDurationUnit === 'month') {
+                    $rentalUnits = ceil($durationDays / ($rentalDurationValue * 30));
+                }
+                
+                $rentalUnits = max(1, $rentalUnits); // At least 1 unit
+            }
+            
             // Calculate total
-            $itemTotal = $item->item_price * $request->quantity;
+            $itemPricePerUnit = $item->item_price * $rentalUnits; // Price adjusted for rental duration
+            $itemTotal = $itemPricePerUnit * $request->quantity;
             $serviceFee = $itemTotal * 0.05; // 5% service fee
             $totalAmount = $itemTotal + $serviceFee;
+            
+            // Calculate DP (30% of total) for rental items
+            $dpAmount = $isRent ? round($totalAmount * 0.30) : $totalAmount;
+            $remainingAmount = $totalAmount - $dpAmount;
 
             // Create order
             $order = Order::create([
@@ -86,16 +115,12 @@ class OrderController extends Controller
                 'order_id' => $order->id,
                 'item_id' => $item->id,
                 'order_item_quantity' => $request->quantity,
-                'order_item_price' => $item->item_price,
+                'order_item_price' => $itemPricePerUnit, // Price per unit including rental duration
                 'order_item_subtotal' => $itemTotal,
             ]);
 
             // If it's a rental, create rental info
             if ($isRent) {
-                $startDate = new \DateTime($request->rental_start_date);
-                $endDate = new \DateTime($request->rental_end_date);
-                $durationDays = $startDate->diff($endDate)->days;
-                
                 \App\Models\RentalInfo::create([
                     'order_id' => $order->id,
                     'start_date' => $request->rental_start_date,

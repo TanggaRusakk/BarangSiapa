@@ -660,15 +660,25 @@ Route::middleware('auth')->group(function () {
                 $q->where('vendor_id', $vendor->id ?? 0);
             })->avg('review_rating') ?? 0;
             $storeRating = round($storeRating, 1);
+
+            // Recent Ads (3 most recent)
+            $recentAds = \App\Models\Ad::with('item')
+                ->whereHas('item', function($q) use ($vendor) {
+                    $q->where('vendor_id', $vendor->id);
+                })
+                ->orderBy('created_at', 'desc')
+                ->take(3)
+                ->get();
         } else {
             $ordersCount = 0;
             $recentOrders = collect();
             $revenue = 0;
             $productsCount = 0;
             $storeRating = 0;
+            $recentAds = collect();
         }
 
-        return view('vendor.dashboard', compact('recentProducts', 'ordersCount', 'recentOrders', 'revenue', 'productsCount', 'storeRating'));
+        return view('vendor.dashboard', compact('recentProducts', 'ordersCount', 'recentOrders', 'revenue', 'productsCount', 'storeRating', 'recentAds'));
     })->name('vendor.dashboard');
 
     Route::get('/vendor/products/create', function () {

@@ -2,45 +2,31 @@
     <x-slot name="title">Member Dashboard</x-slot>
     
     <!-- Welcome Header -->
-    <div class="no-hover">
     <div class="mb-4">
-        <div class="row align-items-center">
-            <div class="col">
-                <h1 class="display-5 fw-bold text-gradient mb-1">Welcome back, {{ auth()->user()->name }}! 👋</h1>
-                <p class="text-secondary mb-0">Here's what's happening with your account today.</p>
-            </div>
-
-            <div class="col-auto">
-                <div class="card bg-dark text-white border-0" style="min-width:220px">
-                    <div class="card-body p-2 d-flex align-items-center">
-                        <img src="{{ auth()->user()->photo_url }}" alt="{{ auth()->user()->name }}" class="rounded-circle me-2" style="width:56px;height:56px;object-fit:cover;border:2px solid rgba(106,56,194,0.6);">
-                        <div class="flex-grow-1 text-start">
-                            <div class="fw-bold">{{ auth()->user()->name }}</div>
-                            <small class="text-secondary">{{ ucfirst(auth()->user()->role ?? 'user') }}</small>
-                        </div>
-                        @if(auth()->user()->image_path)
-                            <form action="{{ route('profile.photo.remove') }}" method="POST" onsubmit="return confirm('Remove profile photo?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
-                            </form>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
+        <h2 class="text-2xl font-bold text-gradient">Hi, {{ auth()->user()->name }} 👋</h2>
+        <p class="text-sm text-soft-lilac">
+            @if(auth()->user()->role === 'admin')
+                Manage your platform — users, vendors, and system settings.
+            @else
+                Track your orders, rentals, and explore the marketplace.
+            @endif
+        </p>
     </div>
 
     @if(!empty($lastViewed))
-        <div class="mb-4">
-            <h3 class="h5 fw-semibold text-gradient">Last Viewed</h3>
-            <div class="card bg-transparent border-0">
-                <div class="card-body p-3 d-flex align-items-center gap-3">
-                    <img src="{{ $lastViewed->first_image_url }}" alt="{{ $lastViewed->item_name }}" class="rounded me-3" style="width:80px;height:80px;object-fit:cover;">
-                    <div>
-                        <h5 class="mb-1 fw-bold">{{ $lastViewed->item_name }}</h5>
-                        <p class="mb-0 text-secondary">@if($lastViewed->item_type === 'sewa' || $lastViewed->item_type === 'rent') Rp{{ number_format($lastViewed->item_price) }} / {{ $lastViewed->rental_duration_unit ?? 'day' }} @else Rp{{ number_format($lastViewed->item_price) }} @endif</p>
-                    </div>
+        <div class="card subtle-hover mb-4 p-4">
+            <h3 class="stat-label mb-3">Last Viewed</h3>
+            <div class="d-flex align-items-center gap-3">
+                <img src="{{ $lastViewed->first_image_url }}" alt="{{ $lastViewed->item_name }}" class="rounded" style="width:80px;height:80px;object-fit:cover;">
+                <div>
+                    <h5 class="mb-1 fw-bold">{{ $lastViewed->item_name }}</h5>
+                    <p class="mb-0 text-soft-lilac">
+                        @if($lastViewed->item_type === 'sewa' || $lastViewed->item_type === 'rent') 
+                            Rp{{ number_format($lastViewed->item_price) }} / {{ $lastViewed->rental_duration_unit ?? 'day' }} 
+                        @else 
+                            Rp{{ number_format($lastViewed->item_price) }} 
+                        @endif
+                    </p>
                 </div>
             </div>
         </div>
@@ -48,120 +34,96 @@
 
     @if(auth()->user()->role === 'admin')
         <!-- ADMIN DASHBOARD -->
+        <div class="row g-4 mb-6">
+            <div class="col-12 col-md-3">
+                <div class="card subtle-hover p-6">
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-value text-3xl font-extrabold">{{ number_format($totalUsers) }}</div>
+                    <div class="text-sm text-soft-lilac mt-2">
+                        <a href="{{ route('admin.users') }}" class="text-decoration-none">Manage users →</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-3">
+                <div class="card subtle-hover p-6">
+                    <div class="stat-label">Active Vendors</div>
+                    <div class="stat-value text-3xl font-extrabold">{{ number_format($activeVendors) }}</div>
+                    <div class="text-sm text-soft-lilac mt-2">
+                        <a href="{{ route('admin.vendors') }}" class="text-decoration-none">Manage vendors →</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-3">
+                <div class="card subtle-hover p-6">
+                    <div class="stat-label">Total Products</div>
+                    <div class="stat-value text-3xl font-extrabold">{{ number_format($totalProducts) }}</div>
+                    <div class="text-sm text-soft-lilac mt-2">
+                        <a href="{{ route('admin.items') }}" class="text-decoration-none">Manage items →</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-3">
+                <div class="card subtle-hover p-6">
+                    <div class="stat-label">Revenue (This Month)</div>
+                    <div class="stat-value text-3xl font-extrabold">Rp{{ number_format($revenueThisMonth, 0) }}</div>
+                    <div class="text-sm text-soft-lilac mt-2">
+                        <a href="{{ route('admin.payments') }}" class="text-decoration-none">View payments →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
         <div class="row g-4 mb-4">
-            <div class="col-6 col-md-3">
-                <a href="{{ route('admin.users') }}" class="text-decoration-none">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="text-secondary small">Total Users</div>
-                            <div class="h4 fw-bold">{{ number_format($totalUsers) }}</div>
-                            <div class="small text-muted">Click to manage →</div>
-                        </div>
-                    </div>
+            <div class="col-12 col-md-3">
+                <a href="{{ route('admin.orders') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                    <h3 class="font-bold text-lg mb-1">Orders</h3>
+                    <p class="text-sm text-secondary mb-0">Manage all orders</p>
                 </a>
             </div>
-            <div class="col-6 col-md-3">
-                <a href="{{ route('admin.vendors') }}" class="text-decoration-none">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="text-secondary small">Active Vendors</div>
-                            <div class="h4 fw-bold">{{ number_format($activeVendors) }}</div>
-                            <div class="small text-muted">Click to manage →</div>
-                        </div>
-                    </div>
+            <div class="col-12 col-md-3">
+                <a href="{{ route('admin.reviews') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                    <h3 class="font-bold text-lg mb-1">Reviews</h3>
+                    <p class="text-sm text-secondary mb-0">View & moderate</p>
                 </a>
             </div>
-            <div class="col-6 col-md-3">
-                <a href="{{ route('admin.items') }}" class="text-decoration-none">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="text-secondary small">Total Products</div>
-                            <div class="h4 fw-bold">{{ number_format($totalProducts) }}</div>
-                            <div class="small text-muted">Click to manage →</div>
-                        </div>
-                    </div>
+            <div class="col-12 col-md-3">
+                <a href="{{ route('admin.messages') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <h3 class="font-bold text-lg mb-1">Messages</h3>
+                    <p class="text-sm text-secondary mb-0">View conversations</p>
                 </a>
             </div>
-            <div class="col-6 col-md-3">
-                <a href="{{ route('admin.payments') }}" class="text-decoration-none">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="text-secondary small">Revenue (This Month)</div>
-                            <div class="h5 fw-bold">Rp{{ number_format($revenueThisMonth, 0) }}</div>
-                            <div class="small text-muted">Click to view →</div>
-                        </div>
-                    </div>
+            <div class="col-12 col-md-3">
+                <a href="{{ route('admin.ads') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                        <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+                    </svg>
+                    <h3 class="font-bold text-lg mb-1">Ads</h3>
+                    <p class="text-sm text-secondary mb-0">Manage advertisements</p>
                 </a>
             </div>
         </div>
 
         <!-- More Admin Actions -->
         <div class="row g-4 mb-4">
-            <div class="col-6 col-md-3">
-                <a href="{{ route('admin.orders') }}" class="text-decoration-none">
-                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
-                        <div class="card-body p-2 d-flex flex-column align-items-center justify-content-center">
-                            <svg class="mb-2" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
-                            </svg>
-                            <h6 class="fw-bold mb-1">Orders</h6>
-                            <p class="small text-secondary mb-0">Manage all orders</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-6 col-md-3">
-                <a href="{{ route('admin.reviews') }}" class="text-decoration-none">
-                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
-                        <div class="card-body p-2 d-flex flex-column align-items-center justify-content-center">
-                            <svg class="mb-2" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                            </svg>
-                            <h6 class="fw-bold mb-1">Reviews</h6>
-                            <p class="small text-secondary mb-0">View & moderate</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-6 col-md-3">
-                <a href="{{ route('admin.messages') }}" class="text-decoration-none">
-                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
-                        <div class="card-body p-2 d-flex flex-column align-items-center justify-content-center">
-                            <svg class="mb-2" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                            </svg>
-                            <h6 class="fw-bold mb-1">Messages</h6>
-                            <p class="small text-secondary mb-0">View conversations</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-6 col-md-3">
-                <a href="{{ route('admin.ads') }}" class="text-decoration-none">
-                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
-                        <div class="card-body p-2 d-flex flex-column align-items-center justify-content-center">
-                            <svg class="mb-2" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-                                <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
-                            </svg>
-                            <h6 class="fw-bold mb-1">Ads</h6>
-                            <p class="small text-secondary mb-0">Manage advertisements</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-6 col-md-3">
-                <a href="{{ route('admin.categories') }}" class="text-decoration-none">
-                    <div class="card text-center shadow-sm p-3" style="min-height: 120px;">
-                        <div class="card-body p-2 d-flex flex-column align-items-center justify-content-center">
-                            <svg class="mb-2" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                            </svg>
-                            <h6 class="fw-bold mb-1">Categories</h6>
-                            <p class="small text-secondary mb-0">Create / edit / delete</p>
-                        </div>
-                    </div>
+            <div class="col-12 col-md-3">
+                <a href="{{ route('admin.categories') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <h3 class="font-bold text-lg mb-1">Categories</h3>
+                    <p class="text-sm text-secondary mb-0">Create / edit / delete</p>
                 </a>
             </div>
         </div>
@@ -413,28 +375,28 @@
         <!-- MEMBER DASHBOARD -->
         <div class="row g-4 mb-6">
             <div class="col-12 col-md-3">
-                <div class="card subtle-hover p-4">
+                <div class="card subtle-hover p-6">
                     <div class="stat-label">Active Orders</div>
                     <div class="stat-value text-3xl font-extrabold">{{ $activeOrdersCount ?? 0 }}</div>
                     <div class="text-sm text-soft-lilac mt-2">{{ $activeOrdersCount > 0 ? 'In progress' : 'No orders yet' }}</div>
                 </div>
             </div>
             <div class="col-12 col-md-3">
-                <div class="card subtle-hover p-4">
+                <div class="card subtle-hover p-6">
                     <div class="stat-label">Active Rentals</div>
                     <div class="stat-value text-3xl font-extrabold">{{ $activeRentalsCount ?? 0 }}</div>
                     <div class="text-sm text-soft-lilac mt-2">{{ $activeRentalsCount > 0 ? 'Currently renting' : 'No rentals' }}</div>
                 </div>
             </div>
             <div class="col-12 col-md-3">
-                <div class="card subtle-hover p-4">
+                <div class="card subtle-hover p-6">
                     <div class="stat-label">Total Spent</div>
                     <div class="stat-value text-2xl font-extrabold">Rp{{ number_format($totalSpent ?? 0) }}</div>
                     <div class="text-sm text-soft-lilac mt-2">Last 30 days</div>
                 </div>
             </div>
             <div class="col-12 col-md-3">
-                <div class="card subtle-hover p-4">
+                <div class="card subtle-hover p-6">
                     <div class="stat-label">Reviews</div>
                     <div class="stat-value text-3xl font-extrabold">{{ $reviewsGiven ?? 0 }}</div>
                     <div class="text-sm text-soft-lilac mt-2">Given by you</div>
@@ -493,8 +455,8 @@
                     <div class="card-body">
                         @if(!(auth()->check() && auth()->user()->role === 'vendor'))
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h3 class="h5 fw-bold mb-0">Recent Orders</h3>
-                                <a href="{{ route('orders.my-orders') }}" class="btn btn-sm" style="background: #6A38C2; color: white;">View All →</a>
+                                <h3 class="stat-label mb-0">Recent Orders</h3>
+                                <a href="{{ route('orders.my-orders') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); color: white;">View All →</a>
                             </div>
                         @endif
                         @if(isset($userOrders) && $userOrders->count() > 0)
@@ -512,10 +474,10 @@
                                         @endif
                                         <div class="flex-grow-1">
                                             <h6 class="mb-1 fw-bold">Order #{{ $order->id }}</h6>
-                                            <p class="mb-1 text-secondary small">Rp{{ number_format($order->order_total_amount ?? 0) }}</p>
+                                            <p class="mb-1 text-soft-lilac small">Rp{{ number_format($order->order_total_amount ?? 0) }}</p>
                                             <span class="badge {{ $order->order_status === 'paid' ? 'bg-success' : ($order->order_status === 'pending' ? 'bg-warning' : 'bg-secondary') }}">{{ ucfirst($order->order_status ?? 'pending') }}</span>
                                         </div>
-                                        <div class="text-end text-secondary small">
+                                        <div class="text-end text-soft-lilac small">
                                             {{ $order->created_at->format('d M Y') }}
                                         </div>
                                     </div>
@@ -527,7 +489,7 @@
                                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                                     <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
                                 </svg>
-                                <p class="text-secondary mb-0">No orders yet</p>
+                                <p class="text-soft-lilac mb-0">No orders yet</p>
                             </div>
                         @endif
                     </div>
@@ -538,8 +500,8 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h3 class="h5 fw-bold mb-0">Active Rentals</h3>
-                            <a href="{{ route('orders.my-orders') }}" class="btn btn-sm" style="background: #FF3CAC; color: #000;">View All →</a>
+                            <h3 class="stat-label mb-0">Active Rentals</h3>
+                            <a href="{{ route('orders.my-orders') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #FF3CAC 0%, #6A38C2 100%); color: white;">View All →</a>
                         </div>
                         @if(isset($userRentals) && $userRentals->count() > 0)
                             <div class="d-flex flex-column gap-3">
@@ -556,10 +518,10 @@
                                         @endif
                                         <div class="flex-grow-1">
                                             <h6 class="mb-1 fw-bold">{{ $rental->orderItems->first()->item->item_name ?? 'Rental Item' }}</h6>
-                                            <p class="mb-1 text-secondary small">Rp{{ number_format($rental->order_total_amount ?? 0) }}</p>
+                                            <p class="mb-1 text-soft-lilac small">Rp{{ number_format($rental->order_total_amount ?? 0) }}</p>
                                             <span class="badge {{ $rental->order_status === 'paid' ? 'bg-success' : ($rental->order_status === 'pending' ? 'bg-warning' : 'bg-secondary') }}">{{ ucfirst($rental->order_status ?? 'pending') }}</span>
                                         </div>
-                                        <div class="text-end text-secondary small">
+                                        <div class="text-end text-soft-lilac small">
                                             {{ $rental->created_at->format('d M Y') }}
                                         </div>
                                     </div>
@@ -570,7 +532,7 @@
                                 <svg class="mb-3 text-secondary" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                                 </svg>
-                                <p class="text-secondary mb-0">No active rentals</p>
+                                <p class="text-soft-lilac mb-0">No active rentals</p>
                             </div>
                         @endif
                     </div>

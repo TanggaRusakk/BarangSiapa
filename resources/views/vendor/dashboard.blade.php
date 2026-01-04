@@ -130,26 +130,35 @@
             </div>
         </div>
 
-        <!-- Recent Orders -->
+        <!-- Recent Ads -->
         <div class="col-12 col-lg-6">
             <div class="card h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h3 class="h5 fw-bold mb-0">Recent Orders</h3>
-                        <a href="{{ route('vendor.orders.list') }}" class="btn btn-sm" style="background: #FF3CAC; color: #000;">View All →</a>
+                        <h3 class="h5 fw-bold mb-0">Recent Ads</h3>
+                        <a href="{{ route('vendor.ads.index') }}" class="btn btn-sm" style="background: #FF3CAC; color: #000;">View All →</a>
                     </div>
 
-                    @if(isset($recentOrders) && $recentOrders->count() > 0)
+                    @if(isset($recentAds) && $recentAds->count() > 0)
                         <div class="d-flex flex-column gap-3">
-                            @foreach($recentOrders as $order)
-                                <div class="d-flex justify-content-between align-items-center p-3 rounded" style="background: rgba(106,56,194,0.05);">
-                                    <div>
-                                        <div class="fw-bold">Order #{{ $order->id }}</div>
-                                        <div class="small text-secondary">{{ optional($order->user)->name ?? '—' }}</div>
-                                    </div>
-                                    <div class="text-end">
-                                        <div class="fw-bold">Rp{{ number_format($order->order_total_amount ?? 0) }}</div>
-                                        <div class="small text-secondary">{{ $order->created_at->format('d M Y') }}</div>
+                            @foreach($recentAds as $ad)
+                                <div class="d-flex gap-3 p-3 rounded" style="background: rgba(255,60,172,0.05);">
+                                    @if($ad->ad_image)
+                                        <img src="{{ asset('storage/' . $ad->ad_image) }}" alt="Ad Image" class="rounded" style="width:80px;height:80px;object-fit:cover;">
+                                    @elseif($ad->item)
+                                        <img src="{{ $ad->item->first_image_url }}" alt="{{ $ad->item->item_name }}" class="rounded" style="width:80px;height:80px;object-fit:cover;">
+                                    @else
+                                        <div class="rounded d-flex align-items-center justify-content-center" style="width:80px;height:80px;background:#f0f0f0;">
+                                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                                                <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+                                            </svg>
+                                        </div>
+                                    @endif
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 fw-bold">{{ $ad->item->item_name ?? 'Ad #' . $ad->id }}</h6>
+                                        <p class="mb-1 text-secondary small">Rp{{ number_format($ad->price) }} • {{ \Carbon\Carbon::parse($ad->start_date)->format('d M') }} - {{ \Carbon\Carbon::parse($ad->end_date)->format('d M Y') }}</p>
+                                        <span class="badge {{ $ad->status === 'active' ? 'bg-success' : ($ad->status === 'pending' ? 'bg-warning' : 'bg-secondary') }} small">{{ ucfirst($ad->status ?? 'pending') }}</span>
                                     </div>
                                 </div>
                             @endforeach
@@ -157,10 +166,10 @@
                     @else
                         <div class="text-center py-5">
                             <svg class="mb-3 text-secondary" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
-                                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                                <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                                <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
                             </svg>
-                            <p class="text-secondary mb-0">No orders yet</p>
+                            <p class="text-secondary mb-0">No ads yet</p>
                         </div>
                     @endif
                 </div>

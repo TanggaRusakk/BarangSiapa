@@ -99,6 +99,12 @@
                                 <span>Quantity</span>
                                 <span id="qtyDisplay">1</span>
                             </div>
+                            @if(in_array($item->item_type, ['sewa', 'rent']))
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Rental Duration</span>
+                                <span id="rentalUnitsDisplay">-</span>
+                            </div>
+                            @endif
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Subtotal</span>
                                 <span id="subtotal" class="fw-bold">Rp {{ number_format($item->item_price, 0, ',', '.') }}</span>
@@ -113,6 +119,21 @@
                                     <span id="total" class="fw-bold fs-5" style="color: #6A38C2;">Rp {{ number_format($item->item_price * 1.05, 0, ',', '.') }}</span>
                                 </div>
                             </div>
+                            @if(in_array($item->item_type, ['sewa', 'rent']))
+                            <div class="border-top pt-2 mt-2">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="fw-bold" style="color: #FF3CAC;">DP (30%)</span>
+                                    <span id="dpAmount" class="fw-bold" style="color: #FF3CAC;">Rp {{ number_format($item->item_price * 1.05 * 0.30, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted">
+                                    <span class="small">Remaining</span>
+                                    <span id="remainingAmount" class="small">Rp {{ number_format($item->item_price * 1.05 * 0.70, 0, ',', '.') }}</span>
+                                </div>
+                            </div>
+                            <div class="alert alert-info mt-3 mb-0">
+                                <small><i class="bi bi-info-circle"></i> Untuk item sewa, Anda cukup bayar DP 30% terlebih dahulu. Sisanya dibayar saat pengambilan barang.</small>
+                            </div>
+                            @endif
                         </div>
 
                         <!-- Submit Button -->
@@ -168,6 +189,7 @@
     function updateTotal() {
         const qty = parseInt(qtyInput.value) || 1;
         let priceMultiplier = 1;
+        let diffDays = 0;
         
         if (isRental && startDateInput && endDateInput) {
             const startDate = startDateInput.value;
@@ -177,7 +199,7 @@
                 const start = new Date(startDate);
                 const end = new Date(endDate);
                 const diffTime = Math.abs(end - start);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
                 
                 if (diffDays > 0) {
                     priceMultiplier = calculateRentalUnits(startDate, endDate);
@@ -188,6 +210,12 @@
                             <div>${diffDays} day(s) selected</div>
                             <div class="mt-1">= ${priceMultiplier} × ${rentalDurationValue} ${rentalDurationUnit} period(s)</div>
                         `;
+                    }
+                    
+                    // Update rental units display in order summary
+                    const rentalUnitsDisplay = document.getElementById('rentalUnitsDisplay');
+                    if (rentalUnitsDisplay) {
+                        rentalUnitsDisplay.textContent = `${priceMultiplier} period(s)`;
                     }
                 } else {
                     if (rentalPeriodDisplay) {
@@ -201,11 +229,23 @@
         const subtotal = itemTotal * qty;
         const serviceFee = subtotal * 0.05;
         const total = subtotal + serviceFee;
+        
+        // Calculate DP (30% for rental)
+        const dpAmount = isRental ? Math.round(total * 0.30) : total;
+        const remainingAmount = total - dpAmount;
 
         qtyDisplay.textContent = qty;
         subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
         serviceFeeEl.textContent = 'Rp ' + serviceFee.toLocaleString('id-ID');
         totalEl.textContent = 'Rp ' + total.toLocaleString('id-ID');
+        
+        // Update DP and remaining amount if rental
+        if (isRental) {
+            const dpAmountEl = document.getElementById('dpAmount');
+            const remainingAmountEl = document.getElementById('remainingAmount');
+            if (dpAmountEl) dpAmountEl.textContent = 'Rp ' + dpAmount.toLocaleString('id-ID');
+            if (remainingAmountEl) remainingAmountEl.textContent = 'Rp ' + remainingAmount.toLocaleString('id-ID');
+        }
     }
 
     qtyInput.addEventListener('input', updateTotal);
