@@ -72,45 +72,53 @@
         <!-- Quick Actions: 4-column boxes -->
         <div class="row g-4 mb-4">
             <div class="col-12 col-md-3">
-                <a href="{{ route('admin.users') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                    </svg>
-                    <h3 class="font-bold text-lg mb-1">Manage Users</h3>
-                    <p class="text-sm text-secondary mb-0">View all users</p>
+                <a href="{{ route('admin.users') }}" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">Manage Users</h3>
+                        <p class="text-sm text-secondary mb-0">View all users</p>
+                    </div>
                 </a>
             </div>
 
             <div class="col-12 col-md-3">
-                <a href="{{ route('admin.items') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
-                    </svg>
-                    <h3 class="font-bold text-lg mb-1">Products</h3>
-                    <p class="text-sm text-secondary mb-0">Manage all items</p>
+                <a href="{{ route('admin.items') }}" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">Products</h3>
+                        <p class="text-sm text-secondary mb-0">Manage all items</p>
+                    </div>
                 </a>
             </div>
 
             <div class="col-12 col-md-3">
-                <a href="{{ route('admin.orders') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                    </svg>
-                    <h3 class="font-bold text-lg mb-1">Orders</h3>
-                    <p class="text-sm text-secondary mb-0">View all orders</p>
+                <a href="{{ route('admin.orders') }}" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">Orders</h3>
+                        <p class="text-sm text-secondary mb-0">View all orders</p>
+                    </div>
                 </a>
             </div>
 
             <div class="col-12 col-md-3">
-                <a href="{{ route('admin.ads') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-                        <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
-                    </svg>
-                    <h3 class="font-bold text-lg mb-1">Advertisements</h3>
-                    <p class="text-sm text-secondary mb-0">Manage ads</p>
+                <a href="{{ route('admin.ads') }}" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                            <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">Advertisements</h3>
+                        <p class="text-sm text-secondary mb-0">Manage ads</p>
+                    </div>
                 </a>
             </div>
         </div>
@@ -243,44 +251,52 @@
         <!-- Quick Actions: 4-column boxes -->
         <div class="row g-4 mb-4">
             <div class="col-12 col-md-3">
-                <a href="/vendor/products/create" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                    <h3 class="font-bold text-lg mb-1">Add Product</h3>
-                    <p class="text-sm text-secondary mb-0">List a new item</p>
+                <a href="/vendor/products/create" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">Add Product</h3>
+                        <p class="text-sm text-secondary mb-0">List a new item</p>
+                    </div>
                 </a>
             </div>
 
             <div class="col-12 col-md-3">
-                <a href="/vendor/products/list" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
-                    </svg>
-                    <h3 class="font-bold text-lg mb-1">Products</h3>
-                    <p class="text-sm text-secondary mb-0">View all items</p>
+                <a href="/vendor/products/list" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">Products</h3>
+                        <p class="text-sm text-secondary mb-0">View all items</p>
+                    </div>
                 </a>
             </div>
 
             <div class="col-12 col-md-3">
-                <a href="/vendor/orders/list" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                    </svg>
-                    <h3 class="font-bold text-lg mb-1">Orders</h3>
-                    <p class="text-sm text-secondary mb-0">Manage orders</p>
+                <a href="/vendor/orders/list" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">Orders</h3>
+                        <p class="text-sm text-secondary mb-0">Manage orders</p>
+                    </div>
                 </a>
             </div>
 
             <div class="col-12 col-md-3">
-                <a href="{{ route('profile.edit') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                    </svg>
-                    <h3 class="font-bold text-lg mb-1">My Profile</h3>
-                    <p class="text-sm text-secondary mb-0">Edit account</p>
+                <a href="{{ route('profile.edit') }}" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">My Profile</h3>
+                        <p class="text-sm text-secondary mb-0">Edit account</p>
+                    </div>
                 </a>
             </div>
         </div>
@@ -381,44 +397,52 @@
         <!-- Quick Actions: 4-column boxes -->
         <div class="row g-4 mb-4">
             <div class="col-12 col-md-3">
-                <a href="{{ route('items.index') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                    </svg>
-                    <h3 class="font-bold text-lg mb-1">Browse Products</h3>
-                    <p class="text-sm text-secondary mb-0">Explore marketplace</p>
+                <a href="{{ route('items.index') }}" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">Browse Products</h3>
+                        <p class="text-sm text-secondary mb-0">Explore marketplace</p>
+                    </div>
                 </a>
             </div>
 
             <div class="col-12 col-md-3">
-                <a href="{{ route('orders.my-orders') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
-                    </svg>
-                    <h3 class="font-bold text-lg mb-1">My Orders</h3>
-                    <p class="text-sm text-secondary mb-0">Track your purchases</p>
+                <a href="{{ route('orders.my-orders') }}" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">My Orders</h3>
+                        <p class="text-sm text-secondary mb-0">Track your purchases</p>
+                    </div>
                 </a>
             </div>
 
             <div class="col-12 col-md-3">
-                <a href="{{ url('/messages') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    <h3 class="font-bold text-lg mb-1">Messages</h3>
-                    <p class="text-sm text-secondary mb-0">Chat with vendors</p>
+                <a href="{{ url('/messages') }}" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">Messages</h3>
+                        <p class="text-sm text-secondary mb-0">Chat with vendors</p>
+                    </div>
                 </a>
             </div>
 
             <div class="col-12 col-md-3">
-                <a href="{{ route('profile.edit') }}" class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
-                    <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                    </svg>
-                    <h3 class="font-bold text-lg mb-1">My Profile</h3>
-                    <p class="text-sm text-secondary mb-0">Edit account settings</p>
+                <a href="{{ route('profile.edit') }}" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">My Profile</h3>
+                        <p class="text-sm text-secondary mb-0">Edit account settings</p>
+                    </div>
                 </a>
             </div>
         </div>
