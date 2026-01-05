@@ -71,12 +71,12 @@
                 @if(!isset($categories))
                     <div class="alert alert-warning">Categories variable not passed to view</div>
                 @endif
-                <div class="p-3 rounded" style="background: rgba(106, 56, 194, 0.05); border: 1px solid rgba(106, 56, 194, 0.2); max-height: 200px; overflow-y: auto;">
+                <div class="p-3 rounded" style="background: rgba(9, 9, 15, 0.8); border: 1px solid rgba(106, 56, 194, 0.4); max-height: 200px; overflow-y: auto;">
                     @if(isset($categories) && $categories->count() > 0)
                         @foreach($categories as $category)
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="categories[]" value="{{ $category->id }}" id="category_{{ $category->id }}" style="background-color: rgba(106, 56, 194, 0.2); border-color: #6A38C2;">
-                                <label class="form-check-label text-white" for="category_{{ $category->id }}" style="margin-left: 0.5rem;">
+                                <input class="form-check-input" type="checkbox" name="categories[]" value="{{ $category->id }}" id="category_{{ $category->id }}" style="width: 18px; height: 18px; border: 2px solid #6A38C2; cursor: pointer;">
+                                <label class="form-check-label" for="category_{{ $category->id }}" style="margin-left: 0.5rem; color: #C8A2C8; cursor: pointer; font-weight: 500;">
                                     {{ $category->category_name }}
                                 </label>
                             </div>
