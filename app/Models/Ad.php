@@ -20,6 +20,11 @@ class Ad extends Model
         'ad_image'
     ];
 
+    protected $casts = [
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
+    ];
+
     public function item()
     {
         return $this->belongsTo(Item::class);
