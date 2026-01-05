@@ -68,18 +68,21 @@
 
             <div>
                 <x-input-label for="categories" :value="__('Categories')" />
+                @if(!isset($categories))
+                    <div class="alert alert-warning">Categories variable not passed to view</div>
+                @endif
                 <div class="p-3 rounded" style="background: rgba(106, 56, 194, 0.05); border: 1px solid rgba(106, 56, 194, 0.2); max-height: 200px; overflow-y: auto;">
                     @if(isset($categories) && $categories->count() > 0)
                         @foreach($categories as $category)
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="categories[]" value="{{ $category->id }}" id="category_{{ $category->id }}">
-                                <label class="form-check-label text-white" for="category_{{ $category->id }}">
+                                <input class="form-check-input" type="checkbox" name="categories[]" value="{{ $category->id }}" id="category_{{ $category->id }}" style="background-color: rgba(106, 56, 194, 0.2); border-color: #6A38C2;">
+                                <label class="form-check-label text-white" for="category_{{ $category->id }}" style="margin-left: 0.5rem;">
                                     {{ $category->category_name }}
                                 </label>
                             </div>
                         @endforeach
                     @else
-                        <p class="text-muted mb-0">No categories available</p>
+                        <p class="text-muted mb-0">No categories available (Total in DB: {{ \App\Models\Category::count() }})</p>
                     @endif
                 </div>
                 <small class="text-muted d-block mt-1">Select one or more categories for this product</small>
