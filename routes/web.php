@@ -716,7 +716,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/vendor/products/create', function () {
         if (auth()->user()->role !== 'vendor') abort(403);
-        $categories = \App\Models\Category::orderBy('category_name')->get();
+        $categories = App\Models\Category::orderBy('category_name')->get();
         return view('vendor.products-create', compact('categories'));
     })->name('vendor.products.create');
 
@@ -1041,7 +1041,7 @@ Route::middleware('auth')->group(function () {
         $vendor = auth()->user()->vendor;
         if (!$vendor || $item->vendor_id !== $vendor->id) abort(403);
         $item->load('galleries', 'categories'); // Load gallery images and categories
-        $categories = \App\Models\Category::orderBy('category_name')->get();
+        $categories = App\Models\Category::orderBy('category_name')->get();
         return view('vendor.products-edit', compact('item', 'categories'));
     })->name('vendor.products.edit');
 
