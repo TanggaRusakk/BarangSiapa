@@ -809,6 +809,12 @@ Route::middleware('auth')->group(function () {
         // If no snap token in session, try to generate new one
         if (!$snapToken) {
             try {
+                // Ensure Midtrans SDK configured before requesting snap token
+                \Midtrans\Config::$serverKey = config('midtrans.server_key');
+                \Midtrans\Config::$isProduction = config('midtrans.is_production');
+                \Midtrans\Config::$isSanitized = config('midtrans.is_sanitized');
+                \Midtrans\Config::$is3ds = config('midtrans.is_3ds');
+
                 $snapToken = \Midtrans\Snap::getSnapToken($params);
                 
                 // Ensure payment record has midtrans_order_id so webhook can match

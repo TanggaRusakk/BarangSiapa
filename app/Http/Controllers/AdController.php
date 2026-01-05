@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Midtrans\Config as MidtransConfig;
 
 class AdController extends Controller
 {
@@ -159,6 +160,12 @@ class AdController extends Controller
         ];
 
         try {
+            // Ensure Midtrans SDK is configured (server/client keys and flags)
+            MidtransConfig::$serverKey = config('midtrans.server_key');
+            MidtransConfig::$isProduction = config('midtrans.is_production');
+            MidtransConfig::$isSanitized = config('midtrans.is_sanitized');
+            MidtransConfig::$is3ds = config('midtrans.is_3ds');
+
             $snapToken = \Midtrans\Snap::getSnapToken($params);
             session(['ad_snap_token_' . $payment->id => $snapToken]);
             return redirect()->route('vendor.ads.payment', $payment->id);
