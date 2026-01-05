@@ -12,27 +12,59 @@
     </div>
 
     <div class="row g-4">
-        <!-- Left: Images -->
+        <!-- Left: Images Gallery -->
         <div class="col-md-6">
-            <!-- Main Image -->
-            @if($item->galleries && $item->galleries->count() > 0)
-                <img id="mainImage" src="{{ $item->galleries->first()->image_url ?? $item->first_image_url }}" alt="{{ $item->item_name }}" class="img-fluid rounded shadow-sm mb-3" style="width: 100%; max-height: 500px; object-fit: cover;">
+            @if($item->itemGalleries && $item->itemGalleries->count() > 0)
+                <!-- Carousel for multiple images -->
+                <div id="itemGalleryCarousel" class="carousel slide mb-3" data-bs-ride="carousel">
+                    <!-- Main Images -->
+                    <div class="carousel-inner rounded shadow-sm" style="max-height: 500px;">
+                        @foreach($item->itemGalleries as $index => $gallery)
+                            <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                                <img src="{{ $gallery->image_url }}" 
+                                     class="d-block w-100" 
+                                     alt="{{ $item->item_name }}" 
+                                     style="height: 500px; object-fit: cover;">
+                                <div class="position-absolute bottom-0 end-0 m-3">
+                                    <span class="badge bg-dark bg-opacity-75">{{ $index + 1 }} / {{ $item->itemGalleries->count() }}</span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    
+                    <!-- Carousel Controls -->
+                    @if($item->itemGalleries->count() > 1)
+                        <button class="carousel-control-prev" type="button" data-bs-target="#itemGalleryCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#itemGalleryCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    @endif
+                </div>
                 
-                <!-- Thumbnails -->
-                @if($item->galleries->count() > 1)
-                    <div class="d-flex gap-2 overflow-auto pb-2">
-                        @foreach($item->galleries as $gallery)
-                            <img src="{{ $gallery->image_url }}" alt="{{ $item->item_name }}" 
-                                 class="rounded" 
-                                 style="width: 80px; height: 80px; object-fit: cover; cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s;"
-                                 onclick="changeMainImage('{{ $gallery->image_url }}')"
-                                 onmouseover="this.style.borderColor='#6A38C2'"
-                                 onmouseout="this.style.borderColor='transparent'">
+                <!-- Thumbnail Navigation -->
+                @if($item->itemGalleries->count() > 1)
+                    <div class="d-flex gap-2 overflow-auto pb-2" style="max-width: 100%;">
+                        @foreach($item->itemGalleries as $index => $gallery)
+                            <img src="{{ $gallery->image_url }}" 
+                                 alt="{{ $item->item_name }}" 
+                                 class="rounded thumbnail-img {{ $index === 0 ? 'active-thumbnail' : '' }}" 
+                                 data-bs-target="#itemGalleryCarousel" 
+                                 data-bs-slide-to="{{ $index }}"
+                                 style="width: 80px; height: 80px; object-fit: cover; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; flex-shrink: 0;"
+                                 onclick="setActiveThumbnail(this)">
                         @endforeach
                     </div>
                 @endif
             @else
-                <img src="{{ $item->first_image_url }}" alt="{{ $item->item_name }}" class="img-fluid rounded shadow-sm" style="width: 100%; max-height: 500px; object-fit: cover;">
+                <!-- Fallback single image -->
+                <img src="{{ $item->first_image_url }}" 
+                     alt="{{ $item->item_name }}" 
+                     class="img-fluid rounded shadow-sm" 
+                     style="width: 100%; max-height: 500px; object-fit: cover;">
             @endif
         </div>
 
@@ -185,8 +217,71 @@
 
 @push('scripts')
 <script>
-function changeMainImage(src) {
-    document.getElementById('mainImage').src = src;
+// Thumbnail active state management
+function setActiveThumbnail(element) {
+    // Remove active class from all thumbnails
+    document.querySelectorAll('.thumbnail-img').forEach(img => {
+        img.classList.remove('active-thumbnail');
+        img.style.borderColor = 'transparent';
+    });
+    
+    // Add active class to clicked thumbnail
+    element.classList.add('active-thumbnail');
+    element.style.borderColor = '#6A38C2';
 }
+
+// Update active thumbnail when carousel slides
+document.addEventListener('DOMContentLoaded', function() {
+    const carousel = document.getElementById('itemGalleryCarousel');
+    if (carousel) {
+        carousel.addEventListener('slide.bs.carousel', function(event) {
+            const thumbnails = document.querySelectorAll('.thumbnail-img');
+            thumbnails.forEach((thumb, index) => {
+                if (index === event.to) {
+                    thumb.classList.add('active-thumbnail');
+                    thumb.style.borderColor = '#6A38C2';
+                } else {
+                    thumb.classList.remove('active-thumbnail');
+                    thumb.style.borderColor = 'transparent';
+                }
+            });
+        });
+    }
+});
+
+// Add hover effect to thumbnails
+document.querySelectorAll('.thumbnail-img').forEach(img => {
+    img.addEventListener('mouseover', function() {
+        if (!this.classList.contains('active-thumbnail')) {
+            this.style.borderColor = '#FF3CAC';
+        }
+    });
+    
+    img.addEventListener('mouseout', function() {
+        if (!this.classList.contains('active-thumbnail')) {
+            this.style.borderColor = 'transparent';
+        }
+    });
+});
 </script>
+
+<style>
+.active-thumbnail {
+    border-color: #6A38C2 !important;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(106, 56, 194, 0.3);
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: rgba(106, 56, 194, 0.8);
+    border-radius: 50%;
+    padding: 20px;
+}
+
+.carousel-control-prev:hover .carousel-control-prev-icon,
+.carousel-control-next:hover .carousel-control-next-icon {
+    background-color: rgba(106, 56, 194, 1);
+}
+</style>
 @endpush

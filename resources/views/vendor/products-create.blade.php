@@ -92,9 +92,12 @@
             <div>
                 <x-input-label for="images" :value="__('Product Images')" />
                 <input id="images" name="images[]" type="file" accept="image/*" multiple class="form-control uniform-field file" />
-                <small class="text-muted">You can upload multiple images (optional).</small>
+                <small class="text-muted">📸 You can upload multiple images at once (Ctrl/Cmd + Click to select multiple files).</small>
                 <x-input-error class="mt-2" :messages="$errors->get('images')" />
                 <x-input-error class="mt-2" :messages="$errors->get('images.*')" />
+                
+                <!-- Preview container -->
+                <div id="imagePreview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3" style="display: none;"></div>
             </div>
 
             <div class="mb-8" style="margin-bottom:2.5rem;">
@@ -132,6 +135,41 @@
 
             itemTypeSelect.addEventListener('change', toggleRentalFields);
             toggleRentalFields(); // Run on page load
+            
+            // Image preview for multiple files
+            const imageInput = document.getElementById('images');
+            const previewContainer = document.getElementById('imagePreview');
+            
+            if (imageInput) {
+                imageInput.addEventListener('change', function(e) {
+                    const files = e.target.files;
+                    previewContainer.innerHTML = '';
+                    
+                    if (files.length > 0) {
+                        previewContainer.style.display = 'grid';
+                        
+                        Array.from(files).forEach((file, index) => {
+                            const reader = new FileReader();
+                            reader.onload = function(event) {
+                                const div = document.createElement('div');
+                                div.className = 'relative';
+                                div.innerHTML = `
+                                    <img src="${event.target.result}" 
+                                         class="w-full h-32 object-cover rounded-lg border-2 border-neon-pink border-opacity-60"
+                                         alt="Preview ${index + 1}">
+                                    <div class="absolute bottom-2 left-2 bg-neon-pink text-black text-xs px-2 py-1 rounded font-semibold">
+                                        Image ${index + 1}
+                                    </div>
+                                `;
+                                previewContainer.appendChild(div);
+                            };
+                            reader.readAsDataURL(file);
+                        });
+                    } else {
+                        previewContainer.style.display = 'none';
+                    }
+                });
+            }
         });
     </script>
     @endpush

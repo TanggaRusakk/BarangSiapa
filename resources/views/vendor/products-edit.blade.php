@@ -21,36 +21,49 @@
             <!-- Current Gallery Images -->
             <div>
                 <x-input-label :value="__('Current Gallery Images')" />
-                @if($item->galleries && $item->galleries->count() > 0)
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-2 gallery-grid">
-                        @foreach($item->galleries as $gallery)
-                            <div class="relative group gallery-item">
-                                <img src="{{ $gallery->url }}" alt="Product Image" class="w-full h-24 object-cover rounded-lg border-2 border-royal-purple border-opacity-40">
-                                <div class="mt-2 text-center">
-                                    <button type="button"
-                                            onclick="deleteGalleryImage({{ $gallery->id }})"
-                                            class="remove-btn-below"
-                                            title="Remove image">
-                                        Remove image
-                                    </button>
+                @if($item->itemGalleries && $item->itemGalleries->count() > 0)
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-2 mb-3">
+                        @foreach($item->itemGalleries as $gallery)
+                            <div class="relative group" id="gallery-{{ $gallery->id }}">
+                                <img src="{{ $gallery->image_url }}" 
+                                     alt="Product Image" 
+                                     class="w-full h-32 object-cover rounded-lg border-2 border-royal-purple border-opacity-40">
+                                <button type="button"
+                                        onclick="confirmDeleteImage({{ $gallery->id }})"
+                                        class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        title="Delete image">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                                <div class="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
+                                    {{ $loop->iteration }} / {{ $item->itemGalleries->count() }}
                                 </div>
                             </div>
                         @endforeach
                     </div>
+                    <small class="text-soft-lilac">Hover over images to delete. You currently have {{ $item->itemGalleries->count() }} image(s).</small>
                 @else
-                    <div class="grid grid-cols-1 gap-3 mt-2 gallery-grid">
-                        <div class="relative">
-                            <img src="{{ asset('images/items/item_placeholder.jpg') }}" alt="Default placeholder" class="w-full h-24 object-cover rounded-lg border-2 border-royal-purple border-opacity-40">
-                        </div>
+                    <div class="p-4 rounded bg-midnight-black bg-opacity-40 border border-royal-purple border-opacity-30 text-center mt-2">
+                        <p class="text-soft-lilac mb-0">No images uploaded yet. Add images below.</p>
                     </div>
                 @endif
             </div>
 
             <div>
-                <x-input-label for="image" :value="__('Add New Image')" />
-                <input id="image" name="image" type="file" accept="image/*" class="mt-1 block w-full text-sm text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-neon-pink file:text-black uniform-field file" />
-                <p class="text-sm text-soft-lilac mt-2">Upload a new image to add to the product gallery.</p>
-                <x-input-error class="mt-2" :messages="$errors->get('image')" />
+                <x-input-label for="images" :value="__('Add New Images (Multiple)')" />
+                <input id="images" 
+                       name="images[]" 
+                       type="file" 
+                       accept="image/*" 
+                       multiple
+                       class="mt-1 block w-full text-sm text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-neon-pink file:text-black hover:file:bg-opacity-90 uniform-field file" />
+                <p class="text-sm text-soft-lilac mt-2">📸 You can select multiple images at once (Ctrl/Cmd + Click)</p>
+                <x-input-error class="mt-2" :messages="$errors->get('images')" />
+                <x-input-error class="mt-2" :messages="$errors->get('images.*')" />
+                
+                <!-- Preview container -->
+                <div id="imagePreview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3" style="display: none;"></div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -153,32 +166,67 @@
                 toggleRentalFields(); // Run on page load
             }
 
-            // Delete gallery image function
-            window.deleteGalleryImage = function (galleryId) {
-                if (confirm('Are you sure you want to delete this image?')) {
-                    // Create a hidden form and submit it
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `/vendor/gallery/${galleryId}`;
-
-                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = '_token';
-                    csrfInput.value = csrfToken;
-                    form.appendChild(csrfInput);
-
-                    const methodInput = document.createElement('input');
-                    methodInput.type = 'hidden';
-                    methodInput.name = '_method';
-                    methodInput.value = 'DELETE';
-                    form.appendChild(methodInput);
-
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            };
+            // Image preview for multiple files
+            const imageInput = document.getElementById('images');
+            const previewContainer = document.getElementById('imagePreview');
+            
+            if (imageInput) {
+                imageInput.addEventListener('change', function(e) {
+                    const files = e.target.files;
+                    previewContainer.innerHTML = '';
+                    
+                    if (files.length > 0) {
+                        previewContainer.style.display = 'grid';
+                        
+                        Array.from(files).forEach((file, index) => {
+                            const reader = new FileReader();
+                            reader.onload = function(event) {
+                                const div = document.createElement('div');
+                                div.className = 'relative';
+                                div.innerHTML = `
+                                    <img src="${event.target.result}" 
+                                         class="w-full h-32 object-cover rounded-lg border-2 border-neon-pink border-opacity-60"
+                                         alt="Preview ${index + 1}">
+                                    <div class="absolute bottom-2 left-2 bg-neon-pink text-black text-xs px-2 py-1 rounded font-semibold">
+                                        New ${index + 1}
+                                    </div>
+                                `;
+                                previewContainer.appendChild(div);
+                            };
+                            reader.readAsDataURL(file);
+                        });
+                    } else {
+                        previewContainer.style.display = 'none';
+                    }
+                });
+            }
         });
+
+        // Confirm delete image
+        function confirmDeleteImage(galleryId) {
+            if (confirm('Are you sure you want to delete this image? This action cannot be undone.')) {
+                // Create hidden form to submit DELETE request
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/vendor/gallery/${galleryId}`;
+                
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+                
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'DELETE';
+                form.appendChild(methodInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
     </script>
     @endpush
 
