@@ -915,7 +915,25 @@ Route::middleware('auth')->group(function () {
         }
     })->name('vendor.ads.payment');
 
-    // Note: Demo/manual ad-confirm route removed. Ad activation is handled exclusively by the Midtrans webhook.
+    // Demo/manual ad-confirm route - fallback for testing without Midtrans
+    Route::post('/vendor/ads/payment/{payment}/confirm', function (\App\Models\Payment $payment) {
+        if (auth()->user()->role !== 'vendor') abort(403);
+        
+        // In demo mode, manually mark payment as settled
+        $payment->update([
+            'payment_status' => 'settlement',
+            'paid_at' => now(),
+        ]);
+        
+        // Find and activate the ad
+        $ad = \App\Models\Ad::where('payment_id', $payment->id)->first();
+        if ($ad) {
+            $ad->update(['status' => 'active']);
+        }
+        
+        return redirect()->route('vendor.ads.index')
+            ->with('success', 'Payment confirmed! Your ad is now active.');
+    })->name('vendor.ads.payment.confirm');
 
     Route::get('/vendor/ads/{ad}/edit', function (\App\Models\Ad $ad) {
         if (auth()->user()->role !== 'vendor') abort(403);
