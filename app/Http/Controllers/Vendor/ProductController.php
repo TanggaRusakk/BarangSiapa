@@ -114,6 +114,8 @@ class ProductController extends Controller
             'item_stock' => 'required|integer|min:0',
             'rental_duration_value' => 'nullable|integer|min:1',
             'rental_duration_unit' => 'nullable|in:day,week,month',
+            'images' => 'nullable|array',
+            'images.*' => 'image|max:4096',
             'categories' => 'nullable|array',
             'categories.*' => 'exists:categories,id',
         ]);
