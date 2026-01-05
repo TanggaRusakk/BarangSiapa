@@ -113,7 +113,6 @@
                                     <div class="flex-grow-1 min-w-0">
                                         <h6 class="mb-1 fw-bold text-truncate">{{ $product->item_name }}</h6>
                                         <p class="mb-1 text-secondary small">Rp{{ number_format($product->item_price) }}</p>
-                                        <span class="badge {{ $product->item_status === 'available' ? 'bg-success' : 'bg-secondary' }} small">{{ ucfirst($product->item_status ?? 'available') }}</span>
                                     </div>
                                 </div>
                             @endforeach
