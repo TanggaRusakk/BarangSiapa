@@ -107,12 +107,34 @@
 
                     @if(isset($recentProducts) && $recentProducts->count() > 0)
                         <div class="d-flex flex-column gap-3">
-                            @foreach($recentProducts->take(3) as $product)
-                                <div class="d-flex gap-3 p-3 rounded" style="background: rgba(106,56,194,0.05);">
-                                    <img src="{{ $product->first_image_url }}" alt="{{ $product->item_name }}" class="rounded" style="width:80px;height:80px;object-fit:cover;">
-                                    <div class="flex-grow-1 min-w-0">
+                            @foreach($recentProducts->take(5) as $product)
+                                <div class="d-flex align-items-center p-3 rounded" style="background: rgba(250,250,250,0.8);">
+                                    <div class="flex-shrink-0">
+                                        <img src="{{ $product->first_image_url }}" alt="{{ $product->item_name }}" class="rounded" style="width:56px;height:56px;object-fit:cover;">
+                                    </div>
+
+                                    <div class="flex-grow-1 ms-3 min-w-0">
                                         <h6 class="mb-1 fw-bold text-truncate">{{ $product->item_name }}</h6>
-                                        <p class="mb-1 text-secondary small">Rp{{ number_format($product->item_price) }}</p>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <p class="mb-0 text-secondary small text-truncate">
+                                                @if(($product->item_type ?? '') === 'rent')
+                                                    Rp{{ number_format($product->item_price) }} / day
+                                                @else
+                                                    Rp{{ number_format($product->item_price) }} (Buy)
+                                                @endif
+                                            </p>
+
+                                            <div class="flex-shrink-0 ms-3">
+                                                @php $_status = strtolower($product->item_status ?? 'available'); @endphp
+                                                @if($_status === 'available')
+                                                    <span class="badge rounded-pill px-3 py-2 bg-success text-white text-nowrap" style="font-size:0.75rem;">Available</span>
+                                                @elseif($_status === 'rented')
+                                                    <span class="badge rounded-pill px-3 py-2 bg-warning text-dark text-nowrap" style="font-size:0.75rem;">Rented</span>
+                                                @else
+                                                    <span class="badge rounded-pill px-3 py-2 bg-secondary text-white text-nowrap" style="font-size:0.75rem;">Unavailable</span>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
