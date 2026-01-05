@@ -29,11 +29,11 @@
             <div class="space-y-2 text-sm">
                 <div class="flex justify-between">
                     <span class="text-gray-400">Start Date:</span>
-                    <span>{{ \Carbon\Carbon::parse($pendingAd['start_date'])->format('d M Y, H:i') }}</span>
+                    <span>{{ \Carbon\Carbon::parse($ad->start_date)->format('d M Y, H:i') }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-400">End Date:</span>
-                    <span>{{ \Carbon\Carbon::parse($pendingAd['end_date'])->format('d M Y, H:i') }}</span>
+                    <span>{{ \Carbon\Carbon::parse($ad->end_date)->format('d M Y, H:i') }}</span>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
         </div>
 
         @php
-            $snapTokenAvailable = $snapToken ?? session('pending_ad.snap_token') ?? ($pendingAd['snap_token'] ?? null);
+            $snapTokenAvailable = $snapToken ?? null;
         @endphp
 
         @if($snapTokenAvailable)
