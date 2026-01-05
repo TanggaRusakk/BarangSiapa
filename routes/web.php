@@ -838,22 +838,20 @@ Route::middleware('auth')->group(function () {
         try {
             $snapToken = \Midtrans\Snap::getSnapToken($params);
 
-            // Redirect to payment page for this ad (payment/midtrans handled there)
+            // Store snap token in session to pass to payment view
+            session(['ad_snap_token_' . $payment->id => $snapToken]);
+
+            // Redirect to payment page for this ad
             return redirect()->route('vendor.ads.payment', $payment->id);
 
         } catch (\Exception $e) {
-            // Fallback: still create ad record and redirect to payment view (without snap token)
-            $ad = \App\Models\Ad::create([
-                'item_id' => $validated['item_id'],
-                'start_date' => $validated['start_date'],
-                'end_date' => $validated['end_date'],
-                'price' => $totalPrice,
-                'ad_image' => $imageName,
-                'status' => 'pending',
+            \Log::error('Failed to create Midtrans snap token for ad payment', [
+                'error' => $e->getMessage(),
                 'payment_id' => $payment->id,
             ]);
 
-            return redirect()->route('vendor.ads.payment', $payment->id)->with('error', 'Failed to initialize Midtrans payment: ' . $e->getMessage());
+            return redirect()->route('vendor.ads.create')
+                ->with('error', 'Failed to initialize payment gateway: ' . $e->getMessage());
         }
     })->name('vendor.ads.pay');
 
@@ -898,42 +896,41 @@ Route::middleware('auth')->group(function () {
             ],
         ];
 
-        try {
-            $snapToken = \Midtrans\Snap::getSnapToken($params);
+        // Get snap token from session (created during POST /vendor/ads/pay)
+        $snapToken = session('ad_snap_token_' . $payment->id);
 
-            // Ensure payment record has midtrans_order_id so webhook can match
+        // If no snap token in session, try to generate new one
+        if (!$snapToken) {
+            try {
+                $snapToken = \Midtrans\Snap::getSnapToken($params);
+                
+                // Ensure payment record has midtrans_order_id so webhook can match
+                if (!$payment->midtrans_order_id) {
+                    $payment->midtrans_order_id = $midtransOrderId;
+                    $payment->save();
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to generate snap token for ad payment view', [
+                    'error' => $e->getMessage(),
+                    'payment_id' => $payment->id,
+                ]);
+                
+                return redirect()->route('vendor.ads.create')
+                    ->with('error', 'Failed to initialize payment gateway: ' . $e->getMessage());
+            }
+        } else {
+            // Ensure payment record has midtrans_order_id
             if (!$payment->midtrans_order_id) {
                 $payment->midtrans_order_id = $midtransOrderId;
                 $payment->save();
             }
-
-            return view('vendor.ads-payment', compact('payment', 'ad', 'snapToken'));
-        } catch (\Exception $e) {
-            // Fallback to previous behavior (use session snap token if available)
-            return view('vendor.ads-payment', compact('payment', 'ad'))
-                ->with('error', 'Failed to initialize Midtrans payment: ' . $e->getMessage());
         }
+
+        // Clear session after retrieving
+        session()->forget('ad_snap_token_' . $payment->id);
+
+        return view('vendor.ads-payment', compact('payment', 'ad', 'snapToken'));
     })->name('vendor.ads.payment');
-
-    // Demo/manual ad-confirm route - fallback for testing without Midtrans
-    Route::post('/vendor/ads/payment/{payment}/confirm', function (\App\Models\Payment $payment) {
-        if (auth()->user()->role !== 'vendor') abort(403);
-        
-        // In demo mode, manually mark payment as settled
-        $payment->update([
-            'payment_status' => 'settlement',
-            'paid_at' => now(),
-        ]);
-        
-        // Find and activate the ad
-        $ad = \App\Models\Ad::where('payment_id', $payment->id)->first();
-        if ($ad) {
-            $ad->update(['status' => 'active']);
-        }
-        
-        return redirect()->route('vendor.ads.index')
-            ->with('success', 'Payment confirmed! Your ad is now active.');
-    })->name('vendor.ads.payment.confirm');
 
     Route::get('/vendor/ads/{ad}/edit', function (\App\Models\Ad $ad) {
         if (auth()->user()->role !== 'vendor') abort(403);

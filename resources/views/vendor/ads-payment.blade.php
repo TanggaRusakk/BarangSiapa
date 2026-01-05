@@ -38,57 +38,60 @@
             </div>
         </div>
 
-        <div class="mb-6 p-4 rounded bg-yellow-900 bg-opacity-20 border border-yellow-500">
-            <p class="text-yellow-300 text-sm">
-                <strong>Demo Mode:</strong> In production, this page would integrate with Midtrans payment gateway. 
-                For now, click "Confirm Payment" to simulate successful payment.
-            </p>
-        </div>
-
-        @php
-            $snapTokenAvailable = $snapToken ?? null;
-        @endphp
-
-        @if($snapTokenAvailable)
-            <div class="mb-4">
-                <button id="launch-snap" class="btn btn-primary">Pay with Midtrans</button>
-                <a href="{{ route('vendor.ads.index') }}" class="btn btn-secondary">Cancel</a>
+        @if(isset($snapToken) && $snapToken)
+            <div class="mb-6">
+                <button id="pay-button" class="btn btn-lg w-100 text-white" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); font-weight: 600;">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    Pay Now - Rp {{ number_format($payment->payment_total_amount, 0, ',', '.') }}
+                </button>
+                <a href="{{ route('vendor.ads.index') }}" class="btn btn-secondary mt-3 w-100">Cancel</a>
             </div>
+
+            <!-- Midtrans Snap Script -->
             <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
             <script>
-                document.getElementById('launch-snap').addEventListener('click', function (e) {
-                    e.preventDefault();
-                    var snapToken = '{{ $snapTokenAvailable }}';
-                    if (!snapToken) {
-                        alert('Missing snap token');
-                        return;
-                    }
-                    window.snap.pay(snapToken, {
+                document.getElementById('pay-button').onclick = function(){
+                    // Show loading state
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
+                    
+                    // Call Midtrans Snap
+                    snap.pay('{{ $snapToken }}', {
                         onSuccess: function(result){
-                            // Let webhook and success handler manage activation; redirect to success route
-                            window.location = '{{ route('payment.success') }}?order_id=' + result.order_id;
+                            console.log('Payment success:', result);
+                            window.location.href = '{{ route('payment.success') }}?order_id=' + result.order_id;
                         },
                         onPending: function(result){
-                            window.location = '{{ route('payment.pending') }}?order_id=' + result.order_id;
+                            console.log('Payment pending:', result);
+                            window.location.href = '{{ route('payment.pending') }}?order_id=' + result.order_id;
                         },
                         onError: function(result){
-                            alert('Payment failed or cancelled');
+                            console.log('Payment error:', result);
+                            window.location.href = '{{ route('payment.error') }}?order_id=' + result.order_id;
+                        },
+                        onClose: function(){
+                            console.log('Payment popup closed');
+                            // Re-enable button
+                            const btn = document.getElementById('pay-button');
+                            btn.disabled = false;
+                            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>Pay Now - Rp {{ number_format($payment->payment_total_amount, 0, ',', '.') }}';
                         }
                     });
-                });
+                };
             </script>
         @else
-            <form method="POST" action="{{ route('vendor.ads.payment.confirm', $payment->id) }}">
-                @csrf
-                <div class="flex gap-2">
-                    <button type="submit" class="btn btn-primary">Confirm Payment (Demo)</button>
-                    <a href="{{ route('vendor.ads.index') }}" class="btn btn-secondary">Cancel</a>
-                </div>
-            </form>
+            <div class="alert alert-danger">
+                <strong>Error:</strong> Failed to initialize payment gateway. Please try again or contact support.
+            </div>
+            <a href="{{ route('vendor.ads.create') }}" class="btn btn-secondary">Back to Create Ad</a>
         @endif
 
-        <div class="mt-6 text-xs text-gray-500">
-            <p>Note: After confirming payment, your ad will be automatically created and activated.</p>
+        <div class="mt-6 p-3 rounded bg-cyan-900 bg-opacity-10 border border-cyan-500 border-opacity-30">
+            <p class="text-cyan-300 text-sm mb-0">
+                <strong>💳 Secure Payment:</strong> Your payment is processed securely through Midtrans payment gateway.
+            </p>
         </div>
     </div>
 </x-dashboard-layout>
