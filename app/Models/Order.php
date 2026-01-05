@@ -17,6 +17,10 @@ class Order extends Model
         'order_status',
     ];
 
+    protected $casts = [
+        'total_amount' => 'integer',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

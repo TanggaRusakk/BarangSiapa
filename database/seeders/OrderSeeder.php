@@ -18,7 +18,7 @@ class OrderSeeder extends Seeder
         if (! $user || ! $item) return;
 
         $order = \App\Models\Order::updateOrCreate(
-            ['user_id' => $user->id, 'order_type' => 'jual'],
+            ['user_id' => $user->id, 'order_type' => 'buy'],
             ['order_status' => 'pending', 'total_amount' => $item->item_price]
         );
 

@@ -78,7 +78,8 @@ class OrderController extends Controller
 
             // Persist chosen payment option in session
             $isRent = $item->item_type === 'rent';
-            $paymentOption = $request->input('payment_option', $isRent ? 'dp' : 'full');
+            // Buy items always use full payment, rent items can choose dp or full
+            $paymentOption = $isRent ? $request->input('payment_option', 'dp') : 'full';
             session(['order_payment_option_' . $order->id => $paymentOption]);
 
             // Redirect to payment

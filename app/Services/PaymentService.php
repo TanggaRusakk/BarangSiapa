@@ -39,10 +39,16 @@ class PaymentService
         $orderTotal = $order->total_amount ?? $order->order_total_amount ?? $order->calculated_total;
         $isRental = $order->order_type === 'rent';
 
-        // Determine final chosen option
-        $chosenOption = $requestOption ?? $sessionOption ?? ($existingPayment->payment_type ?? null) ?? ($isRental ? 'dp' : 'full');
-        $paymentType = $chosenOption;
-        $paymentAmount = ($paymentType === 'dp' && $isRental) ? round($orderTotal * 0.30) : $orderTotal;
+        // For buy orders, always use full payment
+        if (!$isRental) {
+            $paymentType = 'full';
+            $paymentAmount = $orderTotal;
+        } else {
+            // For rental orders, determine based on user choice (default to dp)
+            $chosenOption = $requestOption ?? $sessionOption ?? ($existingPayment->payment_type ?? null) ?? 'dp';
+            $paymentType = $chosenOption;
+            $paymentAmount = ($paymentType === 'dp') ? round($orderTotal * 0.30) : $orderTotal;
+        }
 
         return [
             'payment_type' => $paymentType,
