@@ -8,6 +8,7 @@ use App\Models\Vendor;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Review;
+use App\Models\Category;
 use App\Models\Ad;
 use Illuminate\Http\Request;
 
@@ -35,6 +36,7 @@ class DashboardController extends Controller
         $recentUsers = User::orderBy('created_at', 'desc')->take(6)->get();
         $recentOrders = Order::with(['user', 'orderItems.item.vendor'])->orderBy('created_at', 'desc')->take(6)->get();
         $recentAds = Ad::with(['item.vendor', 'payment'])->orderBy('created_at', 'desc')->take(6)->get();
+        $recentCategories = Category::orderBy('created_at', 'desc')->take(6)->get();
 
         // Vendor specific
         $vendorProductsCount = 0;
@@ -133,7 +135,7 @@ class DashboardController extends Controller
 
         return view('dashboard', compact(
             'recentProducts', 'lastViewed', 'totalUsers', 'activeVendors', 'totalProducts', 
-            'revenueThisMonth', 'recentUsers', 'recentOrders', 'recentAds', 
+            'revenueThisMonth', 'recentUsers', 'recentOrders', 'recentAds', 'recentCategories',
             'vendorProductsCount', 'vendorOrdersCount', 'vendorRevenue', 'vendorRating',
             'vendorRecentProducts', 'vendorRecentOrders', 'vendorRecentAds',
             'userOrders', 'userRentals', 'activeOrdersCount', 'activeRentalsCount', 
