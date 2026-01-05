@@ -57,19 +57,28 @@
                     this.disabled = true;
                     this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
                     
+                    const snapToken = '{{ $snapToken }}';
+                    console.log('Snap Token:', snapToken);
+                    
                     // Call Midtrans Snap
-                    snap.pay('{{ $snapToken }}', {
+                    snap.pay(snapToken, {
                         onSuccess: function(result){
                             console.log('Payment success:', result);
-                            window.location.href = '{{ route('payment.success') }}?order_id=' + result.order_id;
+                            alert('Payment successful! Your ad will be activated shortly.');
+                            window.location.href = '{{ route('vendor.ads.index') }}';
                         },
                         onPending: function(result){
                             console.log('Payment pending:', result);
-                            window.location.href = '{{ route('payment.pending') }}?order_id=' + result.order_id;
+                            alert('Payment is pending. Please complete your payment.');
+                            window.location.href = '{{ route('vendor.ads.index') }}';
                         },
                         onError: function(result){
                             console.log('Payment error:', result);
-                            window.location.href = '{{ route('payment.error') }}?order_id=' + result.order_id;
+                            alert('Payment failed: ' + (result.status_message || 'Unknown error'));
+                            // Re-enable button
+                            const btn = document.getElementById('pay-button');
+                            btn.disabled = false;
+                            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>Pay Now - Rp {{ number_format($payment->payment_total_amount, 0, ',', '.') }}';
                         },
                         onClose: function(){
                             console.log('Payment popup closed');

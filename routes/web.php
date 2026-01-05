@@ -792,6 +792,7 @@ Route::middleware('auth')->group(function () {
         // Create ad payment record (payment_method will be set after Midtrans callback)
         $midtransOrderId = 'AD-' . time() . '-' . $vendor->id;
         $payment = \App\Models\Payment::create([
+            'user_id' => auth()->id(),
             'order_id' => null, // Not related to order
             'midtrans_order_id' => $midtransOrderId,
             'payment_method' => 'midtrans',
