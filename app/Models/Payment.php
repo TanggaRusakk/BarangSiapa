@@ -42,9 +42,23 @@ class Payment extends Model
      */
     public function needsRemainingPayment(): bool
     {
-        return $this->payment_type === 'dp' 
-            && in_array($this->payment_status, ['settlement', 'capture', 'success'])
-            && !$this->payment_dp_paid;
+        // Only show if this is a DP payment that has been paid
+        if ($this->payment_type !== 'dp' || !in_array($this->payment_status, ['settlement', 'capture', 'success'])) {
+            return false;
+        }
+
+        // Check if payment_dp_paid flag is set (means already fully paid)
+        if ($this->payment_dp_paid == 1 || $this->payment_dp_paid === true) {
+            return false;
+        }
+
+        // Check if there's already a successful remaining payment
+        $hasRemainingPayment = Payment::where('order_id', $this->order_id)
+            ->where('payment_type', 'remaining')
+            ->whereIn('payment_status', ['settlement', 'capture', 'success'])
+            ->exists();
+
+        return !$hasRemainingPayment;
     }
 
     /**
