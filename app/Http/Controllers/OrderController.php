@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\Item;
+use App\Models\OrderItem;
+use App\Models\RentalInfo;
 use App\Services\OrderService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -25,18 +28,17 @@ class OrderController extends Controller
     // Show checkout page
     public function checkout($itemId)
     {
-        // Only users can create orders - admin and vendor cannot
+        // Validate: Only users can create orders - admin and vendor cannot
         $userRole = Auth::user()->role ?? 'user';
-        if (!$this->orderService->canUserCreateOrder($userRole)) {
+        if (in_array($userRole, ['admin', 'vendor'])) {
             return redirect()->route('items.show', $itemId)->with('error', 'Admin dan Vendor tidak dapat membuat pesanan.');
         }
 
         $item = Item::with(['vendor', 'galleries'])->findOrFail($itemId);
         
-        // Check if item is available
-        $availability = $this->orderService->isItemAvailable($item, 1);
-        if (!$availability['valid']) {
-            return redirect()->route('items.show', $itemId)->with('error', $availability['message']);
+        // Validate: Check if item is available
+        if ($item->item_status !== 'available' || $item->item_stock <= 0) {
+            return redirect()->route('items.show', $itemId)->with('error', 'Item tidak tersedia untuk dipesan.');
         }
 
         return view('checkout', compact('item'));
@@ -45,12 +47,13 @@ class OrderController extends Controller
     // Create order from checkout
     public function store(Request $request)
     {
-        // Only users can create orders - admin and vendor cannot
+        // Validate: Only users can create orders
         $userRole = Auth::user()->role ?? 'user';
-        if (!$this->orderService->canUserCreateOrder($userRole)) {
+        if (in_array($userRole, ['admin', 'vendor'])) {
             return back()->with('error', 'Admin dan Vendor tidak dapat membuat pesanan.');
         }
 
+        // Validate request
         $request->validate([
             'item_id' => 'required|exists:items,id',
             'quantity' => 'required|integer|min:1',
@@ -61,23 +64,74 @@ class OrderController extends Controller
 
         $item = Item::findOrFail($request->item_id);
 
-        // Check stock availability
-        $availability = $this->orderService->isItemAvailable($item, $request->quantity);
-        if (!$availability['valid']) {
-            return back()->with('error', $availability['message']);
+        // Validate: Check stock
+        if ($item->item_stock < $request->quantity) {
+            return back()->with('error', 'Stok tidak mencukupi!');
         }
 
+        // Validate: Check if item is available
+        if ($item->item_status !== 'available') {
+            return back()->with('error', 'Item tidak tersedia untuk dipesan.');
+        }
+
+        // Check if item type is rent and dates are provided
+        $isRent = $item->item_type === 'rent';
+        if ($isRent && (!$request->rental_start_date || !$request->rental_end_date)) {
+            return back()->with('error', 'Tanggal rental harus diisi untuk item rent!');
+        }
+
+        DB::beginTransaction();
         try {
-            // Create order using service
-            $order = $this->orderService->createOrder([
-                'item_id' => $request->item_id,
-                'quantity' => $request->quantity,
-                'rental_start_date' => $request->rental_start_date,
-                'rental_end_date' => $request->rental_end_date,
+            // Calculate rental units if applicable
+            $rentalUnits = 1;
+            $durationDays = 0;
+            
+            if ($isRent) {
+                // Use service for calculation helper
+                $rentalUnits = $this->orderService->calculateRentalUnits(
+                    $item,
+                    $request->rental_start_date,
+                    $request->rental_end_date
+                );
+                
+                $startDate = new \DateTime($request->rental_start_date);
+                $endDate = new \DateTime($request->rental_end_date);
+                $durationDays = max(1, $startDate->diff($endDate)->days);
+            }
+            
+            // Calculate totals using service
+            $totals = $this->orderService->calculateOrderTotals($item, $request->quantity, $rentalUnits);
+            
+            // Create order
+            $order = Order::create([
+                'user_id' => Auth::id(),
+                'total_amount' => $totals['total_amount'],
+                'order_type' => $isRent ? 'rent' : 'buy',
+                'order_status' => 'pending',
             ]);
 
+            // Create order item
+            OrderItem::create([
+                'order_id' => $order->id,
+                'item_id' => $item->id,
+                'order_item_quantity' => $request->quantity,
+                'order_item_price' => $totals['item_price_per_unit'],
+                'order_item_subtotal' => $totals['item_total'],
+            ]);
+
+            // Create rental info if applicable
+            if ($isRent) {
+                RentalInfo::create([
+                    'order_id' => $order->id,
+                    'start_date' => $request->rental_start_date,
+                    'end_date' => $request->rental_end_date,
+                    'duration_days' => $durationDays,
+                ]);
+            }
+
+            DB::commit();
+
             // Persist chosen payment option in session
-            $isRent = $item->item_type === 'rent';
             // Buy items always use full payment, rent items can choose dp or full
             $paymentOption = $isRent ? $request->input('payment_option', 'dp') : 'full';
             session(['order_payment_option_' . $order->id => $paymentOption]);
@@ -86,6 +140,7 @@ class OrderController extends Controller
             return redirect()->route('payment.create', ['order' => $order->id, 'payment_option' => $paymentOption]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }

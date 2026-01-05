@@ -17,7 +17,16 @@ use App\Http\Controllers\RentalInfoController;
 use App\Http\Controllers\ItemCategoryController;
 use App\Http\Controllers\MidtransNotification;
 use App\Http\Controllers\OrderServiceFeeController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\VendorManagementController;
+use App\Http\Controllers\Admin\ItemManagementController;
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Vendor\ProductController as VendorProductController;
+use App\Http\Controllers\Vendor\VendorOrderController;
+use App\Http\Controllers\Vendor\VendorDashboardController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
 Route::get('/', [AdController::class, 'index']);
 
@@ -41,87 +50,10 @@ Route::get('/rental-infos', [RentalInfoController::class, 'index'])->name('renta
 Route::get('/item-categories', [ItemCategoryController::class, 'index'])->name('item-categories.index');
 Route::get('/order-service-fees', [OrderServiceFeeController::class, 'index'])->name('order-service-fees.index');
 
-use Illuminate\Http\Request;
-
-Route::get('/dashboard', function (Request $request) {
-    $user = auth()->user();
-    
-    // Core datasets
-    $recentProducts = \App\Models\Item::orderBy('created_at', 'desc')->take(6)->get();
-    $lastViewed = null;
-    if (session('last_viewed_item')) {
-        $lastViewed = \App\Models\Item::find(session('last_viewed_item'));
-    }
-
-    // Admin metrics
-    $totalUsers = \App\Models\User::count();
-    $activeVendors = \App\Models\Vendor::count();
-    $totalProducts = \App\Models\Item::count();
-    $revenueThisMonth = \App\Models\Payment::whereYear('created_at', now()->year)
-        ->whereMonth('created_at', now()->month)
-        ->where('payment_status', 'settlement')
-        ->sum('payment_total_amount');
-    $recentUsers = \App\Models\User::orderBy('created_at', 'desc')->take(6)->get();
-    $recentOrders = \App\Models\Order::with(['user', 'orderItems.item.vendor'])->orderBy('created_at', 'desc')->take(6)->get();
-
-    // Vendor specific
-    $vendorProductsCount = 0;
-    if ($user->vendor) {
-        $vendorProductsCount = $user->vendor->items()->count();
-    }
-
-    // Member specific - recent orders and rentals
-    $userOrders = \App\Models\Order::with(['orderItems.item'])
-        ->where('user_id', $user->id)
-        ->orderBy('created_at', 'desc')
-        ->take(3)
-        ->get();
-    
-    $userRentals = \App\Models\Order::with(['orderItems.item'])
-        ->where('user_id', $user->id)
-        ->whereHas('orderItems.item', function($q) {
-            $q->whereIn('item_type', ['rent']);
-        })
-        ->orderBy('created_at', 'desc')
-        ->take(3)
-        ->get();
-    
-    // Member stats
-    $activeOrdersCount = \App\Models\Order::where('user_id', $user->id)
-        ->whereIn('order_status', ['pending', 'processing', 'paid'])
-        ->count();
-    
-    $activeRentalsCount = \App\Models\Order::where('user_id', $user->id)
-        ->whereIn('order_status', ['pending', 'processing', 'paid'])
-        ->whereHas('orderItems.item', function($q) {
-            $q->whereIn('item_type', ['rent']);
-        })
-        ->count();
-    
-    $totalSpent = \App\Models\Payment::where('user_id', $user->id)
-        ->where('payment_status', 'settlement')
-        ->whereYear('created_at', now()->year)
-        ->whereMonth('created_at', '>=', now()->subDays(30))
-        ->sum('payment_total_amount');
-    
-    $reviewsGiven = \App\Models\Review::where('user_id', $user->id)->count();
-
-    return view('dashboard', compact(
-        'recentProducts', 'lastViewed', 'totalUsers', 'activeVendors', 'totalProducts', 
-        'revenueThisMonth', 'recentUsers', 'recentOrders', 'vendorProductsCount',
-        'userOrders', 'userRentals', 'activeOrdersCount', 'activeRentalsCount', 
-        'totalSpent', 'reviewsGiven'
-    ));
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 // Endpoint to record last-viewed product (AJAX)
-Route::post('/product/viewed', function (Request $request) {
-    $id = $request->input('id');
-    if ($id) {
-        session(['last_viewed_item' => $id]);
-    }
-    return response()->json(['status' => 'ok']);
-})->middleware('auth');
+Route::post('/product/viewed', [DashboardController::class, 'recordView'])->middleware('auth');
 
 // WHY: Payment callback routes MUST be BEFORE /payment/{order} route
 // Laravel matches routes from top to bottom - specific routes must come before dynamic ones
