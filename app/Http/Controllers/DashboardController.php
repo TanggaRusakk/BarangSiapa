@@ -8,6 +8,7 @@ use App\Models\Vendor;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Review;
+use App\Models\Ad;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -33,6 +34,7 @@ class DashboardController extends Controller
             ->sum('payment_total_amount');
         $recentUsers = User::orderBy('created_at', 'desc')->take(6)->get();
         $recentOrders = Order::with(['user', 'orderItems.item.vendor'])->orderBy('created_at', 'desc')->take(6)->get();
+        $recentAds = Ad::with(['item.vendor', 'payment'])->orderBy('created_at', 'desc')->take(6)->get();
 
         // Vendor specific
         $vendorProductsCount = 0;
@@ -78,7 +80,7 @@ class DashboardController extends Controller
 
         return view('dashboard', compact(
             'recentProducts', 'lastViewed', 'totalUsers', 'activeVendors', 'totalProducts', 
-            'revenueThisMonth', 'recentUsers', 'recentOrders', 'vendorProductsCount',
+            'revenueThisMonth', 'recentUsers', 'recentOrders', 'recentAds', 'vendorProductsCount',
             'userOrders', 'userRentals', 'activeOrdersCount', 'activeRentalsCount', 
             'totalSpent', 'reviewsGiven'
         ));

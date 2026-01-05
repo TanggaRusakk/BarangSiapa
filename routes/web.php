@@ -282,6 +282,12 @@ Route::middleware('auth')->group(function () {
         return view('admin.ads', compact('ads'));
     })->name('admin.ads');
 
+    Route::delete('/admin/ads/{ad}', function (\App\Models\Ad $ad) {
+        if (auth()->user()->role !== 'admin') abort(403);
+        $ad->delete();
+        return redirect()->back()->with('success', 'Ad deleted successfully');
+    })->name('admin.ads.destroy');
+
     // Admin: Categories CRUD
     Route::get('/admin/categories', function () {
         if (auth()->user()->role !== 'admin') abort(403);

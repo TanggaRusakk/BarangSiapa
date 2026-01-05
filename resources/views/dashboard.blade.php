@@ -89,12 +89,13 @@
             </div>
         </div>
 
-        <!-- Recent Orders & Users -->
+        <!-- Orders, Users & Ads -->
         <div class="row g-3">
-            <div class="col-12 col-lg-6">
+            <div class="col-12 col-lg-4">
                 <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white border-bottom py-3">
-                        <h5 class="fw-bold mb-0">Recent Orders</h5>
+                    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">Orders</h5>
+                        <a href="{{ route('admin.orders') }}" class="btn btn-sm btn-outline-primary">View All</a>
                     </div>
                     <div class="card-body p-0">
                         @if(!empty($recentOrders) && $recentOrders->count() > 0)
@@ -115,17 +116,18 @@
                             </div>
                         @else
                             <div class="text-center py-5">
-                                <p class="text-muted mb-0">No recent orders</p>
+                                <p class="text-muted mb-0">No orders yet</p>
                             </div>
                         @endif
                     </div>
                 </div>
             </div>
 
-            <div class="col-12 col-lg-6">
+            <div class="col-12 col-lg-4">
                 <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white border-bottom py-3">
-                        <h5 class="fw-bold mb-0">Recent Users</h5>
+                    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">Users</h5>
+                        <a href="{{ route('admin.users') }}" class="btn btn-sm btn-outline-primary">View All</a>
                     </div>
                     <div class="card-body p-0">
                         @if(!empty($recentUsers) && $recentUsers->count() > 0)
@@ -146,7 +148,45 @@
                             </div>
                         @else
                             <div class="text-center py-5">
-                                <p class="text-muted mb-0">No recent users</p>
+                                <p class="text-muted mb-0">No users yet</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">Ads</h5>
+                        <a href="{{ route('admin.ads') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body p-0">
+                        @if(!empty($recentAds) && $recentAds->count() > 0)
+                            <div class="list-group list-group-flush">
+                                @foreach($recentAds->take(5) as $ad)
+                                    <div class="list-group-item border-0 py-3">
+                                        <div class="d-flex justify-content-between align-items-center gap-2">
+                                            <div class="flex-grow-1 min-w-0">
+                                                <h6 class="mb-1 fw-semibold text-truncate">{{ $ad->item->item_name ?? 'N/A' }}</h6>
+                                                <small class="text-muted d-block text-truncate">{{ $ad->item->vendor->vendor_name ?? 'Unknown Vendor' }}</small>
+                                            </div>
+                                            <form action="{{ route('admin.ads.destroy', $ad->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this ad?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" style="padding: 0.25rem 0.5rem;">
+                                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="text-center py-5">
+                                <p class="text-muted mb-0">No ads yet</p>
                             </div>
                         @endif
                     </div>
