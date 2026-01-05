@@ -22,27 +22,30 @@
             <div>
                 <x-input-label :value="__('Current Gallery Images')" />
                 @if($item->itemGalleries && $item->itemGalleries->count() > 0)
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-2 mb-3">
+                    <div class="flex gap-4 mt-2 mb-3 overflow-x-auto pb-2" style="scrollbar-width: thin;">
                         @foreach($item->itemGalleries as $gallery)
-                            <div class="relative group" id="gallery-{{ $gallery->id }}">
-                                <img src="{{ $gallery->image_url }}" 
-                                     alt="Product Image" 
-                                     class="w-full h-32 object-cover rounded-lg border-2 border-royal-purple border-opacity-40">
-                                <button type="button"
-                                        onclick="confirmDeleteImage({{ $gallery->id }})"
-                                        class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 shadow-lg transition-all hover:scale-110"
-                                        title="Delete image">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                                <div class="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
-                                    {{ $loop->iteration }} / {{ $item->itemGalleries->count() }}
+                            <div class="flex-shrink-0" id="gallery-{{ $gallery->id }}">
+                                <div class="flex" style="align-items: flex-start;">
+                                    <div style="width: 180px;">
+                                        <img src="{{ $gallery->image_url }}" 
+                                             alt="Product Image" 
+                                             class="w-full h-40 object-cover rounded-lg border-2 border-royal-purple border-opacity-40">
+                                        <div class="text-center mt-1.5 text-soft-lilac text-xs">
+                                            {{ $loop->iteration }}/{{ $item->itemGalleries->count() }}
+                                        </div>
+                                    </div>
+                                    <button type="button"
+                                            onclick="confirmDeleteImage({{ $gallery->id }})"
+                                            class="transition-all duration-200 hover:scale-125"
+                                            style="background: none; border: none; padding: 0; cursor: pointer; margin-top: 0; line-height: 1; margin-left: 4px;"
+                                            title="Hapus gambar">
+                                        <span style="color: #dc2626; font-size: 28px; font-weight: bold; line-height: 1; display: block;">×</span>
+                                    </button>
                                 </div>
                             </div>
                         @endforeach
                     </div>
-                    <small class="text-soft-lilac">🗑️ Click the red button on each image to delete. You currently have {{ $item->itemGalleries->count() }} image(s).</small>
+                    <small class="text-soft-lilac">🗑️ Click the red X button to delete. Scroll right to see more. You have {{ $item->itemGalleries->count() }} image(s).</small>
                 @else
                     <div class="p-4 rounded bg-midnight-black bg-opacity-40 border border-royal-purple border-opacity-30 text-center mt-2">
                         <p class="text-soft-lilac mb-0">No images uploaded yet. Add images below.</p>
@@ -63,7 +66,7 @@
                 <x-input-error class="mt-2" :messages="$errors->get('images.*')" />
                 
                 <!-- Preview container -->
-                <div id="imagePreview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3" style="display: none;"></div>
+                <div id="imagePreview" class="flex gap-3 mt-3 overflow-x-auto pb-2" style="display: none; scrollbar-width: thin;"></div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -182,12 +185,15 @@
                             const reader = new FileReader();
                             reader.onload = function(event) {
                                 const div = document.createElement('div');
-                                div.className = 'relative';
+                                div.className = 'flex-shrink-0';
+                                div.style.width = '180px';
                                 div.innerHTML = `
-                                    <img src="${event.target.result}" 
-                                         class="w-full h-32 object-cover rounded-lg border-2 border-neon-pink border-opacity-60"
-                                         alt="Preview ${index + 1}">
-                                    <div class="absolute bottom-2 left-2 bg-neon-pink text-black text-xs px-2 py-1 rounded font-semibold">
+                                    <div class="relative">
+                                        <img src="${event.target.result}" 
+                                             class="w-full h-40 object-cover rounded-lg border-2 border-neon-pink border-opacity-60"
+                                             alt="Preview ${index + 1}">
+                                    </div>
+                                    <div class="text-center mt-1.5 text-neon-pink text-xs font-semibold">
                                         New ${index + 1}
                                     </div>
                                 `;
