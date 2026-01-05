@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Ad;
 use App\Models\Item;
 use App\Models\Category;
+use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AdController extends Controller
 {
@@ -68,5 +70,106 @@ class AdController extends Controller
         $categories = Category::all();
 
         return view('home', compact('trending', 'items', 'categories', 'popularItems', 'ads'));
+    }
+
+    /**
+     * Handle vendor ad creation and payment initialization.
+     */
+    public function store(Request $request)
+    {
+        if (auth()->user()->role !== 'vendor') abort(403);
+
+        $validated = $request->validate([
+            'item_id' => 'required|exists:items,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'ad_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $vendor = auth()->user()->vendor;
+        $item = Item::find($validated['item_id']);
+        if (!$vendor || $item->vendor_id !== $vendor->id) abort(403);
+
+        // Handle image upload
+        $imageName = null;
+        if ($request->hasFile('ad_image')) {
+            $image = $request->file('ad_image');
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('images/ads'), $imageName);
+        }
+
+        // Calculate days and price: 50,000/day (inclusive of both start and end)
+        $start = \Carbon\Carbon::parse($validated['start_date'])->startOfDay();
+        $end = \Carbon\Carbon::parse($validated['end_date'])->endOfDay();
+        $days = max(1, $start->diffInDays($end) + 1);
+        $pricePerDay = 50000;
+        $totalPrice = $days * $pricePerDay;
+
+        // Create ad payment record
+        $midtransOrderId = 'AD-' . time() . '-' . $vendor->id;
+        $payment = Payment::create([
+            'user_id' => auth()->id(),
+            'order_id' => null,
+            'midtrans_order_id' => $midtransOrderId,
+            'payment_method' => 'midtrans',
+            'payment_type' => 'ad',
+            'payment_total_amount' => $totalPrice,
+            'payment_status' => 'pending',
+        ]);
+
+        // Create the Ad record immediately with status 'pending'
+        $ad = Ad::create([
+            'item_id' => $validated['item_id'],
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'],
+            'price' => $totalPrice,
+            'ad_image' => $imageName,
+            'status' => 'pending',
+            'payment_id' => $payment->id,
+        ]);
+
+        // Build Midtrans Snap payload
+        $transactionDetails = [
+            'order_id' => $midtransOrderId,
+            'gross_amount' => (int) $totalPrice,
+        ];
+
+        $itemDetails = [[
+            'id' => 'AD-' . $item->id,
+            'price' => (int) $totalPrice,
+            'quantity' => 1,
+            'name' => 'Advertisement for: ' . substr($item->item_name ?? 'Item', 0, 50),
+        ]];
+
+        $customerDetails = [
+            'first_name' => auth()->user()->name ?? 'Vendor',
+            'email' => auth()->user()->email ?? 'vendor@example.com',
+            'phone' => auth()->user()->phone ?? '081234567890',
+        ];
+
+        $params = [
+            'transaction_details' => $transactionDetails,
+            'item_details' => $itemDetails,
+            'customer_details' => $customerDetails,
+            'callbacks' => [
+                'finish' => route('payment.success'),
+                'unfinish' => route('payment.pending'),
+                'error' => route('payment.error'),
+            ],
+        ];
+
+        try {
+            $snapToken = \Midtrans\Snap::getSnapToken($params);
+            session(['ad_snap_token_' . $payment->id => $snapToken]);
+            return redirect()->route('vendor.ads.payment', $payment->id);
+        } catch (\Exception $e) {
+            Log::error('Failed to create Midtrans snap token for ad payment', [
+                'error' => $e->getMessage(),
+                'payment_id' => $payment->id,
+            ]);
+
+            return redirect()->route('vendor.ads.create')
+                ->with('error', 'Failed to initialize payment gateway: ' . $e->getMessage());
+        }
     }
 }
