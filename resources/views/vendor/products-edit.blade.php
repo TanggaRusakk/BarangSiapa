@@ -30,7 +30,7 @@
                                      class="w-full h-32 object-cover rounded-lg border-2 border-royal-purple border-opacity-40">
                                 <button type="button"
                                         onclick="confirmDeleteImage({{ $gallery->id }})"
-                                        class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 shadow-lg transition-all hover:scale-110"
                                         title="Delete image">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -42,7 +42,7 @@
                             </div>
                         @endforeach
                     </div>
-                    <small class="text-soft-lilac">Hover over images to delete. You currently have {{ $item->itemGalleries->count() }} image(s).</small>
+                    <small class="text-soft-lilac">🗑️ Click the red button on each image to delete. You currently have {{ $item->itemGalleries->count() }} image(s).</small>
                 @else
                     <div class="p-4 rounded bg-midnight-black bg-opacity-40 border border-royal-purple border-opacity-30 text-center mt-2">
                         <p class="text-soft-lilac mb-0">No images uploaded yet. Add images below.</p>
