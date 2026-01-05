@@ -1,464 +1,386 @@
 <x-dashboard-layout>
     <x-slot name="title">Dashboard</x-slot>
-
-    {{-- Header --}}
-    <div class="mb-5">
-        <h1 class="display-6 fw-bold mb-2">Hi, {{ optional(auth()->user())->name ?? 'User' }} 👋</h1>
-        <p class="text-muted">
-            @if(optional(auth()->user())->role === 'admin')
-                Welcome back! Here's your platform overview.
-            @elseif(optional(auth()->user())->role === 'vendor')
-                Welcome back! Here's your store summary.
+    
+    <!-- Welcome Header -->
+    <div class="mb-4">
+        <h2 class="text-2xl font-bold text-gradient">Hi, {{ auth()->user()->name }} 👋</h2>
+        <p class="text-sm text-soft-lilac">
+            @if(auth()->user()->role === 'admin')
+                Manage your platform — users, vendors, and system settings.
             @else
-                Welcome back! Here's your recent activity.
+                Track your orders, rentals, and explore the marketplace.
             @endif
         </p>
     </div>
 
-    @php $role = optional(auth()->user())->role; @endphp
+    @if(!empty($lastViewed))
+        <div class="card subtle-hover mb-4 p-4">
+            <h3 class="stat-label mb-3">Last Viewed</h3>
+            <div class="d-flex align-items-center gap-3">
+                <img src="{{ $lastViewed->first_image_url }}" alt="{{ $lastViewed->item_name }}" class="rounded" style="width:80px;height:80px;object-fit:cover;">
+                <div>
+                    <h5 class="mb-1 fw-bold">{{ $lastViewed->item_name }}</h5>
+                    <p class="mb-0 text-soft-lilac">
+                        @if($lastViewed->item_type === 'rent') 
+                            Rp{{ number_format($lastViewed->item_price) }} / {{ $lastViewed->rental_duration_unit ?? 'day' }} 
+                        @else 
+                            Rp{{ number_format($lastViewed->item_price) }}
+                        @endif
+                    </p>
+                </div>
+            </div>
+        </div>
+    @endif
 
-    @if($role === 'admin')
-        {{-- Admin Stats Cards --}}
+    @if(auth()->user()->role === 'admin')
+        <!-- Admin Overview Stats -->
         <div class="row g-4 mb-4">
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
-                                <svg width="24" height="24" fill="currentColor" class="text-primary" viewBox="0 0 24 24">
-                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small">Total Users</h6>
-                            </div>
-                        </div>
-                        <h3 class="fw-bold mb-0">{{ number_format($totalUsers ?? 0) }}</h3>
-                    </div>
+            <div class="col-12 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">{{ number_format($totalUsers ?? 0) }}</div>
+                    <div class="stat-label">Total Users</div>
                 </div>
             </div>
-
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-success bg-opacity-10 rounded p-2 me-3">
-                                <svg width="24" height="24" fill="currentColor" class="text-success" viewBox="0 0 24 24">
-                                    <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small">Active Vendors</h6>
-                            </div>
-                        </div>
-                        <h3 class="fw-bold mb-0">{{ number_format($activeVendors ?? 0) }}</h3>
-                    </div>
+            <div class="col-12 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">{{ number_format($activeVendors ?? 0) }}</div>
+                    <div class="stat-label">Active Vendors</div>
                 </div>
             </div>
-
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-warning bg-opacity-10 rounded p-2 me-3">
-                                <svg width="24" height="24" fill="currentColor" class="text-warning" viewBox="0 0 24 24">
-                                    <path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small">Total Products</h6>
-                            </div>
-                        </div>
-                        <h3 class="fw-bold mb-0">{{ number_format($totalProducts ?? 0) }}</h3>
-                    </div>
+            <div class="col-12 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">{{ number_format($totalProducts ?? 0) }}</div>
+                    <div class="stat-label">Total Products</div>
                 </div>
             </div>
-
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-info bg-opacity-10 rounded p-2 me-3">
-                                <svg width="24" height="24" fill="currentColor" class="text-info" viewBox="0 0 24 24">
-                                    <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small">Revenue (Month)</h6>
-                            </div>
-                        </div>
-                        <h3 class="fw-bold mb-0">Rp{{ number_format($revenueThisMonth ?? 0) }}</h3>
-                    </div>
+            <div class="col-12 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">Rp{{ number_format($revenueThisMonth ?? 0) }}</div>
+                    <div class="stat-label">Revenue (This month)</div>
                 </div>
             </div>
         </div>
 
-        {{-- Admin Lists --}}
+        <!-- Recent Orders & Users -->
         <div class="row g-4">
             <div class="col-12 col-lg-6">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white border-0 pt-4">
-                        <h5 class="fw-bold mb-0">Recent Orders</h5>
-                    </div>
-                    <div class="card-body">
-                        @if(!empty($recentOrders) && $recentOrders->count())
-                            <div class="list-group list-group-flush">
-                                @foreach($recentOrders->take(6) as $o)
-                                    <div class="list-group-item border-0 px-0 py-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="mb-1 fw-semibold">#{{ $o->id }}</h6>
-                                                <small class="text-muted">{{ optional($o->user)->name ?? 'N/A' }} • Rp{{ number_format($o->order_total_amount ?? 0) }}</small>
-                                            </div>
-                                            <span class="badge {{ $o->order_status === 'paid' ? 'bg-success' : 'bg-warning' }}">
-                                                {{ ucfirst($o->order_status ?? 'pending') }}
-                                            </span>
+                <div class="card subtle-hover">
+                    <h3 class="stat-label mb-3">Recent Orders</h3>
+                    @if(!empty($recentOrders) && $recentOrders->count() > 0)
+                        <div class="list-group list-group-flush">
+                            @foreach($recentOrders->take(5) as $order)
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="mb-1">Order #{{ $order->id }}</h6>
+                                            <small class="text-soft-lilac">{{ $order->user->name ?? 'N/A' }} - Rp{{ number_format($order->order_total_amount ?? 0) }}</small>
                                         </div>
+                                        <span class="badge {{ $order->order_status === 'paid' ? 'bg-success' : ($order->order_status === 'pending' ? 'bg-warning' : 'bg-secondary') }}">
+                                            {{ ucfirst($order->order_status ?? 'pending') }}
+                                        </span>
                                     </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="text-center text-muted py-5">
-                                <p class="mb-0">No recent orders</p>
-                            </div>
-                        @endif
-                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-soft-lilac">No recent orders</p>
+                    @endif
                 </div>
             </div>
 
             <div class="col-12 col-lg-6">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white border-0 pt-4">
-                        <h5 class="fw-bold mb-0">Recent Users</h5>
-                    </div>
-                    <div class="card-body">
-                        @if(!empty($recentUsers) && $recentUsers->count())
-                            <div class="list-group list-group-flush">
-                                @foreach($recentUsers->take(6) as $u)
-                                    <div class="list-group-item border-0 px-0 py-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="mb-1 fw-semibold">{{ $u->name }}</h6>
-                                                <small class="text-muted">{{ $u->email }}</small>
-                                            </div>
-                                            <span class="badge {{ $u->role === 'admin' ? 'bg-danger' : ($u->role === 'vendor' ? 'bg-primary' : 'bg-info') }}">
-                                                {{ ucfirst($u->role ?? 'user') }}
-                                            </span>
+                <div class="card subtle-hover">
+                    <h3 class="stat-label mb-3">Recent Users</h3>
+                    @if(!empty($recentUsers) && $recentUsers->count() > 0)
+                        <div class="list-group list-group-flush">
+                            @foreach($recentUsers->take(5) as $user)
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="mb-1">{{ $user->name }}</h6>
+                                            <small class="text-soft-lilac">{{ $user->email }}</small>
                                         </div>
+                                        <span class="badge {{ $user->role === 'admin' ? 'bg-danger' : ($user->role === 'vendor' ? 'bg-primary' : 'bg-info') }}">
+                                            {{ ucfirst($user->role) }}
+                                        </span>
                                     </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="text-center text-muted py-5">
-                                <p class="mb-0">No recent users</p>
-                            </div>
-                        @endif
-                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-soft-lilac">No recent users</p>
+                    @endif
                 </div>
             </div>
         </div>
 
-    @elseif($role === 'vendor')
-        {{-- Vendor Stats Cards --}}
+    @elseif(auth()->user()->role === 'vendor')
+        <!-- Vendor Overview Stats -->
         <div class="row g-4 mb-4">
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
-                                <svg width="24" height="24" fill="currentColor" class="text-primary" viewBox="0 0 24 24">
-                                    <path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small">My Products</h6>
-                            </div>
-                        </div>
-                        <h3 class="fw-bold mb-0">{{ $vendorProductsCount ?? 0 }}</h3>
-                    </div>
+            <div class="col-12 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">{{ $vendorProductsCount ?? 0 }}</div>
+                    <div class="stat-label">My Products</div>
                 </div>
             </div>
-
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-success bg-opacity-10 rounded p-2 me-3">
-                                <svg width="24" height="24" fill="currentColor" class="text-success" viewBox="0 0 24 24">
-                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small">Orders</h6>
-                            </div>
-                        </div>
-                        <h3 class="fw-bold mb-0">{{ $ordersCount ?? 0 }}</h3>
-                    </div>
+            <div class="col-12 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">{{ $ordersCount ?? 0 }}</div>
+                    <div class="stat-label">Total Orders</div>
                 </div>
             </div>
-
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-warning bg-opacity-10 rounded p-2 me-3">
-                                <svg width="24" height="24" fill="currentColor" class="text-warning" viewBox="0 0 24 24">
-                                    <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small">Revenue</h6>
-                            </div>
-                        </div>
-                        <h3 class="fw-bold mb-0">Rp{{ number_format($revenue ?? 0) }}</h3>
-                    </div>
+            <div class="col-12 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">Rp{{ number_format($revenue ?? 0) }}</div>
+                    <div class="stat-label">Revenue</div>
                 </div>
             </div>
-
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-info bg-opacity-10 rounded p-2 me-3">
-                                <svg width="24" height="24" fill="currentColor" class="text-info" viewBox="0 0 24 24">
-                                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small">Store Rating</h6>
-                            </div>
-                        </div>
-                        <h3 class="fw-bold mb-0">{{ $storeRating ?? '0.0' }}</h3>
-                    </div>
+            <div class="col-12 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">{{ $storeRating ?? '0.0' }} / 5</div>
+                    <div class="stat-label">Store Rating</div>
                 </div>
             </div>
         </div>
 
-        {{-- Vendor Lists --}}
+        <!-- Recent Products & Orders -->
         <div class="row g-4">
             <div class="col-12 col-lg-6">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white border-0 pt-4">
-                        <h5 class="fw-bold mb-0">Recent Products</h5>
-                    </div>
-                    <div class="card-body">
-                        @if(!empty($recentProducts) && $recentProducts->count())
-                            <div class="list-group list-group-flush">
-                                @foreach($recentProducts->take(6) as $p)
-                                    <div class="list-group-item border-0 px-0 py-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex gap-3 align-items-center">
-                                                <img src="{{ $p->first_image_url ?? asset('images/placeholder.png') }}" 
-                                                     class="rounded" 
-                                                     style="width:50px;height:50px;object-fit:cover">
-                                                <div>
-                                                    <h6 class="mb-1 fw-semibold">{{ $p->item_name }}</h6>
-                                                    <small class="text-muted">Rp{{ number_format($p->item_price ?? 0) }}</small>
-                                                </div>
-                                            </div>
-                                            <span class="badge {{ $p->is_active ? 'bg-success' : 'bg-secondary' }}">
-                                                {{ $p->is_active ? 'Active' : 'Inactive' }}
-                                            </span>
+                <div class="card subtle-hover">
+                    <h3 class="stat-label mb-3">Your Recent Products</h3>
+                    @if(!empty($recentProducts) && $recentProducts->count() > 0)
+                        <div class="list-group list-group-flush">
+                            @foreach($recentProducts->take(5) as $product)
+                                <div class="list-group-item">
+                                    <div class="d-flex gap-3 align-items-center">
+                                        <img src="{{ $product->first_image_url }}" alt="{{ $product->item_name }}" class="rounded" style="width:60px;height:60px;object-fit:cover;">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">{{ $product->item_name }}</h6>
+                                            <small class="text-soft-lilac">Rp{{ number_format($product->item_price) }} @if($product->item_type === 'rent') • Rent @endif</small>
                                         </div>
+                                        <span class="badge bg-success">Active</span>
                                     </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="text-center text-muted py-5">
-                                <p class="mb-0">No products yet</p>
-                            </div>
-                        @endif
-                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-soft-lilac">No products yet</p>
+                    @endif
                 </div>
             </div>
 
             <div class="col-12 col-lg-6">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white border-0 pt-4">
-                        <h5 class="fw-bold mb-0">Recent Orders</h5>
-                    </div>
-                    <div class="card-body">
-                        @if(!empty($recentOrders) && $recentOrders->count())
-                            <div class="list-group list-group-flush">
-                                @foreach($recentOrders->take(6) as $o)
-                                    <div class="list-group-item border-0 px-0 py-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="mb-1 fw-semibold">#{{ $o->id }}</h6>
-                                                <small class="text-muted">Rp{{ number_format($o->order_total_amount ?? 0) }}</small>
-                                            </div>
-                                            <span class="badge {{ $o->order_status === 'paid' ? 'bg-success' : 'bg-warning' }}">
-                                                {{ ucfirst($o->order_status ?? 'pending') }}
-                                            </span>
+                <div class="card subtle-hover">
+                    <h3 class="stat-label mb-3">Recent Orders</h3>
+                    @if(!empty($recentOrders) && $recentOrders->count() > 0)
+                        <div class="list-group list-group-flush">
+                            @foreach($recentOrders->take(5) as $order)
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="mb-1">Order #{{ $order->id }}</h6>
+                                            <small class="text-soft-lilac">Rp{{ number_format($order->order_total_amount ?? 0) }}</small>
                                         </div>
+                                        <span class="badge {{ $order->order_status === 'paid' ? 'bg-success' : ($order->order_status === 'pending' ? 'bg-warning' : 'bg-secondary') }}">
+                                            {{ ucfirst($order->order_status ?? 'pending') }}
+                                        </span>
                                     </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="text-center text-muted py-5">
-                                <p class="mb-0">No orders</p>
-                            </div>
-                        @endif
-                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-soft-lilac">No orders yet</p>
+                    @endif
                 </div>
             </div>
         </div>
 
     @else
-        {{-- Member Logic --}}
         @php
-            $userOrders = $userOrders ?? collect();
-            $paidOrders = $userOrders->where('order_status', 'paid');
-
-            $paidRentals = $userOrders->filter(function($o){
-                $isPaid = ($o->order_status ?? '') === 'paid';
-                $isRental = (($o->order_type ?? '') === 'rental') || (optional(optional($o->orderItems->first())->item)->item_type === 'rent');
-                return $isPaid && $isRental;
+            // Member user - calculate paid orders and rentals
+            $paidOrders = $userOrders->filter(function($order) {
+                return $order->order_status === 'paid';
             });
 
-            $totalSpent = $paidOrders->sum('order_total_amount') ?? 0;
+            $paidRentals = $userOrders->filter(function($order) {
+                if ($order->order_status !== 'paid') return false;
+                
+                // Check if it's a rental order
+                if ($order->order_type === 'rental') return true;
+                
+                // Or check if the first item is a rental
+                $firstItem = $order->orderItems->first();
+                if ($firstItem && $firstItem->item && $firstItem->item->item_type === 'rent') {
+                    return true;
+                }
+                
+                return false;
+            });
+
+            $totalSpent = $paidOrders->sum('order_total_amount');
         @endphp
 
-        {{-- Member Stats Cards --}}
+        <!-- User Stats -->
         <div class="row g-4 mb-4">
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
-                                <svg width="24" height="24" fill="currentColor" class="text-primary" viewBox="0 0 24 24">
-                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small">Active Orders</h6>
-                            </div>
-                        </div>
-                        <h3 class="fw-bold mb-0">{{ $paidOrders->count() }}</h3>
-                        <small class="text-muted">Paid orders</small>
-                    </div>
+            <div class="col-12 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">{{ $paidOrders->count() }}</div>
+                    <div class="stat-label">Active Orders (Paid)</div>
                 </div>
             </div>
-
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-success bg-opacity-10 rounded p-2 me-3">
-                                <svg width="24" height="24" fill="currentColor" class="text-success" viewBox="0 0 24 24">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small">Active Rentals</h6>
-                            </div>
-                        </div>
-                        <h3 class="fw-bold mb-0">{{ $paidRentals->count() }}</h3>
-                        <small class="text-muted">Paid rentals</small>
-                    </div>
+            <div class="col-12 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">{{ $paidRentals->count() }}</div>
+                    <div class="stat-label">Active Rentals (Paid)</div>
                 </div>
             </div>
-
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-warning bg-opacity-10 rounded p-2 me-3">
-                                <svg width="24" height="24" fill="currentColor" class="text-warning" viewBox="0 0 24 24">
-                                    <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small">Total Spent</h6>
-                            </div>
-                        </div>
-                        <h3 class="fw-bold mb-0">Rp{{ number_format($totalSpent ?? 0) }}</h3>
-                        <small class="text-muted">All paid orders</small>
-                    </div>
+            <div class="col-12 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">Rp{{ number_format($totalSpent) }}</div>
+                    <div class="stat-label">Total Spent</div>
                 </div>
             </div>
-
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-info bg-opacity-10 rounded p-2 me-3">
-                                <svg width="24" height="24" fill="currentColor" class="text-info" viewBox="0 0 24 24">
-                                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small">Reviews Given</h6>
-                            </div>
-                        </div>
-                        <h3 class="fw-bold mb-0">{{ $reviewsGiven ?? 0 }}</h3>
-                        <small class="text-muted">Your reviews</small>
-                    </div>
+            <div class="col-12 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">{{ $reviewsGiven ?? 0 }}</div>
+                    <div class="stat-label">Reviews Given</div>
                 </div>
             </div>
         </div>
 
-        {{-- Member Lists --}}
-        <div class="row g-4">
-            <div class="col-12 col-lg-6">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white border-0 pt-4">
-                        <h5 class="fw-bold mb-0">Recent Paid Orders</h5>
+        <!-- Quick Actions -->
+        <div class="row g-4 mb-4">
+            <div class="col-12 col-md-3">
+                <a href="{{ url('/') }}" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">Browse Items</h3>
+                        <p class="text-sm text-secondary mb-0">Explore marketplace</p>
                     </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-3">
+                <a href="{{ route('orders.my-orders') }}" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">My Orders</h3>
+                        <p class="text-sm text-secondary mb-0">Track your purchases</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-3">
+                <a href="{{ url('/messages') }}" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">Messages</h3>
+                        <p class="text-sm text-secondary mb-0">Chat with vendors</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-3">
+                <a href="{{ route('profile.edit') }}" class="text-decoration-none">
+                    <div class="card subtle-hover text-center p-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 140px;">
+                        <svg class="mb-3" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">My Profile</h3>
+                        <p class="text-sm text-secondary mb-0">Edit account settings</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Orders & Rentals (2-column layout) -->
+        <div class="row g-4">
+            <!-- Recent Orders -->
+            <div class="col-12 col-lg-6">
+                <div class="card h-100">
                     <div class="card-body">
-                        @if($paidOrders->count())
-                            <div class="list-group list-group-flush">
-                                @foreach($paidOrders->take(6) as $o)
-                                    <div class="list-group-item border-0 px-0 py-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="mb-1 fw-semibold">#{{ $o->id }}</h6>
-                                                <small class="text-muted">Rp{{ number_format($o->order_total_amount ?? 0) }} • {{ optional($o->created_at)->format('d M Y') }}</small>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="h5 fw-bold mb-0">Recent Orders</h3>
+                            <a href="{{ route('orders.my-orders') }}" class="btn btn-sm" style="background: #6A38C2; color: white;">View All →</a>
+                        </div>
+
+                        @if($paidOrders->count() > 0)
+                            <div class="d-flex flex-column gap-3">
+                                @foreach($paidOrders->take(3) as $order)
+                                    <div class="d-flex gap-3 p-3 rounded" style="background: rgba(106,56,194,0.05);">
+                                        @if($order->orderItems->first() && $order->orderItems->first()->item)
+                                            <img src="{{ $order->orderItems->first()->item->first_image_url }}" alt="{{ $order->orderItems->first()->item->item_name }}" class="rounded" style="width:80px;height:80px;object-fit:cover;">
+                                        @else
+                                            <div class="rounded d-flex align-items-center justify-content-center" style="width:80px;height:80px;background:#f0f0f0;">
+                                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                                </svg>
                                             </div>
-                                            <a href="{{ route('orders.show', $o->id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                        @endif
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 fw-bold">Order #{{ $order->id }}</h6>
+                                            <p class="mb-1 text-secondary small">Rp{{ number_format($order->order_total_amount ?? 0) }} • {{ $order->created_at->format('d M Y') }}</p>
+                                            <span class="badge {{ $order->order_status === 'paid' ? 'bg-success' : ($order->order_status === 'pending' ? 'bg-warning' : 'bg-secondary') }} small">{{ ucfirst($order->order_status ?? 'pending') }}</span>
                                         </div>
                                     </div>
                                 @endforeach
                             </div>
                         @else
-                            <div class="text-center text-muted py-5">
-                                <svg width="64" height="64" fill="currentColor" class="mb-3 opacity-25" viewBox="0 0 24 24">
+                            <div class="text-center py-5">
+                                <svg class="mb-3 text-secondary" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
                                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
                                 </svg>
-                                <p class="mb-0">You have no paid orders yet</p>
+                                <p class="text-secondary mb-0">No orders yet</p>
                             </div>
                         @endif
                     </div>
                 </div>
             </div>
 
+            <!-- Active Rentals -->
             <div class="col-12 col-lg-6">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white border-0 pt-4">
-                        <h5 class="fw-bold mb-0">Paid Rentals</h5>
-                    </div>
+                <div class="card h-100">
                     <div class="card-body">
-                        @if($paidRentals->count())
-                            <div class="list-group list-group-flush">
-                                @foreach($paidRentals->take(6) as $r)
-                                    <div class="list-group-item border-0 px-0 py-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="mb-1 fw-semibold">#{{ $r->id }}</h6>
-                                                <small class="text-muted">Rp{{ number_format($r->order_total_amount ?? 0) }} • {{ optional($r->created_at)->format('d M Y') }}</small>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="h5 fw-bold mb-0">Active Rentals</h3>
+                            <a href="{{ route('orders.my-orders') }}" class="btn btn-sm" style="background: #FF3CAC; color: #000;">View All →</a>
+                        </div>
+
+                        @if($paidRentals->count() > 0)
+                            <div class="d-flex flex-column gap-3">
+                                @foreach($paidRentals->take(3) as $rental)
+                                    <div class="d-flex gap-3 p-3 rounded" style="background: rgba(255,60,172,0.05);">
+                                        @if($rental->orderItems->first() && $rental->orderItems->first()->item)
+                                            <img src="{{ $rental->orderItems->first()->item->first_image_url }}" alt="{{ $rental->orderItems->first()->item->item_name }}" class="rounded" style="width:80px;height:80px;object-fit:cover;">
+                                        @else
+                                            <div class="rounded d-flex align-items-center justify-content-center" style="width:80px;height:80px;background:#f0f0f0;">
+                                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                                </svg>
                                             </div>
-                                            <a href="{{ route('orders.show', $r->id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                        @endif
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 fw-bold">{{ $rental->orderItems->first()->item->item_name ?? 'Rental Item' }}</h6>
+                                            <p class="mb-1 text-secondary small">Rp{{ number_format($rental->order_total_amount ?? 0) }} • {{ $rental->created_at->format('d M Y') }}</p>
+                                            <span class="badge {{ $rental->order_status === 'paid' ? 'bg-success' : ($rental->order_status === 'pending' ? 'bg-warning' : 'bg-secondary') }} small">{{ ucfirst($rental->order_status ?? 'pending') }}</span>
                                         </div>
                                     </div>
                                 @endforeach
                             </div>
                         @else
-                            <div class="text-center text-muted py-5">
-                                <svg width="64" height="64" fill="currentColor" class="mb-3 opacity-25" viewBox="0 0 24 24">
-                                    <rect x="3" y="11" width="18" height="11" rx="2"/>
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            <div class="text-center py-5">
+                                <svg class="mb-3 text-secondary" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                                 </svg>
-                                <p class="mb-0">You have no paid rentals yet</p>
+                                <p class="text-secondary mb-0">No active rentals</p>
                             </div>
                         @endif
                     </div>
