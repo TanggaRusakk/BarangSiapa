@@ -24,235 +24,226 @@
                         @if($lastViewed->item_type === 'rent') 
                             Rp{{ number_format($lastViewed->item_price) }} / {{ $lastViewed->rental_duration_unit ?? 'day' }} 
                         @else 
-                            Rp{{ number_format($lastViewed->item_price) }} 
-                        @endif
-                    </p>
-                </div>
-            </div>
-        </div>
-    @endif
+                            <x-dashboard-layout>
+                                <x-slot name="title">Dashboard</x-slot>
 
-    @if(auth()->user()->role === 'admin')
-        <!-- ADMIN DASHBOARD -->
-        <!-- Stats Grid -->
-        <div class="row g-5 mb-6">
-            <div class="col-12 col-md-3">
-                <div class="card subtle-hover p-6">
-                    <div class="stat-label">Total Users</div>
-                    <div class="stat-value text-3xl font-extrabold">{{ number_format($totalUsers ?? 0) }}</div>
-                    <div class="text-sm text-soft-lilac mt-2">Registered members</div>
-                </div>
-            </div>
+                                <div style="margin-bottom:16px">
+                                    <h1 style="font-size:20px;font-weight:700">Hi, {{ optional(auth()->user())->name ?? 'User' }}</h1>
+                                    <p style="color:#6b6b7a;font-size:13px;margin-top:6px">
+                                        @if(optional(auth()->user())->role === 'admin')
+                                            Platform overview
+                                        @elseif(optional(auth()->user())->role === 'vendor')
+                                            Store summary
+                                        @else
+                                            Your recent activity
+                                        @endif
+                                    </p>
+                                </div>
 
-            <div class="col-12 col-md-3">
-                <div class="card subtle-hover p-6">
-                    <div class="stat-label">Active Vendors</div>
-                    <div class="stat-value text-3xl font-extrabold">{{ number_format($activeVendors ?? 0) }}</div>
-                    <div class="text-sm text-soft-lilac mt-2">Vendor accounts</div>
-                </div>
-            </div>
+                                @php
+                                    $role = optional(auth()->user())->role;
+                                @endphp
 
-            <div class="col-12 col-md-3">
-                <div class="card subtle-hover p-6">
-                    <div class="stat-label">Total Products</div>
-                    <div class="stat-value text-3xl font-extrabold">{{ number_format($totalProducts ?? 0) }}</div>
-                    <div class="text-sm text-soft-lilac mt-2">Listed items</div>
-                </div>
-            </div>
+                                @if($role === 'admin')
+                                    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+                                        <div style="flex:1;min-width:160px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-size:12px;color:#7b7b8a">Total Users</div>
+                                            <div style="font-weight:700">{{ number_format($totalUsers ?? 0) }}</div>
+                                        </div>
+                                        <div style="flex:1;min-width:160px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-size:12px;color:#7b7b8a">Active Vendors</div>
+                                            <div style="font-weight:700">{{ number_format($activeVendors ?? 0) }}</div>
+                                        </div>
+                                        <div style="flex:1;min-width:160px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-size:12px;color:#7b7b8a">Total Products</div>
+                                            <div style="font-weight:700">{{ number_format($totalProducts ?? 0) }}</div>
+                                        </div>
+                                        <div style="flex:1;min-width:160px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-size:12px;color:#7b7b8a">Revenue (This month)</div>
+                                            <div style="font-weight:700">Rp{{ number_format($revenueThisMonth ?? 0) }}</div>
+                                        </div>
+                                    </div>
 
-            <div class="col-12 col-md-3">
-                <div class="card subtle-hover p-6">
-                    <div class="stat-label">Revenue</div>
-                    <x-dashboard-layout>
-                        <x-slot name="title">Member Dashboard</x-slot>
+                                    <div style="display:flex;gap:12px;flex-wrap:wrap">
+                                        <div style="flex:1;min-width:320px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-weight:700;margin-bottom:8px">Recent Orders</div>
+                                            @if(!empty($recentOrders) && $recentOrders->count())
+                                                <ul style="margin:0;padding:0;list-style:none">
+                                                    @foreach($recentOrders->take(6) as $o)
+                                                        <li style="padding:8px 0;border-top:1px solid #f5f5f5;display:flex;justify-content:space-between">
+                                                            <div>
+                                                                <div style="font-weight:600">#{{ $o->id }}</div>
+                                                                <div style="font-size:12px;color:#7b7b8a">{{ optional($o->user)->name ?? 'N/A' }} • Rp{{ number_format($o->order_total_amount ?? 0) }}</div>
+                                                            </div>
+                                                            <div style="align-self:center">{{ ucfirst($o->order_status ?? 'pending') }}</div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            @else
+                                                <div style="color:#7b7b8a">No recent orders</div>
+                                            @endif
+                                        </div>
 
-                        <div class="mb-4">
-                            <h2 class="text-2xl font-bold">Hi, {{ auth()->user()->name }} 👋</h2>
-                            <p class="text-sm text-soft-lilac">
-                                @if(auth()->user()->role === 'admin')
-                                    Manage the platform — concise overview below.
-                                @elseif(auth()->user()->role === 'vendor')
-                                    Your store summary and recent activity.
+                                        <div style="flex:1;min-width:320px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-weight:700;margin-bottom:8px">Recent Users</div>
+                                            @if(!empty($recentUsers) && $recentUsers->count())
+                                                <ul style="margin:0;padding:0;list-style:none">
+                                                    @foreach($recentUsers->take(6) as $u)
+                                                        <li style="padding:8px 0;border-top:1px solid #f5f5f5;display:flex;justify-content:space-between">
+                                                            <div>
+                                                                <div style="font-weight:600">{{ $u->name }}</div>
+                                                                <div style="font-size:12px;color:#7b7b8a">{{ $u->email }}</div>
+                                                            </div>
+                                                            <div style="align-self:center">{{ ucfirst($u->role ?? 'user') }}</div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            @else
+                                                <div style="color:#7b7b8a">No recent users</div>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                @elseif($role === 'vendor')
+                                    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+                                        <div style="flex:1;min-width:160px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-size:12px;color:#7b7b8a">My Products</div>
+                                            <div style="font-weight:700">{{ $vendorProductsCount ?? 0 }}</div>
+                                        </div>
+                                        <div style="flex:1;min-width:160px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-size:12px;color:#7b7b8a">Orders</div>
+                                            <div style="font-weight:700">{{ $ordersCount ?? 0 }}</div>
+                                        </div>
+                                        <div style="flex:1;min-width:160px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-size:12px;color:#7b7b8a">Revenue</div>
+                                            <div style="font-weight:700">Rp{{ number_format($revenue ?? 0) }}</div>
+                                        </div>
+                                        <div style="flex:1;min-width:160px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-size:12px;color:#7b7b8a">Rating</div>
+                                            <div style="font-weight:700">{{ $storeRating ?? '0.0' }}</div>
+                                        </div>
+                                    </div>
+
+                                    <div style="display:flex;gap:12px;flex-wrap:wrap">
+                                        <div style="flex:1;min-width:320px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-weight:700;margin-bottom:8px">Recent Products</div>
+                                            @if(!empty($recentProducts) && $recentProducts->count())
+                                                <ul style="margin:0;padding:0;list-style:none">
+                                                    @foreach($recentProducts->take(6) as $p)
+                                                        <li style="padding:8px 0;border-top:1px solid #f5f5f5;display:flex;justify-content:space-between">
+                                                            <div style="display:flex;gap:10px;align-items:center">
+                                                                <img src="{{ $p->first_image_url ?? asset('images/placeholder.png') }}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">
+                                                                <div>
+                                                                    <div style="font-weight:600">{{ $p->item_name }}</div>
+                                                                    <div style="font-size:12px;color:#7b7b8a">Rp{{ number_format($p->item_price ?? 0) }}</div>
+                                                                </div>
+                                                            </div>
+                                                            <div style="align-self:center">@if($p->is_active) Active @else Inactive @endif</div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            @else
+                                                <div style="color:#7b7b8a">No products yet</div>
+                                            @endif
+                                        </div>
+
+                                        <div style="flex:1;min-width:320px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-weight:700;margin-bottom:8px">Recent Orders</div>
+                                            @if(!empty($recentOrders) && $recentOrders->count())
+                                                <ul style="margin:0;padding:0;list-style:none">
+                                                    @foreach($recentOrders->take(6) as $o)
+                                                        <li style="padding:8px 0;border-top:1px solid #f5f5f5;display:flex;justify-content:space-between">
+                                                            <div>
+                                                                <div style="font-weight:600">#{{ $o->id }}</div>
+                                                                <div style="font-size:12px;color:#7b7b8a">Rp{{ number_format($o->order_total_amount ?? 0) }}</div>
+                                                            </div>
+                                                            <div style="align-self:center">{{ ucfirst($o->order_status ?? 'pending') }}</div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            @else
+                                                <div style="color:#7b7b8a">No orders</div>
+                                            @endif
+                                        </div>
+                                    </div>
+
                                 @else
-                                    Overview of your orders, rentals, and activity.
+                                    {{-- Member view: show paid orders, paid rentals, total spent, reviews given --}}
+                                    @php
+                                        $userOrders = $userOrders ?? collect();
+                                        $paidOrders = $userOrders->where('order_status', 'paid');
+
+                                        $paidRentals = $userOrders->filter(function($o){
+                                            $isPaid = ($o->order_status ?? '') === 'paid';
+                                            $isRental = (($o->order_type ?? '') === 'rental') || (optional(optional($o->orderItems->first())->item)->item_type === 'rent');
+                                            return $isPaid && $isRental;
+                                        });
+
+                                        $totalSpent = $paidOrders->sum('order_total_amount') ?? 0;
+                                    @endphp
+
+                                    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+                                        <div style="flex:1;min-width:160px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-size:12px;color:#7b7b8a">Active Orders (Paid)</div>
+                                            <div style="font-weight:700">{{ $paidOrders->count() }}</div>
+                                        </div>
+                                        <div style="flex:1;min-width:160px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-size:12px;color:#7b7b8a">Active Rentals (Paid)</div>
+                                            <div style="font-weight:700">{{ $paidRentals->count() }}</div>
+                                        </div>
+                                        <div style="flex:1;min-width:160px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-size:12px;color:#7b7b8a">Total Spent</div>
+                                            <div style="font-weight:700">Rp{{ number_format($totalSpent ?? 0) }}</div>
+                                        </div>
+                                        <div style="flex:1;min-width:160px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-size:12px;color:#7b7b8a">Reviews Given</div>
+                                            <div style="font-weight:700">{{ $reviewsGiven ?? 0 }}</div>
+                                        </div>
+                                    </div>
+
+                                    <div style="display:flex;gap:12px;flex-wrap:wrap">
+                                        <div style="flex:1;min-width:320px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-weight:700;margin-bottom:8px">Recent Paid Orders</div>
+                                            @if($paidOrders->count())
+                                                <ul style="margin:0;padding:0;list-style:none">
+                                                    @foreach($paidOrders->take(6) as $o)
+                                                        <li style="padding:8px 0;border-top:1px solid #f5f5f5;display:flex;justify-content:space-between">
+                                                            <div>
+                                                                <div style="font-weight:600">#{{ $o->id }}</div>
+                                                                <div style="font-size:12px;color:#7b7b8a">Rp{{ number_format($o->order_total_amount ?? 0) }} • {{ optional($o->created_at)->format('d M Y') }}</div>
+                                                            </div>
+                                                            <div style="align-self:center"><a href="{{ route('orders.show', $o->id) }}">View</a></div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            @else
+                                                <div style="color:#7b7b8a">You have no paid orders yet</div>
+                                            @endif
+                                        </div>
+
+                                        <div style="flex:1;min-width:320px;padding:12px;border:1px solid #eee;border-radius:8px">
+                                            <div style="font-weight:700;margin-bottom:8px">Paid Rentals</div>
+                                            @if($paidRentals->count())
+                                                <ul style="margin:0;padding:0;list-style:none">
+                                                    @foreach($paidRentals->take(6) as $r)
+                                                        <li style="padding:8px 0;border-top:1px solid #f5f5f5;display:flex;justify-content:space-between">
+                                                            <div>
+                                                                <div style="font-weight:600">#{{ $r->id }}</div>
+                                                                <div style="font-size:12px;color:#7b7b8a">Rp{{ number_format($r->order_total_amount ?? 0) }} • {{ optional($r->created_at)->format('d M Y') }}</div>
+                                                            </div>
+                                                            <div style="align-self:center"><a href="{{ route('orders.show', $r->id) }}">View</a></div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            @else
+                                                <div style="color:#7b7b8a">You have no paid rentals yet</div>
+                                            @endif
+                                        </div>
+                                    </div>
+
                                 @endif
-                            </p>
-                        </div>
 
-                        @if(!empty($lastViewed))
-                            <div style="border:1px solid #eee;padding:12px;border-radius:8px;margin-bottom:16px;display:flex;gap:12px;align-items:center;">
-                                <img src="{{ $lastViewed->first_image_url }}" alt="{{ $lastViewed->item_name }}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;">
-                                <div>
-                                    <div style="font-weight:700">{{ $lastViewed->item_name }}</div>
-                                    <div class="text-sm text-soft-lilac">@if($lastViewed->item_type === 'rent') Rp{{ number_format($lastViewed->item_price) }} / {{ $lastViewed->rental_duration_unit ?? 'day' }} @else Rp{{ number_format($lastViewed->item_price) }} @endif</div>
-                                </div>
-                            </div>
-                        @endif
-
-                        {{-- ADMIN --}}
-                        @if(auth()->user()->role === 'admin')
-                            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">
-                                <div style="border:1px solid #e6e6e6;padding:16px;border-radius:8px;">
-                                    <div class="text-sm text-soft-lilac">Total Users</div>
-                                    <div style="font-size:20px;font-weight:700">{{ number_format($totalUsers ?? 0) }}</div>
-                                </div>
-                                <div style="border:1px solid #e6e6e6;padding:16px;border-radius:8px;">
-                                    <div class="text-sm text-soft-lilac">Active Vendors</div>
-                                    <div style="font-size:20px;font-weight:700">{{ number_format($activeVendors ?? 0) }}</div>
-                                </div>
-                                <div style="border:1px solid #e6e6e6;padding:16px;border-radius:8px;">
-                                    <div class="text-sm text-soft-lilac">Total Products</div>
-                                    <div style="font-size:20px;font-weight:700">{{ number_format($totalProducts ?? 0) }}</div>
-                                </div>
-                                <div style="border:1px solid #e6e6e6;padding:16px;border-radius:8px;">
-                                    <div class="text-sm text-soft-lilac">Revenue (This month)</div>
-                                    <div style="font-size:20px;font-weight:700">Rp{{ number_format($revenueThisMonth ?? 0) }}</div>
-                                </div>
-                            </div>
-
-                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                                <div style="border:1px solid #e6e6e6;padding:14px;border-radius:8px;">
-                                    <div style="font-weight:700;margin-bottom:8px;">Recent Orders</div>
-                                    @if(isset($recentOrders) && $recentOrders->count() > 0)
-                                        <ul style="list-style:none;padding:0;margin:0;">
-                                            @foreach($recentOrders->take(5) as $order)
-                                                <li style="padding:8px 0;border-top:1px solid #f2f2f2;display:flex;justify-content:space-between;align-items:center;">
-                                                    <div>
-                                                        <div style="font-weight:600">Order #{{ $order->id }}</div>
-                                                        <div class="text-sm text-soft-lilac">{{ optional($order->user)->name ?? 'N/A' }} • Rp{{ number_format($order->order_total_amount ?? 0) }}</div>
-                                                    </div>
-                                                    <div>
-                                                        <span class="badge {{ $order->order_status === 'paid' ? 'bg-success' : ($order->order_status === 'pending' ? 'bg-warning' : 'bg-secondary') }}">{{ ucfirst($order->order_status ?? 'pending') }}</span>
-                                                    </div>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    @else
-                                        <div class="text-soft-lilac">No recent orders</div>
-                                    @endif
-                                </div>
-
-                                <div style="border:1px solid #e6e6e6;padding:14px;border-radius:8px;">
-                                    <div style="font-weight:700;margin-bottom:8px;">Recent Users</div>
-                                    @if(isset($recentUsers) && $recentUsers->count() > 0)
-                                        <ul style="list-style:none;padding:0;margin:0;">
-                                            @foreach($recentUsers->take(5) as $user)
-                                                <li style="padding:8px 0;border-top:1px solid #f2f2f2;display:flex;justify-content:space-between;align-items:center;">
-                                                    <div>
-                                                        <div style="font-weight:600">{{ $user->name }}</div>
-                                                        <div class="text-sm text-soft-lilac">{{ $user->email }}</div>
-                                                    </div>
-                                                    <div><span class="badge {{ $user->role === 'admin' ? 'bg-danger' : ($user->role === 'vendor' ? 'bg-primary' : 'bg-info') }}">{{ ucfirst($user->role) }}</span></div>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    @else
-                                        <div class="text-soft-lilac">No recent users</div>
-                                    @endif
-                                </div>
-                            </div>
-
-                        {{-- VENDOR --}}
-                        @elseif(auth()->user()->role === 'vendor')
-                            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">
-                                <div style="border:1px solid #e6e6e6;padding:16px;border-radius:8px;">
-                                    <div class="text-sm text-soft-lilac">My Products</div>
-                                    <div style="font-size:20px;font-weight:700">{{ $vendorProductsCount ?? 0 }}</div>
-                                </div>
-                                <div style="border:1px solid #e6e6e6;padding:16px;border-radius:8px;">
-                                    <div class="text-sm text-soft-lilac">Total Orders</div>
-                                    <div style="font-size:20px;font-weight:700">0</div>
-                                </div>
-                                <div style="border:1px solid #e6e6e6;padding:16px;border-radius:8px;">
-                                    <div class="text-sm text-soft-lilac">Revenue</div>
-                                    <div style="font-size:20px;font-weight:700">Rp0</div>
-                                </div>
-                                <div style="border:1px solid #e6e6e6;padding:16px;border-radius:8px;">
-                                    <div class="text-sm text-soft-lilac">Store Rating</div>
-                                    <div style="font-size:20px;font-weight:700">0 / 5</div>
-                                </div>
-                            </div>
-
-                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                                <div style="border:1px solid #e6e6e6;padding:14px;border-radius:8px;">
-                                    <div style="font-weight:700;margin-bottom:8px;">Your Recent Products</div>
-                                    @if(isset($recentProducts) && $recentProducts->count() > 0)
-                                        <ul style="list-style:none;padding:0;margin:0;">
-                                            @foreach($recentProducts->take(5) as $prod)
-                                                <li style="padding:8px 0;border-top:1px solid #f2f2f2;display:flex;justify-content:space-between;align-items:center;">
-                                                    <div style="display:flex;gap:10px;align-items:center;">
-                                                        <img src="{{ $prod->first_image_url }}" alt="{{ $prod->item_name }}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;">
-                                                        <div>
-                                                            <div style="font-weight:600">{{ $prod->item_name }}</div>
-                                                            <div class="text-sm text-soft-lilac">Rp{{ number_format($prod->item_price) }} @if($prod->item_type === 'rent') • Rent @endif</div>
-                                                        </div>
-                                                    </div>
-                                                    <div><span class="badge bg-success">Active</span></div>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    @else
-                                        <div class="text-soft-lilac">No products yet</div>
-                                    @endif
-                                </div>
-
-                                <div style="border:1px solid #e6e6e6;padding:14px;border-radius:8px;">
-                                    <div style="font-weight:700;margin-bottom:8px;">Recent Orders</div>
-                                    <div class="text-soft-lilac">No orders yet</div>
-                                </div>
-                            </div>
-
-                        {{-- MEMBER --}}
-                        @else
-                            @php
-                                $paidOrders = isset($userOrders) ? $userOrders->where('order_status', 'paid') : collect();
-                                $paidRentals = isset($userOrders) ? $userOrders->filter(function($o){
-                                    $isPaid = ($o->order_status ?? '') === 'paid';
-                                    $isRentalType = (($o->order_type ?? '') === 'rental');
-                                    $firstItemType = optional(optional($o->orderItems->first())->item)->item_type ?? null;
-                                    $hasRentalItem = $firstItemType === 'rent';
-                                    return $isPaid && ($isRentalType || $hasRentalItem);
-                                }) : collect();
-                                $totalSpentPaid = $paidOrders->sum('order_total_amount') ?? 0;
-                            @endphp
-
-                            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">
-                                <div style="border:1px solid #e6e6e6;padding:16px;border-radius:8px;">
-                                    <div class="text-sm text-soft-lilac">Active Orders (Paid)</div>
-                                    <div style="font-size:20px;font-weight:700">{{ $paidOrders->count() }}</div>
-                                </div>
-                                <div style="border:1px solid #e6e6e6;padding:16px;border-radius:8px;">
-                                    <div class="text-sm text-soft-lilac">Active Rentals (Paid)</div>
-                                    <div style="font-size:20px;font-weight:700">{{ $paidRentals->count() }}</div>
-                                </div>
-                                <div style="border:1px solid #e6e6e6;padding:16px;border-radius:8px;">
-                                    <div class="text-sm text-soft-lilac">Total Spent</div>
-                                    <div style="font-size:20px;font-weight:700">Rp{{ number_format($totalSpentPaid ?? 0) }}</div>
-                                </div>
-                                <div style="border:1px solid #e6e6e6;padding:16px;border-radius:8px;">
-                                    <div class="text-sm text-soft-lilac">Reviews Given</div>
-                                    <div style="font-size:20px;font-weight:700">{{ $reviewsGiven ?? 0 }}</div>
-                                </div>
-                            </div>
-
-                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                                <div style="border:1px solid #e6e6e6;padding:14px;border-radius:8px;">
-                                    <div style="font-weight:700;margin-bottom:8px;">Recent Paid Orders</div>
-                                    @if($paidOrders->count() > 0)
-                                        <ul style="list-style:none;padding:0;margin:0;">
-                                            @foreach($paidOrders->take(6) as $order)
-                                                <li style="padding:8px 0;border-top:1px solid #f2f2f2;display:flex;justify-content:space-between;align-items:center;">
-                                                    <div>
-                                                        <div style="font-weight:600">Order #{{ $order->id }}</div>
-                                                        <div class="text-sm text-soft-lilac">Rp{{ number_format($order->order_total_amount ?? 0) }} • {{ optional($order->created_at)->format('d M Y') }}</div>
-                                                    </div>
-                                                    <div><a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm">View</a></div>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    @else
-                                        <div class="text-soft-lilac">No paid orders yet</div>
-                                    @endif
+                            </x-dashboard-layout>
                                 </div>
 
                                 <div style="border:1px solid #e6e6e6;padding:14px;border-radius:8px;">
