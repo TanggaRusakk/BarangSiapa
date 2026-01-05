@@ -359,33 +359,92 @@
 
     @else
         <!-- MEMBER DASHBOARD -->
-        <!-- Stats Grid -->
+
+        @php
+            $paidOrders = isset($userOrders) ? $userOrders->where('order_status', 'paid') : collect();
+            $paidRentals = isset($userOrders) ? $userOrders->filter(function($o){
+                $isPaid = ($o->order_status ?? '') === 'paid';
+                $isRentalType = (($o->order_type ?? '') === 'rental');
+                $firstItemType = optional(optional($o->orderItems->first())->item)->item_type ?? null;
+                $hasRentalItem = $firstItemType === 'rent';
+                return $isPaid && ($isRentalType || $hasRentalItem);
+            }) : collect();
+            $totalSpentPaid = $paidOrders->sum('order_total_amount') ?? 0;
+        @endphp
+
+        <!-- Stats Grid (lists) -->
         <div class="row g-5 mb-6">
-            <div class="col-12 col-md-3">
-                <div class="card subtle-hover p-6">
-                    <div class="stat-label">Active Orders</div>
-                    <div class="stat-value text-3xl font-extrabold">{{ $activeOrdersCount ?? 0 }}</div>
-                    <div class="text-sm text-soft-lilac mt-2">{{ $activeOrdersCount > 0 ? 'In progress' : 'No orders yet' }}</div>
+            <div class="col-12 col-lg-6">
+                <div class="card subtle-hover p-6 h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <div class="stat-label">Active Orders (Paid)</div>
+                            <div class="stat-value text-2xl font-extrabold">{{ $paidOrders->count() }}</div>
+                        </div>
+                        <div class="text-sm text-soft-lilac">Recent paid orders</div>
+                    </div>
+
+                    @if($paidOrders->isNotEmpty())
+                        <ul class="list-unstyled mb-0">
+                            @foreach($paidOrders->take(4) as $order)
+                                <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <div>
+                                        <strong>Order #{{ $order->id }}</strong>
+                                        <div class="text-secondary small">Rp{{ number_format($order->order_total_amount ?? 0) }} • {{ optional($order->created_at)->format('d M Y') }}</div>
+                                    </div>
+                                    <div>
+                                        <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm">View</a>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <div class="text-center py-4 text-secondary">No paid orders yet</div>
+                    @endif
                 </div>
             </div>
 
-            <div class="col-12 col-md-3">
-                <div class="card subtle-hover p-6">
-                    <div class="stat-label">Active Rentals</div>
-                    <div class="stat-value text-3xl font-extrabold">{{ $activeRentalsCount ?? 0 }}</div>
-                    <div class="text-sm text-soft-lilac mt-2">{{ $activeRentalsCount > 0 ? 'Currently renting' : 'No rentals' }}</div>
+            <div class="col-12 col-lg-6">
+                <div class="card subtle-hover p-6 h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <div class="stat-label">Active Rentals (Paid)</div>
+                            <div class="stat-value text-2xl font-extrabold">{{ $paidRentals->count() }}</div>
+                        </div>
+                        <div class="text-sm text-soft-lilac">Paid rentals</div>
+                    </div>
+
+                    @if($paidRentals->isNotEmpty())
+                        <ul class="list-unstyled mb-0">
+                            @foreach($paidRentals->take(4) as $rental)
+                                <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <div>
+                                        <strong>Order #{{ $rental->id }}</strong>
+                                        <div class="text-secondary small">Rp{{ number_format($rental->order_total_amount ?? 0) }} • {{ optional($rental->created_at)->format('d M Y') }}</div>
+                                    </div>
+                                    <div>
+                                        <a href="{{ route('orders.show', $rental->id) }}" class="btn btn-sm">View</a>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <div class="text-center py-4 text-secondary">No paid rentals yet</div>
+                    @endif
                 </div>
             </div>
+        </div>
 
-            <div class="col-12 col-md-3">
+        <div class="row g-5 mb-6">
+            <div class="col-12 col-md-6">
                 <div class="card subtle-hover p-6">
                     <div class="stat-label">Total Spent</div>
-                    <div class="stat-value text-3xl font-extrabold">Rp{{ number_format($totalSpent ?? 0) }}</div>
-                    <div class="text-sm text-soft-lilac mt-2">Last 30 days</div>
+                    <div class="stat-value text-3xl font-extrabold">Rp{{ number_format($totalSpentPaid ?? 0) }}</div>
+                    <div class="text-sm text-soft-lilac mt-2">Total from paid orders</div>
                 </div>
             </div>
 
-            <div class="col-12 col-md-3">
+            <div class="col-12 col-md-6">
                 <div class="card subtle-hover p-6">
                     <div class="stat-label">Reviews Given</div>
                     <div class="stat-value text-3xl font-extrabold">{{ $reviewsGiven ?? 0 }}</div>
@@ -458,9 +517,9 @@
                             <a href="{{ route('orders.my-orders') }}" class="btn btn-sm" style="background: #6A38C2; color: white;">View All →</a>
                         </div>
 
-                        @if(isset($userOrders) && $userOrders->count() > 0)
+                        @if($paidOrders->count() > 0)
                             <div class="d-flex flex-column gap-3">
-                                @foreach($userOrders->take(3) as $order)
+                                @foreach($paidOrders->take(3) as $order)
                                     <div class="d-flex gap-3 p-3 rounded" style="background: rgba(106,56,194,0.05);">
                                         @if($order->orderItems->first() && $order->orderItems->first()->item)
                                             <img src="{{ $order->orderItems->first()->item->first_image_url }}" alt="{{ $order->orderItems->first()->item->item_name }}" class="rounded" style="width:80px;height:80px;object-fit:cover;">
@@ -501,9 +560,9 @@
                             <a href="{{ route('orders.my-orders') }}" class="btn btn-sm" style="background: #FF3CAC; color: #000;">View All →</a>
                         </div>
 
-                        @if(isset($userRentals) && $userRentals->count() > 0)
+                        @if($paidRentals->count() > 0)
                             <div class="d-flex flex-column gap-3">
-                                @foreach($userRentals->take(3) as $rental)
+                                @foreach($paidRentals->take(3) as $rental)
                                     <div class="d-flex gap-3 p-3 rounded" style="background: rgba(255,60,172,0.05);">
                                         @if($rental->orderItems->first() && $rental->orderItems->first()->item)
                                             <img src="{{ $rental->orderItems->first()->item->first_image_url }}" alt="{{ $rental->orderItems->first()->item->item_name }}" class="rounded" style="width:80px;height:80px;object-fit:cover;">
