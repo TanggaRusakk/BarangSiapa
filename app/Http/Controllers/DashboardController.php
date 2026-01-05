@@ -38,8 +38,61 @@ class DashboardController extends Controller
 
         // Vendor specific
         $vendorProductsCount = 0;
+        $vendorOrdersCount = 0;
+        $vendorRevenue = 0;
+        $vendorRating = 0.0;
+        $vendorRecentProducts = collect();
+        $vendorRecentOrders = collect();
+        $vendorRecentAds = collect();
+        
         if ($user->vendor) {
-            $vendorProductsCount = $user->vendor->items()->count();
+            $vendor = $user->vendor;
+            
+            // Total products count (all status)
+            $vendorProductsCount = $vendor->items()->count();
+            
+            // Total PAID orders count for vendor's items
+            $vendorOrdersCount = Order::whereIn('order_status', ['paid', 'completed'])
+                ->whereHas('orderItems.item', function($q) use ($vendor) {
+                    $q->where('vendor_id', $vendor->id);
+                })->count();
+            
+            // Total revenue from paid orders
+            $vendorRevenue = Payment::where('payment_status', 'settlement')
+                ->whereHas('order.orderItems.item', function($q) use ($vendor) {
+                    $q->where('vendor_id', $vendor->id);
+                })->sum('payment_total_amount');
+            
+            // Average store rating from all vendor's product reviews
+            $vendorRating = Review::whereHas('item', function($q) use ($vendor) {
+                $q->where('vendor_id', $vendor->id);
+            })->avg('review_rating') ?? 0.0;
+            $vendorRating = round($vendorRating, 1);
+            
+            // Recent products
+            $vendorRecentProducts = $vendor->items()
+                ->with('galleries')
+                ->orderBy('created_at', 'desc')
+                ->take(6)
+                ->get();
+            
+            // Recent orders for vendor
+            $vendorRecentOrders = Order::with(['user', 'orderItems.item'])
+                ->whereHas('orderItems.item', function($q) use ($vendor) {
+                    $q->where('vendor_id', $vendor->id);
+                })
+                ->orderBy('created_at', 'desc')
+                ->take(6)
+                ->get();
+            
+            // Recent ads for vendor
+            $vendorRecentAds = Ad::with(['item', 'payment'])
+                ->whereHas('item', function($q) use ($vendor) {
+                    $q->where('vendor_id', $vendor->id);
+                })
+                ->orderBy('created_at', 'desc')
+                ->take(6)
+                ->get();
         }
 
         // Member specific - recent orders and rentals
@@ -80,7 +133,9 @@ class DashboardController extends Controller
 
         return view('dashboard', compact(
             'recentProducts', 'lastViewed', 'totalUsers', 'activeVendors', 'totalProducts', 
-            'revenueThisMonth', 'recentUsers', 'recentOrders', 'recentAds', 'vendorProductsCount',
+            'revenueThisMonth', 'recentUsers', 'recentOrders', 'recentAds', 
+            'vendorProductsCount', 'vendorOrdersCount', 'vendorRevenue', 'vendorRating',
+            'vendorRecentProducts', 'vendorRecentOrders', 'vendorRecentAds',
             'userOrders', 'userRentals', 'activeOrdersCount', 'activeRentalsCount', 
             'totalSpent', 'reviewsGiven'
         ));
