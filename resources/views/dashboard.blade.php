@@ -30,47 +30,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Categories (Admin quick manage) -->
-        <div class="row g-3 mb-4">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="fw-bold mb-0">Categories</h5>
-                        <div class="d-flex gap-2">
-                            <a href="{{ route('admin.categories') }}" class="btn btn-sm btn-outline-primary">View All</a>
-                            <a href="{{ route('admin.categories') }}" class="btn btn-sm btn-primary">Create</a>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        @if(!empty($recentCategories) && $recentCategories->count() > 0)
-                            <div class="list-group list-group-flush">
-                                @foreach($recentCategories->take(6) as $category)
-                                    <div class="list-group-item border-0 py-3 d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="mb-1 fw-semibold">{{ $category->category_name }}</h6>
-                                            <small class="text-muted">{{ $category->category_slug ?? '' }}</small>
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            <a href="{{ route('admin.categories.edit', $category->id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                                            <form action="{{ route('admin.categories.destroy', $category->id) }}" method="POST" onsubmit="return confirm('Delete this category?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="text-center py-4">
-                                <p class="text-muted mb-0">No categories yet</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
     @endif
 
     @if(auth()->user()->role === 'admin')
@@ -119,12 +78,67 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center py-4">
                         <div class="mb-2">
+                            <svg width="32" height="32" fill="currentColor" class="text-danger opacity-75" viewBox="0 0 24 24">
+                                <path d="M12 2l-5.5 9h11z"/>
+                                <circle cx="12" cy="17" r="1.5"/>
+                                <path d="M10 10h4v5h-4z"/>
+                            </svg>
+                        </div>
+                        <h3 class="fw-bold mb-1" style="font-size: 2rem; color: #6A38C2;">{{ number_format($totalCategories ?? 0) }}</h3>
+                        <p class="text-muted mb-0 small">Categories</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center py-4">
+                        <div class="mb-2">
                             <svg width="32" height="32" fill="currentColor" class="text-info opacity-75" viewBox="0 0 24 24">
                                 <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
                             </svg>
                         </div>
                         <h3 class="fw-bold mb-1" style="font-size: 2rem; color: #6A38C2;">Rp{{ number_format($revenueThisMonth ?? 0) }}</h3>
                         <p class="text-muted mb-0 small">Revenue (This month)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories Management -->
+        <div class="row g-3 mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">Categories</h5>
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('admin.categories') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        @if(!empty($recentCategories) && $recentCategories->count() > 0)
+                            <div class="list-group list-group-flush">
+                                @foreach($recentCategories->take(6) as $category)
+                                    <div class="list-group-item border-0 py-3 d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1 fw-semibold">{{ $category->category_name }}</h6>
+                                            <small class="text-muted">{{ $category->category_slug ?? '' }}</small>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ route('admin.categories.edit', $category->id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                            <form action="{{ route('admin.categories.destroy', $category->id) }}" method="POST" onsubmit="return confirm('Delete this category?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="text-center py-4">
+                                <p class="text-muted mb-0">No categories yet</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

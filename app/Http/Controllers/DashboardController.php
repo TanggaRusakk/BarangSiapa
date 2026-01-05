@@ -29,6 +29,7 @@ class DashboardController extends Controller
         $totalUsers = User::count();
         $activeVendors = Vendor::count();
         $totalProducts = Item::count();
+        $totalCategories = Category::count();
         $revenueThisMonth = Payment::whereYear('created_at', now()->year)
             ->whereMonth('created_at', now()->month)
             ->where('payment_status', 'settlement')
@@ -135,7 +136,7 @@ class DashboardController extends Controller
 
         return view('dashboard', compact(
             'recentProducts', 'lastViewed', 'totalUsers', 'activeVendors', 'totalProducts', 
-            'revenueThisMonth', 'recentUsers', 'recentOrders', 'recentAds', 'recentCategories',
+            'totalCategories', 'revenueThisMonth', 'recentUsers', 'recentOrders', 'recentAds', 'recentCategories',
             'vendorProductsCount', 'vendorOrdersCount', 'vendorRevenue', 'vendorRating',
             'vendorRecentProducts', 'vendorRecentOrders', 'vendorRecentAds',
             'userOrders', 'userRentals', 'activeOrdersCount', 'activeRentalsCount', 
