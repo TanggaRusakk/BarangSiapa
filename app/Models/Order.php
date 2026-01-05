@@ -105,4 +105,46 @@ class Order extends Model
             }
         });
     }
+
+    /**
+     * Check if order is rental type
+     */
+    public function isRental(): bool
+    {
+        return $this->order_type === 'rent';
+    }
+
+    /**
+     * Check if order is buy type
+     */
+    public function isBuy(): bool
+    {
+        return $this->order_type === 'buy';
+    }
+
+    /**
+     * Check if order is paid
+     */
+    public function isPaid(): bool
+    {
+        return in_array($this->order_status, ['paid', 'completed']);
+    }
+
+    /**
+     * Check if order is pending
+     */
+    public function isPending(): bool
+    {
+        return $this->order_status === 'pending';
+    }
+
+    /**
+     * Calculate total from order items
+     */
+    public function calculateTotal(): int|float
+    {
+        return $this->orderItems->sum(function ($item) {
+            return ($item->order_item_price ?? 0) * ($item->order_item_quantity ?? 1);
+        });
+    }
 }

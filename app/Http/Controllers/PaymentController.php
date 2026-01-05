@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Payment;
 use App\Models\Order;
-use Midtrans\Config;
-use Midtrans\Snap;
+use App\Services\PaymentService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
@@ -16,13 +16,11 @@ class PaymentController extends Controller
     private const SUCCESSFUL_STATUSES = ['capture', 'settlement'];
     private const FAILED_STATUSES = ['deny', 'expire', 'cancel'];
 
-    public function __construct()
+    protected $paymentService;
+
+    public function __construct(PaymentService $paymentService)
     {
-        // WHY: Inisialisasi Midtrans config sekali di constructor untuk semua method
-        Config::$serverKey = config('midtrans.server_key');
-        Config::$isProduction = config('midtrans.is_production');
-        Config::$isSanitized = config('midtrans.is_sanitized');
-        Config::$is3ds = config('midtrans.is_3ds');
+        $this->paymentService = $paymentService;
     }
 
     public function index(Request $request)
@@ -36,127 +34,61 @@ class PaymentController extends Controller
         $order = Order::with(['orderItems.item', 'user', 'rentalInfos'])->findOrFail($orderId);
 
         // WHY: Prevent unauthorized access to other user's orders
-        if ($order->user_id !== auth()->id()) {
+        if ($order->user_id !== Auth::id()) {
             abort(403, 'Unauthorized');
         }
 
         // WHY: Prevent duplicate payment for already paid orders (idempotency check)
         $existingPayment = Payment::where('order_id', $order->id)->first();
-        if ($existingPayment && in_array($existingPayment->payment_status, self::FINAL_PAYMENT_STATUSES)) {
+        if ($this->paymentService->isPaymentFinalized($existingPayment)) {
             return redirect()->route('orders.show', $order->id)
                 ->with('error', 'Order ini sudah dibayar!');
         }
 
-        // WHY: Generate unique order_id to prevent collision with Midtrans
-        $midtransOrderId = 'ORDER-' . $order->id . '-' . time();
-
-        // WHY: Get order total with fallback values for data consistency
-        $orderTotal = $order->total_amount ?? $order->order_total_amount ?? $order->calculated_total;
-
-        // WHY: Determine rental flag
-        $isRental = $order->order_type === 'rent';
-
-        // WHY: Determine payment type/amount. Preference order:
-        // 1) session choice (user just selected at checkout), 2) existing Payment record, 3) default (dp for rentals).
-        $paymentType = $isRental ? 'dp' : 'full';
-        $paymentAmount = $isRental ? round($orderTotal * 0.30) : $orderTotal;
-
-        // Prefer explicit payment_option query parameter -> session -> existing payment -> defaults
+        // WHY: Get payment options from various sources
         $requestOption = $request->query('payment_option', null);
         $sessionKey = 'order_payment_option_' . $order->id;
         $sessionOption = session($sessionKey, null);
 
-        // Debug logging to diagnose mismatched DP/full behavior
+        // Debug logging
         Log::info('PaymentController.create: option check', [
             'order_id' => $order->id,
             'request_option' => $requestOption,
-            'session_key' => $sessionKey,
             'session_option' => $sessionOption,
             'existing_payment_id' => $existingPayment->id ?? null,
-            'existing_payment_type' => $existingPayment->payment_type ?? null,
-            'existing_payment_amount' => $existingPayment->payment_total_amount ?? null,
         ]);
 
-        // Determine final chosen option
-        $chosenOption = $requestOption ?? $sessionOption ?? ($existingPayment->payment_type ?? null) ?? ($isRental ? 'dp' : 'full');
-        $paymentType = $chosenOption;
-        $paymentAmount = ($paymentType === 'dp' && $isRental) ? round($orderTotal * 0.30) : $orderTotal;
+        // Determine payment details using service
+        $paymentDetails = $this->paymentService->determinePaymentDetails(
+            $order,
+            $requestOption,
+            $sessionOption,
+            $existingPayment
+        );
 
-        // If an existing payment exists but differs, update it to match chosen option
+        // Update existing payment if needed
         if ($existingPayment) {
-            if ($existingPayment->payment_type !== $paymentType || (int)$existingPayment->payment_total_amount !== (int)$paymentAmount) {
+            if ($existingPayment->payment_type !== $paymentDetails['payment_type'] || 
+                (int)$existingPayment->payment_total_amount !== (int)$paymentDetails['payment_amount']) {
                 try {
                     $existingPayment->update([
-                        'payment_type' => $paymentType,
-                        'payment_total_amount' => $paymentAmount,
+                        'payment_type' => $paymentDetails['payment_type'],
+                        'payment_total_amount' => $paymentDetails['payment_amount'],
                         'payment_status' => 'pending',
                     ]);
                 } catch (\Exception $e) {
-                    Log::warning('Unable to sync existing payment with chosen option', ['payment_id' => $existingPayment->id, 'error' => $e->getMessage()]);
+                    Log::warning('Unable to sync existing payment', ['payment_id' => $existingPayment->id, 'error' => $e->getMessage()]);
                 }
             }
         }
-        
-        $transactionDetails = [
-            'order_id' => $midtransOrderId,
-            'gross_amount' => (int) $paymentAmount,
-        ];
-
-        // Build item details for Midtrans itemization
-        $itemDetails = $this->buildItemDetails($order->orderItems);
-        
-        // WHY: If payment type is DP, adjust item details to reflect DP amount
-        if ($paymentType === 'dp') {
-            $itemDetails = array_map(function($item) {
-                $item['price'] = round($item['price'] * 0.30);
-                $item['name'] = 'DP ' . $item['name'];
-                return $item;
-            }, $itemDetails);
-        }
-        
-        // WHY: Add service fee if subtotal doesn't match payment amount (tax, admin fee, etc)
-        $itemTotal = collect($itemDetails)->sum(fn($item) => $item['price'] * $item['quantity']);
-        if ($itemTotal < $paymentAmount) {
-            $itemDetails[] = [
-                'id' => 'SERVICE_FEE',
-                'price' => (int) ($paymentAmount - $itemTotal),
-                'quantity' => 1,
-                'name' => $isRental ? 'DP Service Fee' : 'Service Fee',
-            ];
-        }
-
-        $customerDetails = [
-            'first_name' => $order->user->name ?? 'Customer',
-            'email' => $order->user->email ?? 'customer@example.com',
-            'phone' => $order->user->phone ?? '081234567890',
-        ];
-
-        $params = [
-            'transaction_details' => $transactionDetails,
-            'item_details' => $itemDetails,
-            'customer_details' => $customerDetails,
-            'callbacks' => [
-                'finish' => route('payment.success'),
-                'unfinish' => route('payment.pending'),
-                'error' => route('payment.error'),
-            ],
-        ];
 
         try {
-            $snapToken = Snap::getSnapToken($params);
+            // Generate snap token using service
+            $snapToken = $this->paymentService->generateSnapToken($order, $paymentDetails);
+            $midtransOrderId = 'ORDER-' . $order->id . '-' . time();
 
-            // WHY: Use updateOrCreate to handle both new and retry payment scenarios
-            $payment = Payment::updateOrCreate(
-                ['order_id' => $order->id],
-                [
-                    'user_id' => $order->user_id,
-                    'midtrans_order_id' => $midtransOrderId,
-                    'payment_method' => 'midtrans',
-                    'payment_type' => $paymentType,
-                    'payment_total_amount' => $paymentAmount,
-                    'payment_status' => 'pending',
-                ]
-            );
+            // Create or update payment
+            $payment = $this->paymentService->createOrUpdatePayment($order, $midtransOrderId, $paymentDetails);
 
             return view('payment', compact('snapToken', 'order', 'payment'));
 
@@ -213,7 +145,7 @@ class PaymentController extends Controller
                 if ($payment->order_id) {
                     $order = Order::find($payment->order_id);
                     // WHY: Verify user owns this order before showing success page
-                    if ($order && $order->user_id === auth()->id()) {
+                    if ($order && $order->user_id === Auth::id()) {
                         return redirect()->route('orders.show', $order->id)
                             ->with('info', 'Pembayaran sedang diverifikasi. Status akan diupdate otomatis.');
                     }
@@ -297,7 +229,7 @@ class PaymentController extends Controller
             }
 
             // WHY: Validate amount untuk prevent manipulation attack
-            if ((int)$grossAmount !== (int)$payment->payment_total_amount) {
+            if (!$this->paymentService->validateWebhookAmount($payment, (int)$grossAmount)) {
                 Log::error('Amount mismatch in webhook', [
                     'expected' => $payment->payment_total_amount,
                     'received' => $grossAmount,
@@ -307,7 +239,7 @@ class PaymentController extends Controller
             }
 
             // WHY: IDEMPOTENCY - prevent double processing jika webhook dipanggil > 1x
-            if (in_array($payment->payment_status, self::FINAL_PAYMENT_STATUSES)) {
+            if ($this->paymentService->isPaymentFinalized($payment)) {
                 Log::info('Webhook ignored - payment already final', [
                     'order_id' => $orderId,
                     'current_status' => $payment->payment_status,
@@ -359,7 +291,7 @@ class PaymentController extends Controller
             case 'capture':
                 // WHY: Credit card perlu fraud check sebelum approve
                 if ($fraudStatus === 'accept') {
-                    $this->markPaymentAsSettled($payment, $order, $paymentType, $orderId);
+                    $this->paymentService->markPaymentAsSettled($payment, $order, $paymentType);
                 } elseif ($fraudStatus === 'challenge') {
                     $payment->update(['payment_status' => 'challenge']);
                     Log::warning('Payment challenged by fraud detection', ['order_id' => $orderId]);
@@ -368,7 +300,7 @@ class PaymentController extends Controller
 
             case 'settlement':
                 // WHY: Bank transfer, e-wallet langsung settlement tanpa fraud check
-                $this->markPaymentAsSettled($payment, $order, $paymentType, $orderId);
+                $this->paymentService->markPaymentAsSettled($payment, $order, $paymentType);
                 break;
 
             case 'pending':
@@ -383,7 +315,7 @@ class PaymentController extends Controller
             case 'expire':
             case 'cancel':
                 // WHY: Failed payment - cancel order untuk free up stock
-                $this->markPaymentAsFailed($payment, $order, $transactionStatus, $orderId);
+                $this->paymentService->markPaymentAsFailed($payment, $order, $transactionStatus);
                 break;
 
             default:
@@ -392,54 +324,6 @@ class PaymentController extends Controller
                     'order_id' => $orderId,
                 ]);
         }
-    }
-
-    /**
-     * Mark payment as settled (paid) and update order status
-     * 
-     * WHY: DRY principle - logic settlement dipakai di capture dan settlement
-     */
-    private function markPaymentAsSettled(
-        Payment $payment,
-        Order $order,
-        string $paymentType,
-        string $orderId
-    ): void {
-        // Make settlement update atomic; vendor totals are handled by Order observer
-        \DB::transaction(function () use ($payment, $order, $paymentType, $orderId) {
-            $payment->update([
-                'payment_status' => 'settlement',
-                'payment_method' => $paymentType,
-                'paid_at' => now(),
-            ]);
-
-            $order->update(['order_status' => 'paid']);
-        });
-
-        Log::info('Payment successfully settled', [
-            'order_id' => $orderId,
-            'payment_method' => $paymentType,
-        ]);
-    }
-
-    /**
-     * Mark payment as failed and cancel order
-     * 
-     * WHY: DRY principle - logic cancellation sama untuk deny, expire, cancel
-     */
-    private function markPaymentAsFailed(
-        Payment $payment,
-        Order $order,
-        string $status,
-        string $orderId
-    ): void {
-        $payment->update(['payment_status' => $status]);
-        $order->update(['order_status' => 'cancelled']);
-        
-        Log::info('Payment failed and order cancelled', [
-            'order_id' => $orderId,
-            'reason' => $status,
-        ]);
     }
 
     /**
@@ -488,29 +372,5 @@ class PaymentController extends Controller
             default:
                 Log::warning('Unhandled ad transaction status', ['status' => $transactionStatus, 'order_id' => $orderId]);
         }
-    }
-
-    /**
-     * Build item details array untuk Midtrans
-     * 
-     * WHY: Extracted method untuk reduce complexity di create() dan improve reusability
-     */
-    private function buildItemDetails($orderItems): array
-    {
-        $itemDetails = [];
-        
-        foreach ($orderItems as $orderItem) {
-            $price = (int) ($orderItem->order_item_price ?? $orderItem->price ?? 0);
-            $quantity = (int) ($orderItem->order_item_quantity ?? $orderItem->quantity ?? 1);
-            
-            $itemDetails[] = [
-                'id' => $orderItem->item->id ?? 'ITEM-' . $orderItem->id,
-                'price' => $price,
-                'quantity' => $quantity,
-                'name' => substr($orderItem->item->item_name ?? 'Item', 0, 50),
-            ];
-        }
-        
-        return $itemDetails;
     }
 }

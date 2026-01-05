@@ -87,4 +87,36 @@ class Item extends Model
 
         return asset('images/items/item_placeholder.jpg');
     }
+
+    /**
+     * Check if item is available for purchase/rental
+     */
+    public function isAvailable(): bool
+    {
+        return $this->item_status === 'available' && $this->item_stock > 0;
+    }
+
+    /**
+     * Check if sufficient stock is available
+     */
+    public function hasStock(int $quantity): bool
+    {
+        return $this->item_stock >= $quantity;
+    }
+
+    /**
+     * Check if item is a rental item
+     */
+    public function isRental(): bool
+    {
+        return $this->item_type === 'rent';
+    }
+
+    /**
+     * Check if item is a buy item
+     */
+    public function isBuy(): bool
+    {
+        return $this->item_type === 'buy';
+    }
 }
