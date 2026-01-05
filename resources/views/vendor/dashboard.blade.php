@@ -115,15 +115,13 @@
 
                                     <div class="flex-grow-1 ms-3 min-w-0">
                                         <h6 class="mb-1 fw-bold text-truncate">{{ $product->item_name }}</h6>
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <p class="mb-0 text-secondary small text-truncate">
-                                                @if(($product->item_type ?? '') === 'rent')
-                                                    Rp{{ number_format($product->item_price) }} / day
-                                                @else
-                                                    Rp{{ number_format($product->item_price) }} (Buy)
-                                                @endif
-                                            </p>
-                                        </div>
+                                        <p class="mb-0 text-secondary small text-truncate">
+                                            @if(($product->item_type ?? '') === 'rent')
+                                                Rp{{ number_format($product->item_price) }} / day
+                                            @else
+                                                Rp{{ number_format($product->item_price) }} (Buy)
+                                            @endif
+                                        </p>
                                     </div>
                                 </div>
                             @endforeach
