@@ -44,7 +44,6 @@ Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 Route::get('/order-items', [OrderItemController::class, 'index'])->name('order-items.index');
 Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
 
-// Midtrans notification webhook
 Route::get('/service-fees', [ServiceFeeController::class, 'index'])->name('service-fees.index');
 Route::get('/rental-infos', [RentalInfoController::class, 'index'])->name('rental-infos.index');
 Route::get('/item-categories', [ItemCategoryController::class, 'index'])->name('item-categories.index');
@@ -52,11 +51,8 @@ Route::get('/order-service-fees', [OrderServiceFeeController::class, 'index'])->
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
-// Endpoint to record last-viewed product (AJAX)
 Route::post('/product/viewed', [DashboardController::class, 'recordView'])->middleware('auth');
 
-// WHY: Payment callback routes MUST be BEFORE /payment/{order} route
-// Laravel matches routes from top to bottom - specific routes must come before dynamic ones
 Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment/pending', [PaymentController::class, 'pending'])->name('payment.pending');
 Route::get('/payment/error', [PaymentController::class, 'error'])->name('payment.error');
@@ -68,19 +64,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/photo/upload', [ProfileController::class, 'uploadPhoto'])->name('profile.photo.upload');
     Route::delete('/profile/photo/remove', [ProfileController::class, 'removePhoto'])->name('profile.photo.remove');
 
-    // Order routes
     Route::get('/checkout/{item}', [OrderController::class, 'checkout'])->name('checkout');
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('orders.my-orders');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-
-    // Payment create route - needs auth to create payment
-    // IMPORTANT: This must be AFTER /payment/success, /payment/pending, /payment/error
     Route::get('/payment/{order}', [PaymentController::class, 'create'])->name('payment.create');
 });
 
-// WHY: Webhook dipindah ke routes/api.php
-// Lihat: routes/api.php untuk endpoint /api/midtrans/webhook
+// routes/api.php untuk endpoint /api/midtrans/webhook
 
 Route::middleware('auth')->group(function () {
 
