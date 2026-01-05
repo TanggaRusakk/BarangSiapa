@@ -56,6 +56,7 @@ Route::post('/product/viewed', [DashboardController::class, 'recordView'])->midd
 Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment/pending', [PaymentController::class, 'pending'])->name('payment.pending');
 Route::get('/payment/error', [PaymentController::class, 'error'])->name('payment.error');
+Route::get('/payment/remaining/success/{order}', [PaymentController::class, 'remainingSuccess'])->name('payment.remaining.success');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -69,6 +70,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('orders.my-orders');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::get('/payment/{order}', [PaymentController::class, 'create'])->name('payment.create');
+    Route::get('/payment/{order}/remaining', [PaymentController::class, 'payRemaining'])->name('payment.remaining');
 });
 
 // routes/api.php untuk endpoint /api/midtrans/webhook

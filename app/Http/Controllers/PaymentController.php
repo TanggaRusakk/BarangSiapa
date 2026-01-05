@@ -331,6 +331,8 @@ class PaymentController extends Controller
             // Process transaction status - if payment_type is 'ad' handle Ad creation/activation
             if ($payment->payment_type === 'ad') {
                 $this->processAdPaymentWebhook($payment, $transactionStatus, $fraudStatus, $paymentType, $orderId);
+            } elseif ($payment->payment_type === 'remaining') {
+                $this->processRemainingPaymentWebhook($payment, $order, $transactionStatus, $fraudStatus, $paymentType, $orderId);
             } else {
                 $this->processTransactionStatus(
                     $payment,
@@ -494,5 +496,216 @@ class PaymentController extends Controller
             default:
                 Log::warning('Unhandled ad transaction status', ['status' => $transactionStatus, 'order_id' => $orderId]);
         }
+    }
+
+    /**
+     * Handle remaining payment webhook processing
+     */
+    private function processRemainingPaymentWebhook(
+        Payment $remainingPayment,
+        Order $order,
+        string $transactionStatus,
+        ?string $fraudStatus,
+        string $paymentType,
+        string $orderId
+    ): void {
+        switch ($transactionStatus) {
+            case 'capture':
+                if ($fraudStatus === 'accept') {
+                    $this->markRemainingPaymentAsSettled($remainingPayment, $order, $paymentType);
+                } else {
+                    Log::warning('Remaining payment captured but fraud status not accepted', [
+                        'order_id' => $orderId,
+                        'fraud_status' => $fraudStatus,
+                    ]);
+                }
+                break;
+
+            case 'settlement':
+                $this->markRemainingPaymentAsSettled($remainingPayment, $order, $paymentType);
+                break;
+
+            case 'pending':
+                $remainingPayment->update(['payment_status' => 'pending', 'payment_method' => $paymentType]);
+                break;
+
+            case 'deny':
+            case 'expire':
+            case 'cancel':
+                $this->markPaymentAsFailed($remainingPayment, $order, $transactionStatus);
+                break;
+
+            default:
+                Log::warning('Unhandled remaining payment transaction status', [
+                    'status' => $transactionStatus,
+                    'order_id' => $orderId,
+                ]);
+        }
+    }
+
+    /**
+     * Mark remaining payment as settled and mark DP as fully paid
+     */
+    private function markRemainingPaymentAsSettled(
+        Payment $remainingPayment,
+        Order $order,
+        string $paymentType
+    ): void {
+        DB::transaction(function () use ($remainingPayment, $order, $paymentType) {
+            // Mark remaining payment as settled
+            $remainingPayment->update([
+                'payment_status' => 'settlement',
+                'payment_method' => $paymentType,
+                'paid_at' => now(),
+            ]);
+
+            // Find the original DP payment and mark it as fully paid
+            $dpPayment = Payment::where('order_id', $order->id)
+                ->where('payment_type', 'dp')
+                ->first();
+
+            if ($dpPayment) {
+                $dpPayment->update(['payment_dp_paid' => true]);
+            }
+
+            // Order status remains 'paid' (already set from DP payment)
+            // Could add additional logic here if needed
+        });
+
+        Log::info('Remaining payment successfully settled', [
+            'order_id' => $order->id,
+            'payment_method' => $paymentType,
+        ]);
+    }
+
+    /**
+     * Handle remaining 70% payment for DP orders
+     */
+    public function payRemaining($orderId)
+    {
+        $order = Order::with(['orderItems.item', 'user', 'rentalInfos'])->findOrFail($orderId);
+
+        // Validate: Prevent unauthorized access
+        if ($order->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Get the payment
+        $payment = Payment::where('order_id', $order->id)->firstOrFail();
+
+        // Validate: Check if this payment needs remaining payment
+        if (!$payment->needsRemainingPayment()) {
+            return redirect()->route('orders.show', $order->id)
+                ->with('error', 'Order ini tidak memerlukan pelunasan atau sudah lunas!');
+        }
+
+        // Calculate remaining amount (70%)
+        $remainingAmount = $payment->getRemainingAmount();
+        
+        // Generate unique Midtrans order ID for remaining payment
+        $midtransOrderId = 'ORDER-' . $order->id . '-REMAINING-' . time();
+
+        Log::info('PaymentController.payRemaining: payment details', [
+            'order_id' => $order->id,
+            'remaining_amount' => $remainingAmount,
+        ]);
+
+        // Build transaction details
+        $transactionDetails = [
+            'order_id' => $midtransOrderId,
+            'gross_amount' => (int) $remainingAmount,
+        ];
+
+        // Build item details for remaining 70%
+        $itemDetails = [];
+        foreach ($order->orderItems as $orderItem) {
+            $price = (int) ($orderItem->order_item_price ?? $orderItem->price ?? 0);
+            $quantity = (int) ($orderItem->order_item_quantity ?? $orderItem->quantity ?? 1);
+            
+            // Calculate 70% of the price
+            $price = round($price * 0.70);
+            
+            $itemDetails[] = [
+                'id' => $orderItem->item->id ?? 'ITEM-' . $orderItem->id,
+                'price' => $price,
+                'quantity' => $quantity,
+                'name' => substr(($orderItem->item->item_name ?? 'Item') . ' (Sisa Pembayaran)', 0, 50),
+            ];
+        }
+
+        // Add service fee if needed
+        $itemTotal = collect($itemDetails)->sum(fn($item) => $item['price'] * $item['quantity']);
+        if ($itemTotal < $remainingAmount) {
+            $itemDetails[] = [
+                'id' => 'REMAINING_SERVICE_FEE',
+                'price' => (int) ($remainingAmount - $itemTotal),
+                'quantity' => 1,
+                'name' => 'Biaya Pelunasan',
+            ];
+        }
+
+        // Build customer details
+        $customerDetails = [
+            'first_name' => $order->user->name ?? 'Customer',
+            'email' => $order->user->email ?? 'customer@example.com',
+            'phone' => $order->user->phone ?? '081234567890',
+        ];
+
+        // Prepare Midtrans params
+        $params = [
+            'transaction_details' => $transactionDetails,
+            'item_details' => $itemDetails,
+            'customer_details' => $customerDetails,
+            'callbacks' => [
+                'finish' => route('payment.remaining.success', $order->id),
+                'unfinish' => route('payment.pending'),
+                'error' => route('payment.error'),
+            ],
+        ];
+
+        try {
+            // Generate snap token
+            $snapToken = Snap::getSnapToken($params);
+
+            // Create new payment record for remaining payment
+            $remainingPayment = Payment::create([
+                'user_id' => $order->user_id,
+                'order_id' => $order->id,
+                'midtrans_order_id' => $midtransOrderId,
+                'payment_method' => 'midtrans',
+                'payment_type' => 'remaining',
+                'payment_total_amount' => $remainingAmount,
+                'payment_status' => 'pending',
+            ]);
+
+            return view('payment', compact('snapToken', 'order', 'remainingPayment', 'payment'));
+
+        } catch (\Exception $e) {
+            Log::error('Failed to create remaining payment', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return redirect()->route('orders.my-orders')
+                ->with('error', 'Gagal membuat pembayaran: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Handle success redirect for remaining payment
+     */
+    public function remainingSuccess(Request $request, $orderId)
+    {
+        Log::info('Remaining payment success redirect hit', ['order_id' => $orderId, 'query' => $request->query()]);
+        
+        $order = Order::find($orderId);
+        
+        if ($order && $order->user_id === Auth::id()) {
+            return redirect()->route('orders.show', $order->id)
+                ->with('info', 'Pembayaran pelunasan sedang diverifikasi. Status akan diupdate otomatis.');
+        }
+
+        return redirect()->route('orders.my-orders')
+            ->with('info', 'Pembayaran pelunasan sedang diverifikasi oleh sistem.');
     }
 }

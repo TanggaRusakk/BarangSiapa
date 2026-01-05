@@ -11,7 +11,13 @@
         <span class="fw-bold">Payment</span>
     </div>
 
-    <h1 class="text-3xl fw-bold mb-6" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Complete Your Payment</h1>
+    <h1 class="text-3xl fw-bold mb-6" style="background: linear-gradient(135deg, #6A38C2 0%, #FF3CAC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+        @if(isset($remainingPayment))
+            Lunasi Pembayaran
+        @else
+            Complete Your Payment
+        @endif
+    </h1>
 
     <div class="row g-4">
         <!-- Order Summary -->
@@ -51,11 +57,19 @@
                         $serviceFee = $order->total_amount - $subtotal;
                         $isRental = $order->order_type === 'rent';
 
-                        // Prefer payment record values so the UI matches what will be charged
-                        $paymentType = $payment->payment_type ?? ($isRental ? 'dp' : 'full');
-                        $paymentAmount = $payment->payment_total_amount ?? ($paymentType === 'dp' && $isRental ? round($order->total_amount * 0.30) : $order->total_amount);
-                        $dpAmount = $paymentType === 'dp' ? $paymentAmount : 0;
-                        $remainingAmount = $order->total_amount - $dpAmount;
+                        // Check if this is a remaining payment
+                        if (isset($remainingPayment)) {
+                            $paymentType = 'remaining';
+                            $paymentAmount = $remainingPayment->payment_total_amount;
+                            $dpAmount = 0;
+                            $remainingAmount = $paymentAmount;
+                        } else {
+                            // Prefer payment record values so the UI matches what will be charged
+                            $paymentType = $payment->payment_type ?? ($isRental ? 'dp' : 'full');
+                            $paymentAmount = $payment->payment_total_amount ?? ($paymentType === 'dp' && $isRental ? round($order->total_amount * 0.30) : $order->total_amount);
+                            $dpAmount = $paymentType === 'dp' ? $paymentAmount : 0;
+                            $remainingAmount = $order->total_amount - $dpAmount;
+                        }
                     @endphp
 
                     <div class="border-top pt-3 mt-3">
@@ -73,19 +87,33 @@
                                 <span class="fw-bold fs-5" style="color: #6A38C2;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
                             </div>
                         </div>
-                        @if($isRental && $paymentType === 'dp')
+                        @if(isset($remainingPayment))
+                        <div class="border-top pt-2 mt-2">
+                            <div class="d-flex justify-content-between mb-2 text-success">
+                                <span class="fw-bold">DP Already Paid (30%)</span>
+                                <span class="fw-bold">Rp {{ number_format($order->total_amount * 0.30, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-bold" style="color: #FF3CAC;">Remaining to Pay (70%)</span>
+                                <span class="fw-bold" style="color: #FF3CAC;">Rp {{ number_format($remainingAmount, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                        <div class="alert alert-success mt-3 mb-0">
+                            <small><i class="bi bi-check-circle"></i> Setelah pelunasan, pesanan Anda akan selesai dibayar penuh.</small>
+                        </div>
+                        @elseif($isRental && $paymentType === 'dp')
                         <div class="border-top pt-2 mt-2">
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="fw-bold" style="color: #FF3CAC;">DP to Pay (30%)</span>
                                 <span class="fw-bold" style="color: #FF3CAC;">Rp {{ number_format($dpAmount, 0, ',', '.') }}</span>
                             </div>
                             <div class="d-flex justify-content-between text-muted">
-                                <span class="small">Remaining (pay on pickup)</span>
+                                <span class="small">Remaining (can be paid later)</span>
                                 <span class="small">Rp {{ number_format($remainingAmount, 0, ',', '.') }}</span>
                             </div>
                         </div>
                         <div class="alert alert-info mt-3 mb-0">
-                            <small><i class="bi bi-info-circle"></i> Rental items require 30% DP payment now. Remaining 70% will be paid during item pickup.</small>
+                            <small><i class="bi bi-info-circle"></i> Rental items require 30% DP payment now. Remaining 70% can be paid later from your order list.</small>
                         </div>
                         @endif
                     </div>
@@ -110,7 +138,7 @@
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Status</span>
-                            <span class="badge bg-warning">{{ ucfirst($payment->payment_status ?? 'pending') }}</span>
+                            <span class="badge bg-warning">{{ ucfirst((isset($remainingPayment) ? $remainingPayment->payment_status : $payment->payment_status) ?? 'pending') }}</span>
                         </div>
                     </div>
 
@@ -120,8 +148,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                         </svg>
                         @php
-                            $buttonLabel = ($isRental && ($payment->payment_type ?? $paymentType) === 'dp') ? 'Pay DP' : 'Pay Now';
-                            $buttonAmount = ($isRental && ($payment->payment_type ?? $paymentType) === 'dp') ? $dpAmount : $order->total_amount;
+                            if (isset($remainingPayment)) {
+                                $buttonLabel = 'Lunasi Sisa';
+                                $buttonAmount = $remainingPayment->payment_total_amount;
+                            } else {
+                                $buttonLabel = ($isRental && ($payment->payment_type ?? $paymentType) === 'dp') ? 'Pay DP' : 'Pay Now';
+                                $buttonAmount = ($isRental && ($payment->payment_type ?? $paymentType) === 'dp') ? $dpAmount : $order->total_amount;
+                            }
                         @endphp
                         {{ $buttonLabel }} - Rp {{ number_format($buttonAmount, 0, ',', '.') }}
                     </button>
@@ -183,7 +216,11 @@
                 const btn = document.getElementById('pay-button');
                 btn.disabled = false;
                 @php
-                    $btnLabel = ($isRental && ($payment->payment_type ?? $paymentType) === 'dp') ? 'Pay DP - Rp ' . number_format($dpAmount, 0, ',', '.') : 'Pay Now - Rp ' . number_format($order->total_amount, 0, ',', '.');
+                    if (isset($remainingPayment)) {
+                        $btnLabel = 'Lunasi Sisa - Rp ' . number_format($remainingPayment->payment_total_amount, 0, ',', '.');
+                    } else {
+                        $btnLabel = ($isRental && ($payment->payment_type ?? $paymentType) === 'dp') ? 'Pay DP - Rp ' . number_format($dpAmount, 0, ',', '.') : 'Pay Now - Rp ' . number_format($order->total_amount, 0, ',', '.');
+                    }
                 @endphp
                 btn.innerHTML = '<svg class="me-2" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>' + '{{ $btnLabel }}';
             }

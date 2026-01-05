@@ -111,6 +111,17 @@
                                         COMPLETE PAYMENT
                                     </a>
                                 </div>
+                            @elseif($order->payments->needsRemainingPayment())
+                                <div class="mt-3">
+                                    <div class="alert alert-warning mb-3" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #FCD34D;">
+                                        <strong><i class="bi bi-exclamation-circle"></i> Pelunasan Diperlukan</strong>
+                                        <p class="mb-2 mt-2 small">DP sebesar Rp {{ number_format($order->order_total_amount * 0.30, 0, ',', '.') }} sudah dibayar.</p>
+                                        <p class="mb-0 small">Sisa pembayaran: <strong>Rp {{ number_format($order->payments->getRemainingAmount(), 0, ',', '.') }}</strong></p>
+                                    </div>
+                                    <a href="{{ route('payment.remaining', $order->id) }}" class="btn btn-lg w-100 text-white" style="background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%); border-radius: 30px; font-weight: 600;">
+                                        <i class="bi bi-wallet2"></i> LUNASI PEMBAYARAN
+                                    </a>
+                                </div>
                             @endif
                         @else
                             <p class="mb-3" style="color: #9CA3AF;">Payment information not available.</p>

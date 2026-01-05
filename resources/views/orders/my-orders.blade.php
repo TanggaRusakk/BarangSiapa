@@ -83,11 +83,25 @@
                         <div>
                             <span class="text-secondary">Total:</span>
                             <span class="fw-bold fs-5" style="color: #6A38C2;">Rp {{ number_format($order->order_total_amount, 0, ',', '.') }}</span>
+                            @php
+                                $payment = \App\Models\Payment::where('order_id', $order->id)->where('payment_type', 'dp')->first();
+                            @endphp
+                            @if($payment && $payment->needsRemainingPayment())
+                                <div class="mt-2">
+                                    <small class="text-warning">
+                                        <i class="bi bi-exclamation-circle"></i> DP sudah dibayar. Sisa: Rp {{ number_format($payment->getRemainingAmount(), 0, ',', '.') }}
+                                    </small>
+                                </div>
+                            @endif
                         </div>
                         <div class="d-flex gap-2">
                             <a href="{{ route('orders.show', $order->id) }}" class="btn btn-outline-primary btn-sm">View Details</a>
                             @if($order->order_status === 'pending')
                                 <a href="{{ route('payment.create', $order->id) }}" class="btn btn-sm" style="background: #6A38C2; color: white;">Pay Now</a>
+                            @elseif($order->order_status === 'paid' && $payment && $payment->needsRemainingPayment())
+                                <a href="{{ route('payment.remaining', $order->id) }}" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-wallet2"></i> Lunasi Sisa
+                                </a>
                             @endif
                         </div>
                     </div>
