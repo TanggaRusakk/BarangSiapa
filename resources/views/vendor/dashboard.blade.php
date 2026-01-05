@@ -123,17 +123,6 @@
                                                     Rp{{ number_format($product->item_price) }} (Buy)
                                                 @endif
                                             </p>
-
-                                            <div class="flex-shrink-0 ms-3">
-                                                @php $_status = strtolower($product->item_status ?? 'available'); @endphp
-                                                @if($_status === 'available')
-                                                    <span class="badge rounded-pill px-3 py-2 bg-success text-white text-nowrap" style="font-size:0.75rem;">Available</span>
-                                                @elseif($_status === 'rented')
-                                                    <span class="badge rounded-pill px-3 py-2 bg-warning text-dark text-nowrap" style="font-size:0.75rem;">Rented</span>
-                                                @else
-                                                    <span class="badge rounded-pill px-3 py-2 bg-secondary text-white text-nowrap" style="font-size:0.75rem;">Unavailable</span>
-                                                @endif
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
