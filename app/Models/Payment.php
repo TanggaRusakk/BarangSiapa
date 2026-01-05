@@ -37,6 +37,11 @@ class Payment extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function ad()
+    {
+        return $this->hasOne(Ad::class, 'payment_id');
+    }
+
     /**
      * Check if this is a DP payment that has been paid and needs remaining 70% payment
      */
