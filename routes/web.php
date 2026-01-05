@@ -998,26 +998,29 @@ Route::middleware('auth')->group(function () {
             'item_stock' => 'nullable|integer|min:0',
             'rental_duration_value' => 'nullable|integer|min:1',
             'rental_duration_unit' => 'nullable|string|in:day,week,month',
-            'image' => 'nullable|image|max:2048',
+            'images' => 'nullable|array',
+            'images.*' => 'image|max:4096',
             'categories' => 'nullable|array',
             'categories.*' => 'exists:categories,id',
         ]);
 
-        // Handle image upload: store to public/images/products and create gallery record
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $filename = time() . '_' . preg_replace('/[^A-Za-z0-9\-_.]/', '_', $file->getClientOriginalName());
-            $dest = public_path('images/products');
-            if (!file_exists($dest)) {
-                mkdir($dest, 0755, true);
-            }
-            $file->move($dest, $filename);
+        // Handle multiple images upload
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $ext = $file->getClientOriginalExtension();
+                $filename = time() . '_' . uniqid() . '.' . $ext;
+                $dest = public_path('images/products');
+                if (!file_exists($dest)) {
+                    mkdir($dest, 0755, true);
+                }
+                $file->move($dest, $filename);
 
-            // create gallery record
-            \App\Models\ItemGallery::create([
-                'item_id' => $item->id,
-                'image_path' => $filename,
-            ]);
+                // create gallery record
+                \App\Models\ItemGallery::create([
+                    'item_id' => $item->id,
+                    'image_path' => $filename,
+                ]);
+            }
         }
 
         // Update item fields
