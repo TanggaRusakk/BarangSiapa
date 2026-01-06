@@ -17,14 +17,13 @@ use App\Http\Controllers\RentalInfoController;
 use App\Http\Controllers\ItemCategoryController;
 use App\Http\Controllers\MidtransNotification;
 use App\Http\Controllers\OrderServiceFeeController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\VendorManagementController;
 use App\Http\Controllers\Admin\ItemManagementController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Vendor\ProductController as VendorProductController;
 use App\Http\Controllers\Vendor\VendorOrderController;
-use App\Http\Controllers\Vendor\VendorDashboardController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
@@ -49,7 +48,18 @@ Route::get('/rental-infos', [RentalInfoController::class, 'index'])->name('renta
 Route::get('/item-categories', [ItemCategoryController::class, 'index'])->name('item-categories.index');
 Route::get('/order-service-fees', [OrderServiceFeeController::class, 'index'])->name('order-service-fees.index');
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+// Role-based dashboard routes
+Route::middleware(['auth', 'role:user'])->group(function () {
+    Route::get('/dashboard', [UserController::class, 'dashboard'])->name('user.dashboard');
+});
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/admin/dashboard', [UserController::class, 'adminDashboard'])->name('admin.dashboard');
+});
+
+Route::middleware(['auth', 'role:vendor'])->group(function () {
+    Route::get('/vendor/dashboard', [\App\Http\Controllers\VendorController::class, 'dashboard'])->name('vendor.dashboard');
+});
 
 Route::post('/product/viewed', [DashboardController::class, 'recordView'])->middleware('auth');
 
