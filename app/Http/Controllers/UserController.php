@@ -18,13 +18,27 @@ class UserController extends Controller
         if (auth()->user()->role !== 'user') abort(403);
 
         $user = auth()->user();
-        $recentOrders = Order::where('user_id', $user->id)->with('orderItems.item')->latest()->take(5)->get();
-        $ordersCount = Order::where('user_id', $user->id)->count();
 
-        // Recent viewed items placeholder
+        // Metrics (computed in controller only)
+        $activeOrders = Order::where('user_id', $user->id)
+            ->where('order_status', 'paid')
+            ->count();
+
+        $totalSpent = Order::where('user_id', $user->id)
+            ->where('order_status', 'paid')
+            ->sum('order_total_amount');
+
+        $reviewsGiven = \App\Models\Review::where('user_id', $user->id)->count();
+
+        // Conversations count (chats where user participates)
+        $messagesCount = \App\Models\Chat::where('user_id', $user->id)
+            ->orWhere('vendor_user_id', $user->id)
+            ->count();
+
+        $recentOrders = Order::where('user_id', $user->id)->with('orderItems.item')->latest()->take(5)->get();
         $recentProducts = Item::latest()->take(5)->get();
 
-        return view('dashboard.user.index', compact('recentOrders', 'ordersCount', 'recentProducts'));
+        return view('dashboard.user.index', compact('recentOrders', 'recentProducts', 'activeOrders', 'totalSpent', 'reviewsGiven', 'messagesCount'));
     }
 
     // Admin dashboard (role: admin)
@@ -46,5 +60,24 @@ class UserController extends Controller
         $recentUsers = User::latest()->take(5)->get();
 
         return view('dashboard', compact('totalUsers','activeVendors','totalProducts','totalCategories','revenueThisMonth','recentCategories','recentOrders','recentUsers'));
+    }
+
+    // Generic dashboard route that redirects to role-specific dashboard
+    public function redirectDashboard(Request $request)
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $role = auth()->user()->role;
+        switch ($role) {
+            case 'admin':
+                return redirect()->route('admin.dashboard');
+            case 'vendor':
+                return redirect()->route('vendor.dashboard');
+            case 'user':
+            default:
+                return redirect()->route('user.dashboard');
+        }
     }
 }

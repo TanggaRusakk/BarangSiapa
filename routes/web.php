@@ -48,9 +48,12 @@ Route::get('/rental-infos', [RentalInfoController::class, 'index'])->name('renta
 Route::get('/item-categories', [ItemCategoryController::class, 'index'])->name('item-categories.index');
 Route::get('/order-service-fees', [OrderServiceFeeController::class, 'index'])->name('order-service-fees.index');
 
-// Role-based dashboard routes
+// Generic named dashboard route that redirects based on role (no closures)
+Route::get('/dashboard', [UserController::class, 'redirectDashboard'])->middleware('auth')->name('dashboard');
+
+// Role-based dashboard routes (explicit)
 Route::middleware(['auth', 'role:user'])->group(function () {
-    Route::get('/dashboard', [UserController::class, 'dashboard'])->name('user.dashboard');
+    Route::get('/dashboard/user', [UserController::class, 'dashboard'])->name('user.dashboard');
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
@@ -560,8 +563,7 @@ Route::middleware('auth')->group(function () {
         return redirect()->back()->with('success', 'Review deleted successfully!');
     })->name('reviews.destroy');
 
-    // Vendor routes (basic) — dashboard, product create/list, orders, ads
-    Route::get('/vendor/dashboard', [\App\Http\Controllers\VendorDashboardController::class, 'index'])->name('vendor.dashboard');
+    // Vendor routes (basic) — product create/list, orders, ads
 
     Route::get('/vendor/products/create', function () {
         if (auth()->user()->role !== 'vendor') abort(403);

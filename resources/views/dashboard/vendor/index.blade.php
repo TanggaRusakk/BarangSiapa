@@ -48,6 +48,7 @@
 
         <!-- Short Lists: Products, Orders, Ads -->
         <div class="row g-3">
+            <!-- Products -->
             <div class="col-12 col-lg-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
@@ -55,7 +56,7 @@
                         <a href="{{ route('vendor.products.list') }}" class="btn btn-sm btn-outline-primary">View All</a>
                     </div>
                     <div class="card-body p-3">
-                        @if(isset($recentProducts) && $recentProducts->count() > 0)
+                        @if(!empty($recentProducts) && $recentProducts->count() > 0)
                             <div class="d-flex flex-column gap-3">
                                 @foreach($recentProducts as $product)
                                     <div class="d-flex align-items-center gap-3 p-2 rounded" style="background: rgba(255,255,255,0.02);">
@@ -74,6 +75,7 @@
                 </div>
             </div>
 
+            <!-- Orders -->
             <div class="col-12 col-lg-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
@@ -81,17 +83,15 @@
                         <a href="{{ route('vendor.orders.list') }}" class="btn btn-sm btn-outline-primary">View All</a>
                     </div>
                     <div class="card-body p-3">
-                        @if(isset($recentOrders) && $recentOrders->count() > 0)
-                            <div class="list-group list-group-flush">
+                        @if(!empty($recentOrders) && $recentOrders->count() > 0)
+                            <div class="d-flex flex-column gap-3">
                                 @foreach($recentOrders as $order)
-                                    <div class="list-group-item border-0 py-2 d-flex justify-content-between align-items-center" style="background: rgba(255,255,255,0.02);">
-                                        <div class="min-w-0">
-                                            <h6 class="mb-1 fw-semibold">Order #{{ $order->id }}</h6>
-                                            <small class="text-muted">{{ $order->user->name ?? 'N/A' }} • Rp{{ number_format($order->order_total_amount ?? 0) }}</small>
+                                    <div class="d-flex align-items-center gap-3 p-2 rounded" style="background: rgba(255,255,255,0.02);">
+                                        <div class="flex-grow-1 min-w-0">
+                                            <h6 class="mb-1 fw-bold text-truncate">Order #{{ $order->id }}</h6>
+                                            <p class="mb-0 text-secondary small text-truncate">Rp{{ number_format($order->total_price ?? 0) }} · {{ ucfirst($order->status ?? 'unknown') }}</p>
                                         </div>
-                                        <span class="badge rounded-pill px-3 py-2 {{ $order->order_status === 'paid' ? 'bg-success' : ($order->order_status === 'pending' ? 'bg-warning text-dark' : 'bg-secondary') }}" style="font-size: 0.75rem;">
-                                            {{ ucfirst($order->order_status ?? 'pending') }}
-                                        </span>
+                                        <div class="text-end small text-muted">{{ $order->created_at ? $order->created_at->diffForHumans() : '' }}</div>
                                     </div>
                                 @endforeach
                             </div>
@@ -102,35 +102,25 @@
                 </div>
             </div>
 
+            <!-- Recommended Items (placed beside Orders) -->
             <div class="col-12 col-lg-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="fw-bold mb-0">Ads</h5>
-                        <a href="{{ route('vendor.ads.index') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                        <h5 class="fw-bold mb-0">Recommended Items</h5>
                     </div>
                     <div class="card-body p-3">
-                        @if(isset($recentAds) && $recentAds->count() > 0)
-                            <div class="d-flex flex-column gap-3">
-                                @foreach($recentAds as $ad)
-                                    <div class="d-flex gap-3 p-2 rounded" style="background: rgba(255,255,255,0.02);">
-                                        @if($ad->ad_image)
-                                            <img src="{{ asset('storage/' . $ad->ad_image) }}" alt="Ad Image" class="rounded" style="width:64px;height:64px;object-fit:cover;">
-                                        @elseif($ad->item)
-                                            <img src="{{ $ad->item->first_image_url }}" alt="{{ $ad->item->item_name }}" class="rounded" style="width:64px;height:64px;object-fit:cover;">
-                                        @else
-                                            <div class="rounded d-flex align-items-center justify-content-center" style="width:64px;height:64px;background:#f0f0f0;">
-                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>
-                                            </div>
-                                        @endif
-                                        <div class="flex-grow-1">
-                                            <h6 class="mb-1 fw-bold text-truncate">{{ $ad->item->item_name ?? 'Ad #' . $ad->id }}</h6>
-                                            <p class="mb-0 text-secondary small">Rp{{ number_format($ad->price ?? 0) }}</p>
-                                        </div>
+                        @if(!empty($recentProducts) && $recentProducts->count() > 0)
+                            @foreach($recentProducts as $product)
+                                <div class="d-flex align-items-center gap-3 py-2" style="background: rgba(255,255,255,0.02);">
+                                    <img src="{{ $product->first_image_url }}" style="width:48px;height:48px;object-fit:cover;" class="rounded">
+                                    <div>
+                                        <div class="fw-semibold">{{ $product->item_name }}</div>
+                                        <small class="text-muted">Rp{{ number_format($product->item_price ?? 0) }}</small>
                                     </div>
-                                @endforeach
-                            </div>
+                                </div>
+                            @endforeach
                         @else
-                            <div class="text-center py-4 text-secondary">No ads yet</div>
+                            <div class="text-center text-secondary py-4">No recent items</div>
                         @endif
                     </div>
                 </div>

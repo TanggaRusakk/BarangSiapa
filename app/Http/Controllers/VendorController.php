@@ -74,14 +74,16 @@ class VendorController extends Controller
                 return $order->orderItems->pluck('item_id')->intersect($vendorItems)->isNotEmpty();
             });
 
-            $ordersCount = $vendorOrders->whereIn('order_status', ['paid', 'completed'])->count();
+            // Total Orders (paid)
+            $totalOrders = $vendorOrders->where('order_status', 'paid')->count();
 
+            // Recent Orders (paid/completed for display)
             $recentOrders = $vendorOrders
                 ->whereIn('order_status', ['paid', 'completed'])
                 ->sortByDesc('created_at')
                 ->take(5);
 
-            // Total Sales
+            // Total Sales (sum of paid/completed order items belonging to vendor)
             $successfulOrders = $vendorOrders->whereIn('order_status', ['paid', 'completed']);
             $revenue = 0;
             foreach ($successfulOrders as $order) {
@@ -92,13 +94,18 @@ class VendorController extends Controller
                 }
             }
 
-            $productsCount = $vendor->items()->count();
+            $totalProducts = $vendor->items()->count();
 
-            // Store Rating
-            $storeRating = \App\Models\Review::whereHas('item', function ($q) use ($vendor) {
+            // Average Rating
+            $averageRating = \App\Models\Review::whereHas('item', function ($q) use ($vendor) {
                 $q->where('vendor_id', $vendor->id ?? 0);
             })->avg('rating') ?? 0;
-            $storeRating = round($storeRating, 1);
+            $averageRating = round($averageRating, 1);
+
+            // Total Advertisements
+            $totalAdvertisements = \App\Models\Ad::whereHas('item', function($q) use ($vendor) {
+                $q->where('vendor_id', $vendor->id);
+            })->count();
 
             // Recent Ads (paid and active)
             $finalPaymentStatuses = ['settlement', 'capture', 'success'];
@@ -120,14 +127,15 @@ class VendorController extends Controller
                 ->take(5)
                 ->get();
         } else {
-            $ordersCount = 0;
+            $totalOrders = 0;
             $recentOrders = collect();
             $revenue = 0;
-            $productsCount = 0;
-            $storeRating = 0;
+            $totalProducts = 0;
+            $averageRating = 0;
             $recentAds = collect();
+            $totalAdvertisements = 0;
         }
 
-        return view('vendor.dashboard', compact('recentProducts', 'ordersCount', 'recentOrders', 'revenue', 'productsCount', 'storeRating', 'recentAds'));
+        return view('dashboard.vendor.index', compact('recentProducts', 'totalOrders', 'recentOrders', 'revenue', 'totalProducts', 'averageRating', 'recentAds', 'totalAdvertisements'));
     }
 }

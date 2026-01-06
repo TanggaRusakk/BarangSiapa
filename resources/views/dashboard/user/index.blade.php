@@ -8,7 +8,47 @@
         </div>
 
         <div class="row g-3 mb-4">
-            <div class="col-12 col-md-6">
+                <div class="col-12">
+            <!-- Statistic Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center py-4">
+                            <h3 class="fw-bold mb-1" style="font-size: 1.75rem; color: #6A38C2;">{{ number_format($activeOrders ?? 0) }}</h3>
+                            <p class="text-muted mb-0 small">Active Orders</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center py-4">
+                            <h3 class="fw-bold mb-1" style="font-size: 1.75rem; color: #6A38C2;">Rp{{ number_format($totalSpent ?? 0) }}</h3>
+                            <p class="text-muted mb-0 small">Total Spent</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center py-4">
+                            <h3 class="fw-bold mb-1" style="font-size: 1.75rem; color: #6A38C2;">{{ number_format($reviewsGiven ?? 0) }}</h3>
+                            <p class="text-muted mb-0 small">Reviews Given</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center py-4">
+                            <h3 class="fw-bold mb-1" style="font-size: 1.75rem; color: #6A38C2;">{{ number_format($messagesCount ?? 0) }}</h3>
+                            <p class="text-muted mb-0 small">Messages</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                </div>
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
                         <h5 class="fw-bold mb-0">Recent Orders</h5>
